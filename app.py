@@ -2,10 +2,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Streamlit Retro Arcade",
+    page_title="Space Shooter",
     page_icon="🚀",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="wide" # Bypasses standard narrow container constraints
 )
 
 st.title("🚀 Mobile Space Shooter with Sound")
@@ -363,4 +362,7 @@ requestAnimationFrame(drawLoop);
 
 """
 
-components.html(game_html, height=850, scrolling=True)
+_, center_column, _ = st.columns([1, 4, 1])
+
+with center_column:
+    components.html(game_html, height=900, scrolling=False)
