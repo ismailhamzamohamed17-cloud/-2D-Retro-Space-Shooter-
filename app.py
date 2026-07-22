@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Desert FPS", layout="centered")
-st.title("🏜️ Desert Sniper FPS")
+st.set_page_config(page_title="3D Sniper FPS", layout="centered")
+st.title("🎯 3D Desert Sniper")
 
 game_html = """
 <!DOCTYPE html>
@@ -12,55 +12,55 @@ game_html = """
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
         
-        /* Layered Sunset Desert Canvas */
+        /* 3D Horizon Desert Landscape Viewport */
         #board { 
             position: relative; 
             width: 320px; 
             height: 350px; 
-            background: linear-gradient(to bottom, #ff7e5f 0%, #feb47b 40%, #e07a5f 70%, #f4a261 100%); 
-            border: 3px solid #555; 
+            background: linear-gradient(to bottom, #ff9e7d 0%, #ffcad4 40%, #e07a5f 65%, #f4a261 100%); 
+            border: 3px solid #444; 
             overflow: hidden; 
             margin: auto; 
-            border-radius: 8px; 
+            border-radius: 12px; 
             touch-action: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         }
         
-        /* Distant background mountain ranges */
+        /* Perspective sand dunes */
         #board::before {
-            content: ''; position: absolute; bottom: 0; left: -50px; width: 250px; height: 120px; background: #c2593f; clip-path: polygon(0% 100%, 50% 20%, 100% 100%); opacity: 0.7; z-index: 1;
+            content: ''; position: absolute; bottom: 0; left: -40px; width: 220px; height: 110px; background: #c2593f; clip-path: polygon(0% 100%, 60% 15%, 100% 100%); opacity: 0.8; z-index: 1;
         }
         #board::after {
-            content: ''; position: absolute; bottom: 0; right: -30px; width: 200px; height: 90px; background: #a64630; clip-path: polygon(0% 100%, 40% 10%, 100% 100%); opacity: 0.9; z-index: 2;
+            content: ''; position: absolute; bottom: 0; right: -40px; width: 240px; height: 95px; background: #a64630; clip-path: polygon(0% 100%, 35% 5%, 100% 100%); opacity: 0.9; z-index: 2;
         }
 
-        /* 3D FPS Tactical Scope Crosshair */
+        /* Sniper Rifle Crosshair Overlay */
         #crosshair { 
             position: absolute; 
-            top: 155px; 
-            left: 140px; 
+            top: 153px; 
+            left: 138px; 
             width: 44px; 
             height: 44px; 
-            border: 3px solid #ff0055; 
+            border: 2px solid #00ff66; 
             border-radius: 50%; 
             will-change: left, top; 
             z-index: 15; 
-            cursor: move;
-            box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.15); /* Scope tint effect */
+            pointer-events: none; /* Allows user to drag background canvas surface directly */
         }
-        #crosshair::before { content: ''; position: absolute; top: 21px; left: 0; width: 44px; height: 2px; background: #ff0055; }
-        #crosshair::after { content: ''; position: absolute; top: 0; left: 21px; width: 2px; height: 44px; background: #ff0055; }
+        #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
+        #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
         
-        #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 18px; z-index: 10; background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 4px; }
-        .retry-btn { margin-top: 15px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; }
+        #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 16px; z-index: 10; background: rgba(255,255,255,0.7); padding: 3px 8px; border-radius: 4px; }
+        .retry-btn { margin-top: 15px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
         
-        /* Humanoid Target Assembly Framework */
+        /* 3D Human Silhouette Nodes */
         .humanoid { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 5; pointer-events: none; }
-        .head { border-radius: 50%; background: #2b2d42; width: 25%; height: 25%; }
-        .torso { background: #2b2d42; width: 15%; height: 45%; margin-top: 2%; position: relative; }
-        .arm-l { position: absolute; top: 10%; left: -150%; width: 150%; height: 20%; background: #2b2d42; transform: rotate(-30deg); transform-origin: right; }
-        .arm-r { position: absolute; top: 10%; right: -150%; width: 150%; height: 20%; background: #2b2d42; transform: rotate(30deg); transform-origin: left; }
+        .head { border-radius: 50%; background: #1d1e2c; width: 28%; height: 25%; }
+        .torso { background: #1d1e2c; width: 18%; height: 45%; margin-top: 2%; position: relative; }
+        .arm-l { position: absolute; top: 10%; left: -140%; width: 140%; height: 20%; background: #1d1e2c; transform: rotate(-25deg); transform-origin: right; }
+        .arm-r { position: absolute; top: 10%; right: -140%; width: 140%; height: 20%; background: #1d1e2c; transform: rotate(25deg); transform-origin: left; }
         .legs { display: flex; justify-content: space-between; width: 100%; height: 28%; }
-        .leg { background: #2b2d42; width: 20%; height: 100%; }
+        .leg { background: #1d1e2c; width: 22%; height: 100%; }
     </style>
 </head>
 <body>
@@ -70,167 +70,260 @@ game_html = """
         <div id="crosshair"></div>
     </div>
 
-    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 10px; font-family: sans-serif;">
-        🎯 <b>Drag the scope crosshair</b> directly with your finger to aim, and <b>lift your finger up</b> to shoot!
+    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 12px; font-family: sans-serif; line-height: 1.4;">
+        🎮 <b>Drag anywhere inside the box</b> to guide your weapon sight.<br>
+        🎯 <b>Tap cleanly once without dragging</b> to fire!
     </p>
 
 <script>
-    let aimX = 140; let aimY = 155; let score = 0; let gameOver = false;
-    let isDragging = false;
-    let touchStartX = 0; let touchStartY = 0;
+    let aimX = 138; let aimY = 153; let score = 0; let gameOver = false;
+    let isMovingCrosshair = false;
+    let dragStartX = 0; let dragStartY = 0;
+    let touchMovedFlag = false; // Distinguishes dragging from tapping to shoot
     
     const board = document.getElementById("board");
     const crosshair = document.getElementById("crosshair");
     const scoreTxt = document.getElementById("scoreTxt");
     
     let activeEnemies = [];
-    let audioCtx = null; let spawnInt = null; let bgOsc1 = null; let bgOsc2 = null;
+    let audioCtx = null; let spawnInt = null; let bgLoop = null;
 
     function initAudio() {
         if (audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        startBackgroundMusic();
+        startSynthAmbientMusic();
     }
 
-    function startBackgroundMusic() {
+    // Creates dynamic space engine hum / desert drone music
+    function startSynthAmbientMusic() {
         try {
-            bgOsc1 = audioCtx.createOscillator(); bgOsc2 = audioCtx.createOscillator();
-            let bgGain = audioCtx.createGain();
-            bgOsc1.type = "sine"; bgOsc1.frequency.setValueAtTime(65.41, audioCtx.currentTime); // C2 background drone
-            bgOsc2.type = "triangle"; bgOsc2.frequency.setValueAtTime(98.00, audioCtx.currentTime); // G2 sandstorm drone
-            bgGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-            bgOsc1.connect(bgGain); bgOsc2.connect(bgGain);
-            bgGain.connect(audioCtx.destination);
-            bgOsc1.start(); bgOsc2.start();
+            let osc1 = audioCtx.createOscillator(); let osc2 = audioCtx.createOscillator();
+            bgLoop = audioCtx.createGain();
+            
+            osc1.type = "sine"; osc1.frequency.setValueAtTime(55.00, audioCtx.currentTime); // A1 note
+            osc2.type = "triangle"; osc2.frequency.setValueAtTime(82.41, audioCtx.currentTime); // E2 drone harmony
+            
+            bgLoop.gain.setValueAtTime(0.04, audioCtx.currentTime); // Soft background volume
+            
+            osc1.connect(bgLoop); osc2.connect(bgLoop);
+            bgLoop.connect(audioCtx.destination);
+            osc1.start(); osc2.start();
         } catch(e) {}
     }
 
-    function stopBackgroundMusic() {
-        if(bgOsc1) { try { bgOsc1.stop(); bgOsc2.stop(); } catch(e){} }
+    function stopSynthAmbientMusic() {
+        if (bgLoop) { try { audioCtx.close(); audioCtx = null; } catch(e){} }
     }
 
-    function playSound(fStart, fEnd, duration, type) {
+    // 8-bit Audio Sound FX Generators
+    function playSoundFX(type) {
         initAudio(); if (!audioCtx) return;
         let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-        osc.type = type; osc.frequency.setValueAtTime(fStart, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(fEnd, audioCtx.currentTime + duration);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + duration);
+
+        if (type === "sniper") { // Rifle fire discharge
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        } 
+        else if (type === "shout") { // Human shout warning effect
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(420, audioCtx.currentTime + 0.1);
+            osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }
+        else if (type === "hit") { // Target elimination impact
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        }
     }
 
-    // Touch and Mouse Drag Implementation
-      function onStart(e) {
+    // Touch Interaction Event Matrix
+    function onStart(e) {
         if (gameOver) return;
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        initAudio();
+        isMovingCrosshair = true;
+        touchMovedFlag = false;
         
-        let rect = crosshair.getBoundingClientRect();
-        isDragging = true;
-        touchStartX = clientX - aimX;
-        touchStartY = clientY - aimY;
+        let pointer = e.touches ? e.touches[0] : e;
+        let boardRect = board.getBoundingClientRect();
+        
+        // Grab drag anchor offsets relative to active center cursor tracking position
+        dragStartX = pointer.clientX - boardRect.left - aimX;
+        dragStartY = pointer.clientY - boardRect.top - aimY;
     }
 
     function onMove(e) {
-        if (!isDragging || gameOver) return;
-        if (e.touches) e.preventDefault(); // Prevents screen bouncing on mobile safari/chrome
+        if (!isMovingCrosshair || gameOver) return;
+        touchMovedFlag = true;
         
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let pointer = e.touches ? e.touches[0] : e;
+        let boardRect = board.getBoundingClientRect();
         
-        // Track finger dragging positions across the board
-        aimX = Math.max(-10, Math.min(285, clientX - touchStartX));
-        aimY = Math.max(-10, Math.min(315, clientY - touchStartY));
+        let relativeX = pointer.clientX - boardRect.left - dragStartX;
+        let relativeY = pointer.clientY - boardRect.top - dragStartY;
+        
+        // Lock sight inside boundaries
+        aimX = Math.max(-10, Math.min(288, relativeX));
+        aimY = Math.max(-10, Math.min(316, relativeY));
         
         crosshair.style.left = aimX + "px";
         crosshair.style.top = aimY + "px";
     }
 
-    function onEnd() {
-        if (!isDragging || gameOver) return;
-        isDragging = false;
-        shoot(); // Fire sniper automatically upon lifting finger
+    function onEnd(e) {
+        if (!isMovingCrosshair || gameOver) return;
+        isMovingCrosshair = false;
+        
+        // If your finger didn't drag extensively across the screen surface, interpret input as a gunshot
+        if (!touchMovedFlag) {
+            fireSniperRifle();
+        }
     }
 
-    // Attach interaction events directly to your screen window
-    crosshair.addEventListener("touchstart", onStart, {passive: false});
+    board.addEventListener("touchstart", onStart, {passive: true});
     window.addEventListener("touchmove", onMove, {passive: false});
     window.addEventListener("touchend", onEnd);
-    crosshair.addEventListener("mousedown", onStart);
+    board.addEventListener("mousedown", onStart);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onEnd);
-    // ---------------------------------------------
 
-    function startSpawner() {
-        spawnInt = setInterval(() => {
+    function fireSniperRifle() {
+        if (gameOver) return;
+        playSoundFX("sniper");
+        
+        // Visual weapon recoil flash feedback
+        crosshair.style.borderColor = "red";
+        setTimeout(() => { if(!gameOver) crosshair.style.borderColor = "#00ff66"; }, 70);
+
+        activeEnemies.forEach((e) => {
+            let eX = parseFloat(e.style.left) || 0;
+            let eY = parseFloat(e.style.top) || 0;
+            let eW = parseFloat(e.style.width) || 0;
+            let eH = parseFloat(e.style.height) || 0;
+            
+            let centerTargetX = eX + (eW / 2);
+            let centerTargetY = eY + (eH / 2);
+            let centerScopeX = aimX + 22;
+            let centerScopeY = aimY + 22;
+
+            // Accurate bounding coordinates distance evaluation calculation
+            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 12) && Math.abs(centerScopeY - centerCenterY) < (eH / 2 + 12) && eW > 10) {
+                playSoundFX("hit");
+                score += 10;
+                scoreTxt.innerText = "Score: " + score;
+                if(e.intervalId) clearInterval(e.intervalId);
+                e.remove();
+            activeEnemies = activeEnemies.filter(item => item !== e);
+        }
+    });
+}
+
+function restartGame() {
+    stopSynthAmbientMusic();
+    if (spawnInt) clearInterval(spawnInt);
+    
+    activeEnemies.forEach(e => { 
+        if (e.intervalId) clearInterval(e.intervalId); 
+        e.remove(); 
+    });
+    
+    activeEnemies = []; 
+    score = 0; 
+    aimX = 138; 
+    aimY = 153; 
+    isMovingCrosshair = false; 
+    gameOver = false;
+    
+    board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 138px; top: 153px;"></div>';
+    
+    setTimeout(() => {
+        globalThis.scoreTxt = document.getElementById("scoreTxt");
+        globalThis.crosshair = document.getElementById("crosshair");
+        initAudio();
+        startSpawner();
+    }, 60);
+}
+
+function startSpawner() {
+    spawnInt = setInterval(() => {
+        if (gameOver) { 
+            clearInterval(spawnInt); 
+            return; 
+        }
+        
+        // Build humanoid target layout
+        let h = document.createElement("div");
+        h.className = "humanoid";
+        h.innerHTML = '<div class="head"></div><div class="torso"><div class="arm-l"></div><div class="arm-r"></div></div><div class="legs"><div class="leg"></div><div class="leg"></div></div>';
+        
+        let finalTrajectoryX = Math.random() * 240 + 30;
+        let currentWidth = 3; 
+        let currentHeight = 6;
+        
+        h.style.cssText = `position:absolute; top:165px; left:160px; width:${currentWidth}px; height:${currentHeight}px;`;
+        board.appendChild(h); 
+        activeEnemies.push(h);
+        
+        // Play shouting voice indicator sound effect upon spawning target
+        playSoundFX("shout");
+        
+        let steps = 0;
+        let hInt = setInterval(() => {
             if (gameOver) { 
-                clearInterval(spawnInt); 
+                clearInterval(hInt); 
                 return; 
             }
             
-            // Generate full modular HTML vector assembly for the Humanoid target structures
-            let h = document.createElement("div");
-            h.className = "humanoid";
-            h.innerHTML = '<div class="head"></div><div class="torso"><div class="arm-l"></div><div class="arm-r"></div></div><div class="legs"><div class="leg"></div><div class="leg"></div></div>';
+            steps += 1;
+            // Continuous 3D dimensional scaling computations
+            currentWidth += 0.45; 
+            currentHeight += 0.9;
             
-            let targetX = Math.random() * 240 + 30;
-            let targetY = 160 + (Math.random() * 40 - 20); 
-            let currentW = 4; 
-            let currentH = 8;
+            let speedX = (finalTrajectoryX - 160) / 95;
+            let positionX = 160 + (speedX * steps) - (currentWidth / 2);
+            let positionY = 165 + (1.25 * steps) - (currentHeight / 2);
             
-            // FIXED: Added mandatory backticks around string variables to prevent app engine crashing
-            h.style.cssText = `position:absolute; top:160px; left:160px; width:${currentW}px; height:${currentH}px;`;
-            board.appendChild(h); 
-            activeEnemies.push(h);
+            h.style.width = currentWidth + "px";
+            h.style.height = currentHeight + "px";
+            h.style.left = positionX + "px";
+            h.style.top = positionY + "px";
+            h.intervalId = hInt;
             
-            let steps = 0;
-            let hInt = setInterval(() => {
-                if (gameOver) { 
-                    clearInterval(hInt); 
-                    return; 
-                }
-                
-                steps += 1;
-                currentW += 0.5; 
-                currentH += 1.0; 
-                
-                let speedX = (targetX - 160) / 90;
-                let currentX = 160 + (speedX * steps) - (currentW / 2);
-                let currentY = 160 + (1.3 * steps) - (currentH / 2);
-                
-                h.style.width = currentW + "px";
-                h.style.height = currentH + "px";
-                h.style.left = currentX + "px";
-                h.style.top = currentY + "px";
-                h.intervalId = hInt;
-                
-                if (currentH > 90) {
-                    triggerGameOver();
-                    clearInterval(hInt);
-                }
-            }, 25);
-        }, 1100);
-    }
+            // If a target breaches the spatial perimeter boundary proximity threshold, trigger game over
+            if (currentHeight > 85) {
+                triggerGameOver();
+                clearInterval(hInt);
+            }
+        }, 30);
+    }, 1300);
+}
 
-    function triggerGameOver() {
-        gameOver = true; 
-        isDragging = false;
-        stopBackgroundMusic();
-        playSound(120, 10, 0.5, "sawtooth");
-        board.innerHTML = `
-            <div style='color:#7a1f1d; font-size:30px; font-weight:bold; text-align:center; margin-top:100px; position:relative; z-index:20; text-shadow: 1px 1px black;'>
-                MISSION FAILED<br>
-                <span style='color:black; font-size:18px; font-weight:normal;'>Score: ${score}</span><br>
-                <button class='retry-btn' onclick='restartGame()'>REDEPLOY 🔄</button>
-            </div>`;
-    }
+function triggerGameOver() {
+    gameOver = true; 
+    isMovingCrosshair = false;
+    stopSynthAmbientMusic();
+    board.innerHTML = `
+        <div style='color:#7a1f1d; font-size:28px; font-weight:bold; text-align:center; margin-top:100px; position:relative; z-index:20; text-shadow: 1px 1px #000;'>
+            MISSION FAILURE<br>
+            <span style='color:white; font-size:18px; font-weight:normal;'>Score achieved: ${score}</span><br>
+            <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button>
+        </div>`;
+}
 
-    globalThis.scoreTxt = scoreTxt; 
-    globalThis.crosshair = crosshair;
-    startSpawner();
+// Connect global variables hooks up securely
+globalThis.scoreTxt = scoreTxt; 
+globalThis.crosshair = crosshair;
+startSpawner();
 """
 
 components.html(game_html, height=450)
 
-
+                
