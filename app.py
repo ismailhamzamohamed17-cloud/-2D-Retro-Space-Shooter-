@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="3D Sniper FPS", layout="centered")
-st.title("🎯 3D Desert Sniper")
+st.set_page_config(page_title="Desert Outpost FPS", layout="centered")
+st.title("🏜️ Outpost Sniper Defense")
 
 game_html = """
 <!DOCTYPE html>
@@ -10,108 +10,104 @@ game_html = """
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-    <style>
-    body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
-    
-    /* 3D Horizon Space Desert Viewport */
-    #board { 
-        position: relative; 
-        width: 320px; 
-        height: 350px; 
-        background: linear-gradient(to bottom, #11001c 0%, #240046 30%, #3c096c 60%, #7b2cbf 100%); 
-        border: 3px solid #555; 
-        overflow: hidden; 
-        margin: auto; 
-        border-radius: 12px; 
-        touch-action: none;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
-    
-    /* Neon glowing alien sand structures */
-    #board::before {
-        content: ''; position: absolute; bottom: 0; left: -40px; width: 220px; height: 110px; background: #3c096c; clip-path: polygon(0% 100%, 60% 15%, 100% 100%); opacity: 0.8; z-index: 1; border-top: 1px solid #9d4edd;
-    }
-    #board::after {
-        content: ''; position: absolute; bottom: 0; right: -40px; width: 240px; height: 95px; background: #240046; clip-path: polygon(0% 100%, 35% 5%, 100% 100%); opacity: 0.9; z-index: 2; border-top: 1px solid #7b2cbf;
-    }
-    
-    /* Highly Detailed 3D-Look Tactical Sniper Rifle Model Assembly */
-    #gun {
-        position: absolute;
-        bottom: -20px;
-        right: 15px;
-        width: 45px;
-        height: 160px;
-        transform: rotate(40deg);
-        transform-origin: bottom right;
-        pointer-events: none;
-        z-index: 25;
-        will-change: transform;
-    }
-    /* Long Sniper Metal Barrel extension */
-    .gun-barrel {
-        position: absolute; top: -45px; left: 18px; width: 8px; height: 75px; 
-        background: linear-gradient(to right, #111, #444, #222); border-radius: 2px;
-    }
-    /* Heavy Muzzle Brake Tip */
-    .gun-muzzle {
-        position: absolute; top: -55px; left: 16px; width: 12px; height: 12px; 
-        background: #0d0d0d; border-radius: 1px;
-    }
-    /* Rifle Receiver & Dynamic Scope Mount Body */
-    .gun-receiver {
-        position: absolute; top: 30px; left: 10px; width: 24px; height: 70px; 
-        background: linear-gradient(to right, #1a1a1a, #2b2b2b, #111); border-radius: 4px;
-        box-shadow: -5px 5px 12px rgba(0,0,0,0.6);
-    }
-    /* Sniper Scope Tube attached to rifle upper receiver */
-    .gun-scope-tube {
-        position: absolute; top: 15px; left: -2px; width: 10px; height: 45px; 
-        background: linear-gradient(to right, #0a0a0a, #333, #1a1a1a); border-radius: 2px;
-    }
-    /* Heavy Sniper Stock handle */
-    .gun-stock {
-        position: absolute; top: 100px; left: 14px; width: 20px; height: 60px; 
-        background: linear-gradient(to right, #111, #222); border-radius: 3px;
-    }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
+        
+        /* 1. Maximized Screen Sizing Container Optimized for iPhone 17 Pro Max */
+        #board { 
+            position: relative; 
+            width: 380px; 
+            height: 480px; 
+            background: linear-gradient(to bottom, #ff9e7d 0%, #feb47b 40%, #e07a5f 70%, #d88060 100%); 
+            border: 3px solid #555; 
+            overflow: hidden; 
+            margin: auto; 
+            border-radius: 16px; 
+            touch-action: none;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+        }
+        
+        /* Deep background canyons and ground trenches */
+        #board::before {
+            content: ''; position: absolute; bottom: 0; left: -40px; width: 260px; height: 160px; background: #c2593f; clip-path: polygon(0% 100%, 60% 30%, 100% 100%); opacity: 0.8; z-index: 1; border-top: 2px solid #e07a5f;
+        }
+        #board::after {
+            content: ''; position: absolute; bottom: 0; right: -40px; width: 280px; height: 130px; background: #a64630; clip-path: polygon(0% 100%, 35% 15%, 100% 100%); opacity: 0.9; z-index: 2; border-top: 2px solid #c2593f;
+        }
+        
+        /* Underground Trench Lip Mask Overlay */
+        .trench-floor {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; background: #8c3523; z-index: 3; border-top: 4px solid #5e2114;
+        }
+        
+        /* 2. Massive, Detailed Prominent 3D-Style Sniper Rifle Stock */
+        #gun {
+            position: absolute;
+            bottom: -35px;
+            right: 25px;
+            width: 60px;
+            height: 220px;
+            transform: rotate(28deg);
+            transform-origin: bottom right;
+            pointer-events: none;
+            z-index: 25;
+            will-change: transform;
+        }
+        .gun-barrel {
+            position: absolute; top: -65px; left: 24px; width: 12px; height: 110px; 
+            background: linear-gradient(to right, #1a1a1a, #555, #2d2d2d); border-radius: 3px;
+        }
+        .gun-muzzle {
+            position: absolute; top: -80px; left: 21px; width: 18px; height: 16px; 
+            background: #0a0a0a; border-radius: 2px;
+        }
+        .gun-receiver {
+            position: absolute; top: 40px; left: 10px; width: 38px; height: 100px; 
+            background: linear-gradient(to right, #222, #3d3d3d, #1a1a1a); border-radius: 6px;
+            box-shadow: -8px 8px 16px rgba(0,0,0,0.7);
+        }
+        .gun-scope-tube {
+            position: absolute; top: 15px; left: -4px; width: 16px; height: 65px; 
+            background: linear-gradient(to right, #111, #444, #222); border-radius: 3px;
+        }
+        .gun-stock {
+            position: absolute; top: 140px; left: 16px; width: 32px; height: 80px; 
+            background: linear-gradient(to right, #151515, #2a2a2a); border-radius: 4px;
+        }
 
-    /* Green Tactical Crosshair Scope */
-    #crosshair { 
-        position: absolute; 
-        top: 153px; 
-        left: 138px; 
-        width: 44px; 
-        height: 44px; 
-        border: 2px solid #00ff66; 
-        border-radius: 50%; 
-        will-change: left, top; 
-        z-index: 15; 
-        pointer-events: none;
-    }
-    #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
-    #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
-    
-    #scoreTxt { position: absolute; top: 10px; left: 10px; color: #00ff66; font-weight: bold; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.7); padding: 3px 8px; border: 1px solid #333; border-radius: 4px; }
-    .retry-btn { margin-top: 25px; padding: 12px 25px; background: #9d4edd; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 0 10px #9d4edd; }
-    
-    /* 3D Radiant Neon-Green Extraterrestrial Alien Invader Target Model */
-    .humanoid { 
-        position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; will-change: left, top, width, height;
-    }
-    /* Glowing extended macro alien skull head */
-    .alien-head { background: #39ff14; border-radius: 50% 50% 40% 40%; width: 100%; height: 35%; box-shadow: 0 0 8px #39ff14; position: relative; }
-    /* Giant black insectoid glowing eyes */
-    .alien-head::before { content: ''; position: absolute; top: 40%; left: 15%; width: 25%; height: 25%; background: #000; border-radius: 50% 50% 30% 30%; transform: rotate(-10deg); }
-    .alien-head::after { content: ''; position: absolute; top: 40%; right: 15%; width: 25%; height: 25%; background: #000; border-radius: 50% 50% 30% 30%; transform: rotate(10deg); }
-    /* Slender fluid torso section */
-    .alien-torso { background: #39ff14; width: 45%; height: 40%; border-radius: 2px; margin-top: 4%; position: relative; box-shadow: 0 0 6px #39ff14; }
-    /* Long trailing space alien arms */
-    .alien-arm-l { position: absolute; left: -50%; top: 10%; width: 50%; height: 110%; background: #39ff14; transform: rotate(35deg); transform-origin: top right; border-radius: 2px; }
-    .alien-arm-r { position: absolute; right: -50%; top: 10%; width: 50%; height: 110%; background: #39ff14; transform: rotate(-35deg); transform-origin: top left; border-radius: 2px; }
-    /* Shifting lower tentacles / legs structure */
-    .alien-legs { display: flex; justify-content: space-between; width: 70%; height: 20%; margin-top: auto; }
-    .alien-leg { background: #39ff14; width: 25%; height: 100%; border-radius: 1px; box-shadow: 0 0 4px #39ff14; }
-</style>
+        /* Green Tactical Sniper Crosshair Scope Circle */
+        #crosshair { 
+            position: absolute; 
+            top: 218px; 
+            left: 168px; 
+            width: 44px; 
+            height: 44px; 
+            border: 2px solid #00ff66; 
+            border-radius: 50%; 
+            will-change: left, top; 
+            z-index: 15; 
+            pointer-events: none;
+        }
+        #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
+        #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
+        
+        #scoreTxt { position: absolute; top: 12px; left: 12px; color: #00ff66; font-weight: bold; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.75); padding: 4px 10px; border: 1px solid #444; border-radius: 6px; }
+        .retry-btn { margin-top: 30px; padding: 12px 28px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(231,111,81,0.4); }
+        
+        /* 3. Code-Generated Realistic Human Sapper Enemies */
+        .humanoid { 
+            position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; will-change: left, top, width, height;
+        }
+        /* Caucasian / Desert camouflage skin-tone mapping elements */
+        .human-head { background: #e0a96d; border-radius: 50%; width: 100%; height: 25%; box-shadow: inset -1px -1px 2px rgba(0,0,0,0.2); }
+        /* Combat fatigue torso clothing layer */
+        .human-torso { background: #4f5d2f; width: 65%; height: 50%; border-radius: 3px; margin-top: 3%; position: relative; }
+        /* Moving human arms arms */
+        .human-arm-l { position: absolute; left: -35%; top: 10%; width: 35%; height: 90%; background: #4f5d2f; transform: rotate(20deg); transform-origin: top right; border-radius: 2px; }
+        .human-arm-r { position: absolute; right: -35%; top: 10%; width: 35%; height: 90%; background: #4f5d2f; transform: rotate(-20deg); transform-origin: top left; border-radius: 2px; }
+        /* Combat trousers & boots legs structure */
+        .human-legs { display: flex; justify-content: space-around; width: 65%; height: 22%; margin-top: auto; }
+        .human-leg { background: #35401b; width: 40%; height: 100%; border-radius: 1px; }
+    </style>
 </head>
 <body>
 
@@ -125,15 +121,16 @@ game_html = """
             <div class="gun-receiver"></div>
             <div class="gun-stock"></div>
         </div>
+        <div class="trench-floor"></div> <!-- Structural ground line barrier -->
     </div>
 
-    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 12px; font-family: sans-serif; line-height: 1.4;">
-        🎮 <b>Drag anywhere inside the box</b> to sweep your weapon scope sight.<br>
-        🛸 <b>Tap cleanly once without dragging</b> to eliminate oncoming alien invaders!
+    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 15px; font-family: sans-serif; line-height: 1.4; padding: 0 10px;">
+        🎮 <b>Drag anywhere inside the box</b> to sweep your close-up sniper rifle scope.<br>
+        🎯 <b>Tap cleanly once without dragging</b> to eliminate targets running from trenches!
     </p>
 
 <script>
-    let aimX = 138; let aimY = 153; let score = 0; let gameOver = false;
+    let aimX = 168; let aimY = 218; let score = 0; let gameOver = false;
     let isMovingCrosshair = false;
     let touchMovedFlag = false;
     
@@ -155,8 +152,8 @@ game_html = """
         try {
             let osc1 = audioCtx.createOscillator(); let osc2 = audioCtx.createOscillator();
             bgLoop = audioCtx.createGain();
-            osc1.type = "sine"; osc1.frequency.setValueAtTime(45.00, audioCtx.currentTime);
-            osc2.type = "sawtooth"; osc2.frequency.setValueAtTime(65.41, audioCtx.currentTime);
+            osc1.type = "sine"; osc1.frequency.setValueAtTime(60.00, audioCtx.currentTime);
+            osc2.type = "sine"; osc2.frequency.setValueAtTime(90.00, audioCtx.currentTime);
             bgLoop.gain.setValueAtTime(0.03, audioCtx.currentTime);
             osc1.connect(bgLoop); osc2.connect(bgLoop);
             bgLoop.connect(audioCtx.destination);
@@ -175,25 +172,25 @@ game_html = """
 
         if (type === "sniper") {
             osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(850, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.18);
-            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.18);
+            osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         } 
-        else if (type === "shout") { // Extraterrestrial frequency shriek screech
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
-            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        else if (type === "shout") { // Aggressive soldier shout warning indicator frequencies
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(340, audioCtx.currentTime + 0.08);
+            osc.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.25);
         }
         else if (type === "hit") {
             osc.type = "triangle";
-            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.22);
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.22);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         }
     }
 
@@ -202,17 +199,16 @@ game_html = """
         let pointer = e.touches ? e.touches[0] : e;
         let boardRect = board.getBoundingClientRect();
         
-        aimX = Math.max(-10, Math.min(288, pointer.clientX - boardRect.left - 22));
-        aimY = Math.max(-10, Math.min(316, pointer.clientY - boardRect.top - 22));
+        aimX = Math.max(-10, Math.min(345, pointer.clientX - boardRect.left - 22));
+        aimY = Math.max(-10, Math.min(445, pointer.clientY - boardRect.top - 22));
         
         if(crosshair) {
             crosshair.style.left = aimX + "px";
             crosshair.style.top = aimY + "px";
         }
-        
-        // Dynamic sniper rifle barrel pivot calculation matrix matching scope movements
-        if(gun) {
-            gun.style.transform = `rotate(${40 + (aimX - 138)/25}deg) translateX(${(aimX - 138)/18}px) translateY(${(aimY - 153)/25}px)`;
+                // Massive immersive recoil sweep linking rifle rotation to aiming vector parameters
+        if (gun) {
+            gun.style.transform = `rotate(${28 + (aimX - 168) / 20}deg) translateX(${(aimX - 168) / 12}px) translateY(${(aimY - 218) / 18}px)`;
         }
     }
 
@@ -225,7 +221,7 @@ game_html = """
     }
 
     function onMove(e) {
-            if (!isMovingCrosshair || gameOver) return;
+        if (!isMovingCrosshair || gameOver) return;
         if (e.touches) e.preventDefault();
         touchMovedFlag = true;
         updatePosition(e);
@@ -239,7 +235,6 @@ game_html = """
         }
     }
 
-    // Explicit structural event connection pipeline function
     function registerDeviceListeners() {
         board = document.getElementById("board");
         crosshair = document.getElementById("crosshair");
@@ -275,7 +270,7 @@ game_html = """
             let centerScopeX = aimX + 22;
             let centerScopeY = aimY + 22;
 
-            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 15) && Math.abs(centerScopeY - centerTargetY) < (eH / 2 + 15) && eW > 8) {
+            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 16) && Math.abs(centerScopeY - centerTargetY) < (eH / 2 + 16) && eW > 6) {
                 playSoundFX("hit");
                 score += 10;
                 if (scoreTxt) scoreTxt.innerText = "Score: " + score;
@@ -297,25 +292,26 @@ game_html = """
         
         activeEnemies = []; 
         score = 0; 
-        aimX = 138; 
-        aimY = 153; 
+        aimX = 168; 
+        aimY = 218; 
         isMovingCrosshair = false; 
         gameOver = false;
 
-        // FULLY FIXED: Injection re-build resets raw layout properties and forces structural variable re-binding hooks
+        // Re-inject pristine clean layout structural frames
         board.innerHTML = `
-            <div id="scoreTxt">Score: 0</div>
-            <div id="crosshair" style="left: 138px; top: 153px;"></div>
-            <div id="gun">
-                <div class="gun-muzzle"></div>
-                <div class="gun-barrel"></div>
-                <div class="gun-scope-tube"></div>
-                <div class="gun-receiver"></div>
-                <div class="gun-stock"></div>
-            </div>`;
+            <div id="scoreTxt">Score: 0</div> 
+            <div id="crosshair" style="left: 168px; top: 218px;"></div> 
+            <div id="gun"> 
+                <div class="gun-muzzle"></div> 
+                <div class="gun-barrel"></div> 
+                <div class="gun-scope-tube"></div> 
+                <div class="gun-receiver"></div> 
+                <div class="gun-stock"></div> 
+            </div> 
+            <div class="trench-floor"></div>`;
             
         setTimeout(() => {
-            registerDeviceListeners(); // Force-inject event hooks immediately to fix freezing bugs
+            registerDeviceListeners();
             initAudio();
             startSpawner();
         }, 60);
@@ -330,18 +326,21 @@ game_html = """
             
             let h = document.createElement("div");
             h.className = "humanoid";
-            h.innerHTML = '<div class="alien-head"></div><div class="alien-torso"><div class="alien-arm-l"></div><div class="alien-arm-r"></div></div><div class="alien-legs"><div class="alien-leg"></div><div class="alien-leg"></div></div>';
+            h.innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm-l"></div><div class="human-arm-r"></div></div><div class="human-legs"><div class="human-leg"></div><div class="human-leg"></div></div>';
             
-            let finalTrajectoryX = Math.random() * 240 + 30;
-            let currentWidth = 6; 
-            let currentHeight = 12;
+            let finalTrajectoryX = Math.random() * 280 + 40;
+            let currentWidth = 8; 
+            let currentHeight = 16;
             
-            h.style.cssText = `position:absolute; top:190px; left:160px; width:${currentWidth}px; height:${currentHeight}px;`;
-            board.appendChild(h); 
+            // FIXED: Enemies spawn underground inside trench horizons (top:370px instead of sky top:190px)
+            h.style.cssText = `position:absolute; top:370px; left:190px; width:${currentWidth}px; height:${currentHeight}px;`;
+            
+            // Append target nodes underneath trench lip barrier to make them rise up realistically
+            board.insertBefore(h, document.querySelector(".trench-floor"));
             activeEnemies.push(h);
             
             playSoundFX("shout");
-
+            
             let steps = 0;
             let hInt = setInterval(() => {
                 if (gameOver) { 
@@ -350,12 +349,14 @@ game_html = """
                 }
                 
                 steps += 1;
-                currentWidth += 0.45; 
-                currentHeight += 0.9;
+                // Continuous 3D perspective scaling vectors running upwards/outwards towards screen
+                currentWidth += 0.55; 
+                currentHeight += 1.1;
                 
-                let speedX = (finalTrajectoryX - 160) / 95;
-                let positionX = 160 + (speedX * steps) - (currentWidth / 2);
-                let positionY = 190 + (1.1 * steps) - (currentHeight / 2);
+                let speedX = (finalTrajectoryX - 190) / 85;
+                let positionX = 190 + (speedX * steps) - (currentWidth / 2);
+                // Moves upwards and out from underground trench parameters dynamically
+                let positionY = 370 - (2.2 * steps) - (currentHeight / 2);
                 
                 h.style.width = currentWidth + "px";
                 h.style.height = currentHeight + "px";
@@ -363,12 +364,13 @@ game_html = """
                 h.style.top = positionY + "px";
                 h.intervalId = hInt;
                 
-                if (currentHeight > 85) {
+                // If a human sapper breaks your defensive threshold perimeter context line, fail mission
+                if (positionY < 120) {
                     triggerGameOver();
                     clearInterval(hInt);
                 }
             }, 30);
-        }, 1300);
+        }, 1400);
     }
 
     function triggerGameOver() {
@@ -376,14 +378,13 @@ game_html = """
         isMovingCrosshair = false;
         stopSynthAmbientMusic();
         board.innerHTML = `
-            <div style='color:#dc2f02; font-size:26px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:55px;'>
-                OUTPOST OVERRUN<br>
-                <span style='color:white; font-size:16px; font-weight:normal;'>Aliens Eliminated: ${score/10}</span><br>
-                <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button>
+            <div style='color:#b7094c; font-size:26px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:140px;'> 
+                OUTPOST OVERRUN<br> 
+                <span style='color:white; font-size:16px; font-weight:normal;'>Enemies Neutralized: ${score / 10}</span><br> 
+                <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button> 
             </div>`;
     }
 
-    // Run primary initializer routine
     registerDeviceListeners();
     startSpawner();
 </script>
@@ -391,6 +392,6 @@ game_html = """
 </html>
 """
 
-components.html(game_html, height=450)
+components.html(game_html, height=560)
 
-                
+        
