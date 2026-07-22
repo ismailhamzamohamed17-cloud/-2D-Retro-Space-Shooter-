@@ -256,42 +256,40 @@ game_html = """
     }
 
     function drawLoop() {
-        // Menu Mode Rendering
-        if (!gameStarted) {
-            ctx.fillStyle = "#010409";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#58a6ff";
-            ctx.font = "bold 24px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("SPACE SHOOTER", canvas.width / 2, canvas.height / 2 - 30);
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "16px sans-serif";
-            ctx.fillText("CLICK HERE OR TAP A BUTTON TO START", canvas.width / 2, canvas.height / 2 + 20);
-            requestAnimationFrame(drawLoop);
-            return;
-        }
-
-        // Death Layout Rendering
-        if (gameOver) {
-            ctx.fillStyle = "rgba(1, 4, 9, 0.85)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#f85149";
-            ctx.font = "bold 28px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "16px sans-serif";
-            ctx.fillText("Click Canvas or Tap Any Button to Restart", canvas.width / 2, canvas.height / 2 + 20);
-            requestAnimationFrame(drawLoop);
-            return;
-        }
-
-        // Live Frame Computations
+        // Clear frame immediately using canvas resolution parameters
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!gameStarted) {
+            ctx.fillStyle = "#21262d";
+            ctx.fillRect(50, 150, 300, 200);
+            
+            ctx.fillStyle = "#58a6ff";
+            ctx.font = "20px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("SPACE SHOOTER", canvas.width / 2, 220);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px Arial";
+            ctx.fillText("CLICK HERE TO START GAME", canvas.width / 2, 280);
+            return;
+        }
+
+        if (gameOver) {
+            ctx.fillStyle = "#da3633";
+            ctx.fillRect(50, 150, 300, 200);
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "24px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("GAME OVER", canvas.width / 2, 230);
+            ctx.font = "14px Arial";
+            ctx.fillText("CLICK TO RESTART", canvas.width / 2, 290);
+            return;
+        }
 
         if (inputs.left && player.x > 0) player.x -= player.speed;
         if (inputs.right && player.x < canvas.width - player.width) player.x += player.speed;
 
+        // Render Green Player Ship
         ctx.fillStyle = player.color;
         ctx.beginPath();
         ctx.moveTo(player.x + player.width / 2, player.y);
@@ -300,60 +298,68 @@ game_html = """
         ctx.closePath();
         ctx.fill();
 
+        // Projectiles Controller
         for (let i = bullets.length - 1; i >= 0; i--) {
             bullets[i].y -= bullets[i].speed;
             if (bullets[i].y < 0) {
-bullets.splice(i, 1);
-continue;
-}
-ctx.fillStyle = bullets[i].color;
-ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-}
+                bullets.splice(i, 1);
+                continue;
+            }
+            ctx.fillStyle = bullets[i].color;
+            ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+        }
 
-for (let i = enemies.length - 1; i >= 0; i--) {
-enemies[i].y += enemies[i].speed;
+        // Hostiles Controller
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            enemies[i].y += enemies[i].speed;
+            
+            if (enemies[i].y > canvas.height) {
+                gameOver = true;
+                playExplosionSound();
+            }
 
-if (enemies[i].y > canvas.height) {
-gameOver = true;
-playExplosionSound();
-}
+            ctx.fillStyle = enemies[i].color;
+            ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
 
-ctx.fillStyle = enemies[i].color;
-ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
+            if (enemies[i].x < player.x + player.width &&
+                enemies[i].x + enemies[i].width > player.x &&
+                enemies[i].y < player.y + player.height &&
+                enemies[i].y + enemies[i].height > player.y) {
+                gameOver = true;
+                playExplosionSound();
+            }
 
-if (enemies[i].x < player.x + player.width &&
-enemies[i].x + enemies[i].width > player.x &&
-enemies[i].y < player.y + player.height &&
-enemies[i].y + enemies[i].height > player.y) {
-gameOver = true;
-playExplosionSound();
-}
+            for (let j = bullets.length - 1; j >= 0; j--) {
+                if (bullets[j].x < enemies[i].x + enemies[i].width &&
+                    bullets[j].x + bullets[j].width > enemies[i].x &&
+                    bullets[j].y < enemies[i].y + enemies[i].height &&
+                    bullets[j].y + bullets[j].height > enemies[i].y) {
+                    
+                    enemies.splice(i, 1);
+                    bullets.splice(j, 1);
+                    score += 10;
+                    playExplosionSound();
+                    break;
+                }
+            }
+        }
 
-for (let j = bullets.length - 1; j >= 0; j--) {
-if (bullets[j].x < enemies[i].x + enemies[i].width &&
-bullets[j].x + bullets[j].width > enemies[i].x &&
-bullets[j].y < enemies[i].y + enemies[i].height &&
-bullets[j].y + bullets[j].height > enemies[i].y) 
+        // Render Score Counter Text
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText("Score: " + score, 15, 30);
+    }
 
-enemies.splice(i, 1);
-bullets.splice(j, 1);
-score += 10;
-playExplosionSound();
-break;
-}
-}
-}
-
-ctx.fillStyle = "#ffffff";
-ctx.font = "16px Arial";
-ctx.textAlign = "left";
-ctx.fillText("Score: " + score, 15, 30);
 
 
 requestAnimationFrame(drawLoop);
 }
 // Start rendering the title screen immediately
-drawLoop();
+    // Force browser engine loop inside Streamlit container structures
+    setInterval(drawLoop, 1000 / 60);
+</script>
+
 
 """
 
