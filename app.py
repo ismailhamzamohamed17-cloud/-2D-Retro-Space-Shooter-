@@ -1,18 +1,16 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Configure Streamlit page layout to maximize screen real estate
 st.set_page_config(
-    page_title="Streamlit Space Shooter",
+    page_title="Streamlit Retro Arcade",
     page_icon="🚀",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-st.title("🚀 Mobile-Friendly Space Shooter")
-st.write("Playing on desktop? Use **Arrow Keys / WASD** and **Spacebar**. Playing on mobile? Use the **on-screen touch controls** below!")
+st.title("🚀 Mobile Space Shooter with Sound")
+st.write("Turn your sound up! Press **FIRE / ◀ / ▶** on mobile to play and restart.")
 
-# Pure HTML5 / Canvas / Touch JavaScript Engine
 game_html = """
 <!DOCTYPE html>
 <html>
@@ -30,7 +28,7 @@ game_html = """
             align-items: center;
             justify-content: flex-start;
             overflow: hidden;
-            touch-action: none; /* Prevents double-tap zooming on mobile Safari/Chrome */
+            touch-action: none;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
@@ -38,9 +36,9 @@ game_html = """
         #gameContainer {
             position: relative;
             width: 100vw;
-            max-width: 450px; /* Locked down mobile aspect aspect-ratio */
-            height: 70vh;
-            max-height: 550px;
+            max-width: 450px;
+            height: 65vh;
+            max-height: 500px;
             margin-top: 5px;
         }
         canvas {
@@ -51,7 +49,6 @@ game_html = """
             border-radius: 8px;
             display: block;
         }
-        /* Touch Controls Area */
         #controls {
             display: flex;
             width: 100vw;
@@ -60,21 +57,21 @@ game_html = """
             align-items: center;
             padding: 15px 20px;
             box-sizing: border-box;
-            height: 20vh;
+            height: 25vh;
         }
         .nav-cluster {
             display: flex;
-            gap: 12px;
+            gap: 15px;
         }
         .btn {
             background-color: #21262d;
             border: 2px solid #30363d;
             color: white;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 28px;
             border-radius: 50%;
-            width: 65px;
-            height: 65px;
+            width: 70px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -83,14 +80,13 @@ game_html = """
         }
         .btn:active {
             background-color: #388bfd;
-            transform: scale(0.92);
+            transform: scale(0.9);
         }
         #fireBtn {
             background-color: #da3633;
             border-color: #f85149;
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
+            width: 85px;
+            height: 85px;
             font-size: 18px;
         }
         #fireBtn:active {
@@ -116,7 +112,6 @@ game_html = """
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Internal Logical Game Resolution Setup
     canvas.width = 400;
     canvas.height = 500;
 
@@ -125,32 +120,93 @@ game_html = """
     const enemies = [];
     let score = 0;
     let gameOver = false;
+    let spawnTimeout = null;
     
-    // Combined State Tracker for Hardware Keys + Touch Controls
-    const inputs = { left: false, right: false, fire: false };
+    const inputs = { left: false, right: false };
+
+    // Web Audio Synthesizer Engine
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playLaserSound() {
+        initAudio();
+        if (!audioCtx) return;
+        
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.15);
+        
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function playExplosionSound() {
+        initAudio();
+        if (!audioCtx) return;
+
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    // Centralized Restart Function
+    function checkAndRestart() {
+        if (gameOver) {
+            resetGame();
+            return true;
+        }
+        return false;
+    }
 
     // Keyboard Bindings
     window.addEventListener("keydown", (e) => {
+        if (gameOver && e.key === "Enter") { resetGame(); return; }
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") inputs.left = true;
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = true;
-        if (e.key === " " || e.key === "Spacebar") { inputs.fire = true; }
-        if (e.key === "Enter" && gameOver) resetGame();
+        if (e.key === " " || e.key === "Spacebar") {
+            if (!gameOver) fireBullet();
+        }
     });
+
     window.addEventListener("keyup", (e) => {
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") inputs.left = false;
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = false;
     });
 
-    // Touch Event Helpers
+    // Device Touch Bindings
     function setupTouch(elementId, stateProperty) {
         const btn = document.getElementById(elementId);
         
         btn.addEventListener("touchstart", (e) => {
             e.preventDefault();
-            if (gameOver) {
-                resetGame();
-                return;
-            }
+            initAudio(); 
+            if (checkAndRestart()) return;
             inputs[stateProperty] = true;
         }, { passive: false });
 
@@ -163,30 +219,36 @@ game_html = """
     setupTouch("leftBtn", "left");
     setupTouch("rightBtn", "right");
 
-    // Standalone click handler logic specifically designed for tactical single-tap shooting
+    function fireBullet() {
+        bullets.push({ x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 9, color: "#58a6ff" });
+        playLaserSound();
+    }
+
     document.getElementById("fireBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
-        if (gameOver) {
-            resetGame();
-            return;
-        }
-        bullets.push({ x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 9, color: "#58a6ff" });
+        initAudio();
+        if (checkAndRestart()) return;
+        fireBullet();
     }, { passive: false });
 
-    // Allow canvas tapping to reset game on death overlay screen
     canvas.addEventListener("touchstart", (e) => {
-        if (gameOver) resetGame();
-    });
+        e.preventDefault();
+        initAudio();
+        checkAndRestart();
+    }, { passive: false });
 
     function spawnEnemy() {
         if (gameOver) return;
         const size = Math.random() * 15 + 20;
         const x = Math.random() * (canvas.width - size);
         enemies.push({ x: x, y: -size, width: size, height: size, speed: Math.random() * 1.5 + 1.5, color: "#f85149" });
-        setTimeout(spawnEnemy, Math.max(500, 1200 - score * 6));
+        
+        const nextSpawn = Math.max(500, 1200 - score * 6);
+        spawnTimeout = setTimeout(spawnEnemy, nextSpawn);
     }
 
     function resetGame() {
+        if (spawnTimeout) clearTimeout(spawnTimeout);
         score = 0;
         bullets.length = 0;
         enemies.length = 0;
@@ -194,7 +256,6 @@ game_html = """
         gameOver = false;
         inputs.left = false;
         inputs.right = false;
-        inputs.fire = false;
         spawnEnemy();
         update();
     }
@@ -209,17 +270,15 @@ game_html = """
             ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
             ctx.fillStyle = "#ffffff";
             ctx.font = "16px sans-serif";
-            ctx.fillText("Tap Any Control Button to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Tap ANY Button to Restart", canvas.width / 2, canvas.height / 2 + 20);
             return;
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Core Physics Calculation Handling
         if (inputs.left && player.x > 0) player.x -= player.speed;
         if (inputs.right && player.x < canvas.width - player.width) player.x += player.speed;
 
-        // Draw Player Rocket Ship
         ctx.fillStyle = player.color;
         ctx.beginPath();
         ctx.moveTo(player.x + player.width / 2, player.y);
@@ -228,7 +287,6 @@ game_html = """
         ctx.closePath();
         ctx.fill();
 
-        // Process Lasers
         for (let i = bullets.length - 1; i >= 0; i--) {
             bullets[i].y -= bullets[i].speed;
             if (bullets[i].y < 0) {
@@ -239,54 +297,54 @@ game_html = """
             ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
         }
 
-        // Process Invader Asteroids
         for (let i = enemies.length - 1; i >= 0; i--) {
             enemies[i].y += enemies[i].speed;
             
             if (enemies[i].y > canvas.height) {
                 gameOver = true;
+                playExplosionSound();
             }
 
             ctx.fillStyle = enemies[i].color;
             ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
 
-            // Crash Collision Boundary Checks
             if (enemies[i].x < player.x + player.width &&
                 enemies[i].x + enemies[i].width > player.x &&
                 enemies[i].y < player.y + player.height &&
                 enemies[i].y + enemies[i].height > player.y) {
                 gameOver = true;
+                playExplosionSound();
             }
 
-            // Target Elimination Check
             for (let j = bullets.length - 1; j >= 0; j--) {
-                if (bullets[j].x < enemies[i].x + enemies[i].width &&
-                    bullets[j].x + bullets[j].width > enemies[i].x &&
-                    bullets[j].y < enemies[i].y + enemies[i].height &&
-                    bullets[j].y + bullets[j].height > enemies[i].y) {
-                    
-                    enemies.splice(i, 1);
-                    bullets.splice(j, 1);
-                    score += 10;
-                    break;
-                }
-            }
-        }
+            if (bullets[j].x < enemies[i].x + enemies[i].width &&
+bullets[j].x + bullets[j].width > enemies[i].x &&
+bullets[j].y < enemies[i].y + enemies[i].height &&
+bullets[j].y + bullets[j].height > enemies[i].y) {
 
-        // UI Score Panel Rendering
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 18px sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(`Score: ${score}`, 15, 30);
+enemies.splice(i, 1);
+bullets.splice(j, 1);
+score += 10;
+playExplosionSound();
+break;
+}
+}
+}
 
-        requestAnimationFrame(update);
-    }
+ctx.fillStyle = "#ffffff";
+ctx.font = "bold 18px sans-serif";
+ctx.textAlign = "left";
+ctx.fillText(Score: ${score}, 15, 30);
 
-    resetGame();
-</script>
-</body>
-</html>
+requestAnimationFrame(update);
+}
+
+resetGame();
+
+
 """
 
-# Render Game via Streamlit Component Engine
-components.html(game_html, height=720, scrolling=False)
+components.html(game_html, height=750, scrolling=False)
+            
+            
+
