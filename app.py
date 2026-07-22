@@ -294,9 +294,14 @@ game_html = """
             </div>`;
     }
 
-    globalThis.scoreTxt = scoreTxt; globalThis.crosshair = crosshair; globalThis.gun = gun;
+    globalThis.scoreTxt = scoreTxt; 
+    globalThis.crosshair = crosshair; 
+    globalThis.gun = gun;
     startSpawner();
 </script>
+</body>
+</html>
+"""
 
 components.html(game_html, height=450)
 
