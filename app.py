@@ -363,4 +363,4 @@ requestAnimationFrame(drawLoop);
 
 """
 
-components.html(game_html, height=750, scrolling=False)
+components.html(game_html, height=850, scrolling=True)
