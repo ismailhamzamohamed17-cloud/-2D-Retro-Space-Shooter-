@@ -345,9 +345,10 @@ break;
 }
 
 ctx.fillStyle = "#ffffff";
-ctx.font = "bold 18px sans-serif";
+ctx.font = "16px Arial";
 ctx.textAlign = "left";
-ctx.fillText(Score: ${score}, 15, 30);
+ctx.fillText("Score: " + score, 15, 30);
+
 
 requestAnimationFrame(drawLoop);
 }
