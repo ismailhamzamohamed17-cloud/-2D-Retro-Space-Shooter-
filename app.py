@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="FPS Space", layout="centered")
-st.title("🚀 First-Person Space Shooter")
+st.set_page_config(page_title="Desert FPS", layout="centered")
+st.title("🏜️ Desert Sniper FPS")
 
 game_html = """
 <!DOCTYPE html>
@@ -11,30 +11,74 @@ game_html = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
-        #board { position: relative; width: 320px; height: 350px; background: radial-gradient(circle, #111 10%, #000 90%); border: 3px solid #333; overflow: hidden; margin: auto; border-radius: 8px; }
-        /* 3D FPS Crosshair styling */
-        #crosshair { position: absolute; bottom: 155px; left: 140px; width: 40px; height: 40px; border: 2px dashed lime; border-radius: 50%; will-change: left; z-index: 5; }
-        #crosshair::after { content: ''; position: absolute; top: 19px; left: 19px; width: 2px; height: 2px; background: lime; }
-        .btn { padding: 18px 35px; font-size: 18px; margin: 5px 10px; background: #222; color: white; border-radius: 8px; border: 1px solid #555; font-weight: bold; min-width: 120px; }
-        #scoreTxt { position: absolute; top: 10px; left: 10px; color: white; font-weight: bold; font-size: 16px; z-index: 10; }
-        .retry-btn { margin-top: 15px; padding: 12px 25px; background: #238636; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; }
+        
+        /* Layered Sunset Desert Canvas */
+        #board { 
+            position: relative; 
+            width: 320px; 
+            height: 350px; 
+            background: linear-gradient(to bottom, #ff7e5f 0%, #feb47b 40%, #e07a5f 70%, #f4a261 100%); 
+            border: 3px solid #555; 
+            overflow: hidden; 
+            margin: auto; 
+            border-radius: 8px; 
+            touch-action: none;
+        }
+        
+        /* Distant background mountain ranges */
+        #board::before {
+            content: ''; position: absolute; bottom: 0; left: -50px; width: 250px; height: 120px; background: #c2593f; clip-path: polygon(0% 100%, 50% 20%, 100% 100%); opacity: 0.7; z-index: 1;
+        }
+        #board::after {
+            content: ''; position: absolute; bottom: 0; right: -30px; width: 200px; height: 90px; background: #a64630; clip-path: polygon(0% 100%, 40% 10%, 100% 100%); opacity: 0.9; z-index: 2;
+        }
+
+        /* 3D FPS Tactical Scope Crosshair */
+        #crosshair { 
+            position: absolute; 
+            top: 155px; 
+            left: 140px; 
+            width: 44px; 
+            height: 44px; 
+            border: 3px solid #ff0055; 
+            border-radius: 50%; 
+            will-change: left, top; 
+            z-index: 15; 
+            cursor: move;
+            box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.15); /* Scope tint effect */
+        }
+        #crosshair::before { content: ''; position: absolute; top: 21px; left: 0; width: 44px; height: 2px; background: #ff0055; }
+        #crosshair::after { content: ''; position: absolute; top: 0; left: 21px; width: 2px; height: 44px; background: #ff0055; }
+        
+        #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 18px; z-index: 10; background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 4px; }
+        .retry-btn { margin-top: 15px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; }
+        
+        /* Humanoid Target Assembly Framework */
+        .humanoid { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 5; pointer-events: none; }
+        .head { border-radius: 50%; background: #2b2d42; width: 25%; height: 25%; }
+        .torso { background: #2b2d42; width: 15%; height: 45%; margin-top: 2%; position: relative; }
+        .arm-l { position: absolute; top: 10%; left: -150%; width: 150%; height: 20%; background: #2b2d42; transform: rotate(-30deg); transform-origin: right; }
+        .arm-r { position: absolute; top: 10%; right: -150%; width: 150%; height: 20%; background: #2b2d42; transform: rotate(30deg); transform-origin: left; }
+        .legs { display: flex; justify-content: space-between; width: 100%; height: 28%; }
+        .leg { background: #2b2d42; width: 20%; height: 100%; }
     </style>
 </head>
 <body>
 
-    <div id="board" onmousedown="handleScreenTap(event)" ontouchstart="handleScreenTap(event)">
+    <div id="board">
         <div id="scoreTxt">Score: 0</div>
         <div id="crosshair"></div>
     </div>
 
-    <div style="text-align: center; margin-top: 15px;">
-        <button class="btn" onmousedown="startMove(-1)" onmouseup="stopMove()" ontouchstart="event.preventDefault(); startMove(-1)" ontouchend="event.preventDefault(); stopMove()">◀ Aim Left</button>
-        <button class="btn" onmousedown="startMove(1)" onmouseup="stopMove()" ontouchstart="event.preventDefault(); startMove(1)" ontouchend="event.preventDefault(); stopMove()">Aim Right ▶</button>
-    </div>
+    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 10px; font-family: sans-serif;">
+        🎯 <b>Drag the scope crosshair</b> directly with your finger to aim, and <b>lift your finger up</b> to shoot!
+    </p>
 
 <script>
-    let aimX = 140; let score = 0; let gameOver = false;
-    let moveDirection = 0; const aimSpeed = 6;
+    let aimX = 140; let aimY = 155; let score = 0; let gameOver = false;
+    let isDragging = false;
+    let touchStartX = 0; let touchStartY = 0;
+    
     const board = document.getElementById("board");
     const crosshair = document.getElementById("crosshair");
     const scoreTxt = document.getElementById("scoreTxt");
@@ -48,17 +92,13 @@ game_html = """
         startBackgroundMusic();
     }
 
-    // Generates continuous, retro sci-fi background space music dynamically
     function startBackgroundMusic() {
         try {
             bgOsc1 = audioCtx.createOscillator(); bgOsc2 = audioCtx.createOscillator();
             let bgGain = audioCtx.createGain();
-            
-            bgOsc1.type = "triangle"; bgOsc1.frequency.setValueAtTime(73.42, audioCtx.currentTime); // D2 note
-            bgOsc2.type = "sine"; bgOsc2.frequency.setValueAtTime(110.00, audioCtx.currentTime); // A2 minor chord depth
-            
-            bgGain.gain.setValueAtTime(0.05, audioCtx.currentTime); // Low volume background layer
-            
+            bgOsc1.type = "sine"; bgOsc1.frequency.setValueAtTime(65.41, audioCtx.currentTime); // C2 background drone
+            bgOsc2.type = "triangle"; bgOsc2.frequency.setValueAtTime(98.00, audioCtx.currentTime); // G2 sandstorm drone
+            bgGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
             bgOsc1.connect(bgGain); bgOsc2.connect(bgGain);
             bgGain.connect(audioCtx.destination);
             bgOsc1.start(); bgOsc2.start();
@@ -74,48 +114,79 @@ game_html = """
         let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
         osc.type = type; osc.frequency.setValueAtTime(fStart, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(fEnd, audioCtx.currentTime + duration);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    function startMove(dir) { if (gameOver) return; moveDirection = dir; }
-    function stopMove() { moveDirection = 0; }
-
-    function updatePhysicsLoop() {
-        if (!gameOver && moveDirection !== 0) {
-            aimX = Math.max(0, Math.min(280, aimX + (moveDirection * aimSpeed)));
-            if(globalThis.crosshair) globalThis.crosshair.style.left = aimX + "px";
-        }
-        requestAnimationFrame(updatePhysicsLoop);
-    }
-
-    window.handleScreenTap = function(e) {
+    // Touch and Mouse Drag Implementation
+    function onStart(e) {
         if (gameOver) return;
-        if (e.target.classList.contains('retry-btn')) return;
-        e.preventDefault();
-        shoot();
+        initAudio();
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        let rect = crosshair.getBoundingClientRect();
+        // Check if user tapped anywhere close to the sight perimeter to catch it
+        if (clientX >= rect.left - 20 && clientX <= rect.right + 20 && clientY >= rect.top - 20 && clientY <= rect.bottom + 20) {
+            isDragging = true;
+            touchStartX = clientX - aimX;
+            touchStartY = clientY - aimY;
+        }
     }
+
+    function onMove(e) {
+        if (!isDragging || gameOver) return;
+        if(e.touches) e.preventDefault(); // Lock browser canvas scrolling mechanics
+        
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // Calculate new grid position offsets inside boundaries
+        aimX = Math.max(-10, Math.min(285, clientX - touchStartX));
+        aimY = Math.max(-10, Math.min(315, clientY - touchStartY));
+        
+        crosshair.style.left = aimX + "px";
+        crosshair.style.top = aimY + "px";
+    }
+
+    function onEnd(e) {
+        if (!isDragging || gameOver) return;
+        isDragging = false;
+        shoot(); // High-velocity action trigger dropped immediately when lifting finger
+    }
+
+    // Event Registration hooks
+    crosshair.addEventListener("touchstart", onStart, {passive: false});
+    window.addEventListener("touchmove", onMove, {passive: false});
+    window.addEventListener("touchend", onEnd);
+    
+    crosshair.addEventListener("mousedown", onStart);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onEnd);
 
     function shoot() {
         if (gameOver) return;
-        initAudio(); playSound(587.33, 293.66, 0.12, "sawtooth"); // Deep laser discharge sound
+        playSound(800, 300, 0.1, "sawtooth"); // Sniper discharge sound wave
         
-        // Flash crosshair red instantly to indicate firing confirmation
-        crosshair.style.borderColor = "red";
-        setTimeout(() => { if(!gameOver) crosshair.style.borderColor = "lime"; }, 60);
+        crosshair.style.borderColor = "white";
+        setTimeout(() => { if(!gameOver) crosshair.style.borderColor = "#ff0055"; }, 80);
 
-        // FPS Hit Check: Check if crosshair is centered over any oncoming scaling target
         activeEnemies.forEach((e) => {
             let eX = parseFloat(e.style.left) || 0;
-            let eWidth = parseFloat(e.style.width) || 0;
-            let centerOfEnemy = eX + (eWidth / 2);
-            let centerOfAim = aimX + 20;
+            let eY = parseFloat(e.style.top) || 0;
+            let eW = parseFloat(e.style.width) || 0;
+            let eH = parseFloat(e.style.height) || 0;
+            
+            let targetCenterX = eX + (eW / 2);
+            let targetCenterY = eY + (eH / 2);
+            let scopeCenterX = aimX + 22;
+            let scopeCenterY = aimY + 22;
 
-            // If target is close enough to center vision and large enough, blow it up
-            if (Math.abs(centerOfAim - centerOfEnemy) < (eWidth / 2 + 10) && eWidth > 15) {
-                playSound(120, 30, 0.2, "triangle");
+            // Strict spatial distance box math check to evaluate elimination coordinates
+            if (Math.abs(scopeCenterX - targetCenterX) < (eW / 2 + 8) && Math.abs(scopeCenterY - targetCenterY) < (eH / 2 + 8) && eW > 12) {
+                playSound(180, 50, 0.25, "triangle");
                 score += 10;
                 if(globalThis.scoreTxt) scoreTxt.innerText = "Score: " + score;
                 if(e.intervalId) clearInterval(e.intervalId);
@@ -130,84 +201,91 @@ game_html = """
         if(spawnInt) clearInterval(spawnInt);
         activeEnemies.forEach(e => { if(e.intervalId) clearInterval(e.intervalId); e.remove(); });
         
-        activeEnemies = []; score = 0; aimX = 140; moveDirection = 0; gameOver = false;
+        activeEnemies = []; score = 0; aimX = 140; aimY = 155; isDragging = false; gameOver = false;
         
-        board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 140px;"></div>';
+        board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 140px; top: 155px;"></div>';
         setTimeout(() => {
             globalThis.scoreTxt = document.getElementById("scoreTxt");
             globalThis.crosshair = document.getElementById("crosshair");
+            
+            // Re-bind listeners down securely onto new target node elements
+            document.getElementById("crosshair").addEventListener("touchstart", onStart, {passive: false});
+            document.getElementById("crosshair").addEventListener("mousedown", onStart);
+            
             if(audioCtx) startBackgroundMusic();
             startSpawner();
-        }, 50);
+                    }, 60);
     }
 
     function startSpawner() {
         spawnInt = setInterval(() => {
-            if (gameOver) { clearInterval(spawnInt); return; }
+            if (gameOver) { 
+                clearInterval(spawnInt); 
+                return; 
+            }
             
-            let e = document.createElement("div");
-            // Random trajectory targets heading outward from background depth
-            let targetX = Math.random() * 260 + 20; 
-            let currentSize = 4; // Spawns tiny in the distance
+            // Generate full modular HTML vector assembly for the Humanoid target structures
+            let h = document.createElement("div");
+            h.className = "humanoid";
+            h.innerHTML = '';
             
-            e.style.cssText = `position:absolute; top:160px; left:160px; width:${currentSize}px; height:${currentSize}px; background:red; border-radius:50%; box-shadow: 0 0 8px red;`;
-            board.appendChild(e); activeEnemies.push(e);
+            let targetX = Math.random() * 240 + 30;
+            let targetY = 160 + (Math.random() * 40 - 20); // Spawns along shifting horizon line boundaries
+            let currentW = 4; 
+            let currentH = 8;
+            
+            h.style.cssText = `position:absolute; top:160px; left:160px; width:${currentW}px; height:${currentH}px;`;
+            board.appendChild(h); 
+            activeEnemies.push(h);
             
             let steps = 0;
-            let eInt = setInterval(() => {
-                if (gameOver) { clearInterval(eInt); return; }
+            let hInt = setInterval(() => {
+                if (gameOver) { 
+                    clearInterval(hInt); 
+                    return; 
+                }
+                
                 steps += 1;
-                currentSize += 0.8; // Scales up towards screen perspective layout
+                currentW += 0.5; 
+                currentH += 1.0; // Scale up proportionally to look human
                 
-                // Track 3D physics movement vectors outwards towards screen boundary perimeter
-                let speedX = (targetX - 160) / 80;
-                let currentX = 160 + (speedX * steps) - (currentSize / 2);
-                let currentY = 160 + (1.2 * steps) - (currentSize / 2);
+                let speedX = (targetX - 160) / 90;
+                let currentX = 160 + (speedX * steps) - (currentW / 2);
+                let currentY = 160 + (1.3 * steps) - (currentH / 2);
                 
-                e.style.width = currentSize + "px";
-                e.style.height = currentSize + "px";
-                e.style.left = currentX + "px";
-                e.style.top = currentY + "px";
-                e.intervalId = eInt;
+                h.style.width = currentW + "px";
+                h.style.height = currentH + "px";
+                h.style.left = currentX + "px";
+                h.style.top = currentY + "px";
+                h.intervalId = hInt;
                 
-                // Game Over trigger if enemy scaling breaches screen boundary context
-                if (currentSize > 65) {
+                // If stickman breaches scope screen canvas perimeter, trip death frame
+                if (currentH > 90) {
                     triggerGameOver();
-                    clearInterval(eInt);
+                    clearInterval(hInt);
                 }
             }, 25);
-        }, 1000);
+        }, 1100);
     }
 
     function triggerGameOver() {
-        gameOver = true; moveDirection = 0;
+        gameOver = true; 
+        isDragging = false;
         stopBackgroundMusic();
-        playSound(90, 10, 0.6, "sawtooth");
+        playSound(120, 10, 0.5, "sawtooth");
         board.innerHTML = `
-            <div style='color:red; font-size:32px; font-weight:bold; text-align:center; margin-top:90px;'>
-                CRASH / OVER<br>
-                <span style='color:white; font-size:18px; font-weight:normal;'>Final Score: ${score}</span><br>
-                <button class='retry-btn' onclick='restartGame()'>RETRY 🔄</button>
+            <div style='color:#7a1f1d; font-size:30px; font-weight:bold; text-align:center; margin-top:100px; position:relative; z-index:20; text-shadow: 1px 1px black;'>
+                MISSION FAILED<br>
+                <span style='color:black; font-size:18px; font-weight:normal;'>Score: ${score}</span><br>
+                <button class='retry-btn' onclick='restartGame()'>REDEPLOY 🔄</button>
             </div>`;
     }
 
-    window.addEventListener("keydown", (e) => {
-        if (e.repeat) return;
-        if(e.key === "ArrowLeft" || e.key === "a") startMove(-1);
-        if(e.key === "ArrowRight" || e.key === "d") startMove(1);
-        if(e.key === " " || e.key === "Enter") { if(gameOver) restartGame(); else shoot(); }
-    });
-
-    window.addEventListener("keyup", (e) => {
-        if((e.key === "ArrowLeft" || e.key === "a") && moveDirection === -1) stopMove();
-        if((e.key === "ArrowRight" || e.key === "d") && moveDirection === 1) stopMove();
-    });
-
-    globalThis.scoreTxt = scoreTxt; globalThis.crosshair = crosshair;
-    startSpawner(); updatePhysicsLoop();
-</script>
-</body>
-</html>
+    globalThis.scoreTxt = scoreTxt; 
+    globalThis.crosshair = crosshair;
+    startSpawner();
 """
 
 components.html(game_html, height=450)
+
+
