@@ -254,21 +254,24 @@ game_html = """
         spawnEnemy();
     }
 
-    function drawLoop() {
-        // Clear frame immediately using canvas resolution parameters
+      function drawLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (!gameStarted) {
-            ctx.fillStyle = "#21262d";
-            ctx.fillRect(50, 150, 300, 200);
+            // Draw a bright green box to show the game engine is alive
+            ctx.fillStyle = "#238636";
+            ctx.fillRect(40, 125, 320, 200);
             
+            // Draw a bright blue triangle (start arrow) instead of text strings
             ctx.fillStyle = "#58a6ff";
-            ctx.font = "20px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("SPACE SHOOTER", canvas.width / 2, 220);
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "14px Arial";
-            ctx.fillText("CLICK HERE TO START GAME", canvas.width / 2, 280);
+            ctx.beginPath();
+            ctx.moveTo(200, 180);
+            ctx.lineTo(170, 240);
+            ctx.lineTo(230, 240);
+            ctx.closePath();
+            ctx.fill();
+            
+            requestAnimationFrame(drawLoop);
             return;
         }
 
