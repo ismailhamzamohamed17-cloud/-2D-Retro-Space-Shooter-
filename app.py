@@ -121,29 +121,25 @@ game_html = """
     }
 
     // Touch and Mouse Drag Implementation
-    function onStart(e) {
+      function onStart(e) {
         if (gameOver) return;
-        initAudio();
         let clientX = e.touches ? e.touches[0].clientX : e.clientX;
         let clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
         let rect = crosshair.getBoundingClientRect();
-        // Check if user tapped anywhere close to the sight perimeter to catch it
-        if (clientX >= rect.left - 20 && clientX <= rect.right + 20 && clientY >= rect.top - 20 && clientY <= rect.bottom + 20) {
-            isDragging = true;
-            touchStartX = clientX - aimX;
-            touchStartY = clientY - aimY;
-        }
+        isDragging = true;
+        touchStartX = clientX - aimX;
+        touchStartY = clientY - aimY;
     }
 
     function onMove(e) {
         if (!isDragging || gameOver) return;
-        if(e.touches) e.preventDefault(); // Lock browser canvas scrolling mechanics
+        if (e.touches) e.preventDefault(); // Prevents screen bouncing on mobile safari/chrome
         
         let clientX = e.touches ? e.touches[0].clientX : e.clientX;
         let clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // Calculate new grid position offsets inside boundaries
+        // Track finger dragging positions across the board
         aimX = Math.max(-10, Math.min(285, clientX - touchStartX));
         aimY = Math.max(-10, Math.min(315, clientY - touchStartY));
         
@@ -151,71 +147,20 @@ game_html = """
         crosshair.style.top = aimY + "px";
     }
 
-    function onEnd(e) {
+    function onEnd() {
         if (!isDragging || gameOver) return;
         isDragging = false;
-        shoot(); // High-velocity action trigger dropped immediately when lifting finger
+        shoot(); // Fire sniper automatically upon lifting finger
     }
 
-    // Event Registration hooks
+    // Attach interaction events directly to your screen window
     crosshair.addEventListener("touchstart", onStart, {passive: false});
     window.addEventListener("touchmove", onMove, {passive: false});
     window.addEventListener("touchend", onEnd);
-    
     crosshair.addEventListener("mousedown", onStart);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onEnd);
-
-    function shoot() {
-        if (gameOver) return;
-        playSound(800, 300, 0.1, "sawtooth"); // Sniper discharge sound wave
-        
-        crosshair.style.borderColor = "white";
-        setTimeout(() => { if(!gameOver) crosshair.style.borderColor = "#ff0055"; }, 80);
-
-        activeEnemies.forEach((e) => {
-            let eX = parseFloat(e.style.left) || 0;
-            let eY = parseFloat(e.style.top) || 0;
-            let eW = parseFloat(e.style.width) || 0;
-            let eH = parseFloat(e.style.height) || 0;
-            
-            let targetCenterX = eX + (eW / 2);
-            let targetCenterY = eY + (eH / 2);
-            let scopeCenterX = aimX + 22;
-            let scopeCenterY = aimY + 22;
-
-            // Strict spatial distance box math check to evaluate elimination coordinates
-            if (Math.abs(scopeCenterX - targetCenterX) < (eW / 2 + 8) && Math.abs(scopeCenterY - targetCenterY) < (eH / 2 + 8) && eW > 12) {
-                playSound(180, 50, 0.25, "triangle");
-                score += 10;
-                if(globalThis.scoreTxt) scoreTxt.innerText = "Score: " + score;
-                if(e.intervalId) clearInterval(e.intervalId);
-                e.remove();
-                activeEnemies = activeEnemies.filter(item => item !== e);
-            }
-        });
-    }
-
-    function restartGame() {
-        stopBackgroundMusic();
-        if(spawnInt) clearInterval(spawnInt);
-        activeEnemies.forEach(e => { if(e.intervalId) clearInterval(e.intervalId); e.remove(); });
-        
-        activeEnemies = []; score = 0; aimX = 140; aimY = 155; isDragging = false; gameOver = false;
-        
-        board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 140px; top: 155px;"></div>';
-        setTimeout(() => {
-            globalThis.scoreTxt = document.getElementById("scoreTxt");
-            globalThis.crosshair = document.getElementById("crosshair");
-            
-            // Re-bind listeners down securely onto new target node elements
-            document.getElementById("crosshair").addEventListener("touchstart", onStart, {passive: false});
-            document.getElementById("crosshair").addEventListener("mousedown", onStart);
-            
-            if(audioCtx) startBackgroundMusic();
-            startSpawner();
-                    }, 60);
-    }
+    // ---------------------------------------------
 
     function startSpawner() {
         spawnInt = setInterval(() => {
@@ -227,13 +172,14 @@ game_html = """
             // Generate full modular HTML vector assembly for the Humanoid target structures
             let h = document.createElement("div");
             h.className = "humanoid";
-            h.innerHTML = '';
+            h.innerHTML = '<div class="head"></div><div class="torso"><div class="arm-l"></div><div class="arm-r"></div></div><div class="legs"><div class="leg"></div><div class="leg"></div></div>';
             
             let targetX = Math.random() * 240 + 30;
-            let targetY = 160 + (Math.random() * 40 - 20); // Spawns along shifting horizon line boundaries
+            let targetY = 160 + (Math.random() * 40 - 20); 
             let currentW = 4; 
             let currentH = 8;
             
+            // FIXED: Added mandatory backticks around string variables to prevent app engine crashing
             h.style.cssText = `position:absolute; top:160px; left:160px; width:${currentW}px; height:${currentH}px;`;
             board.appendChild(h); 
             activeEnemies.push(h);
@@ -247,7 +193,7 @@ game_html = """
                 
                 steps += 1;
                 currentW += 0.5; 
-                currentH += 1.0; // Scale up proportionally to look human
+                currentH += 1.0; 
                 
                 let speedX = (targetX - 160) / 90;
                 let currentX = 160 + (speedX * steps) - (currentW / 2);
@@ -259,7 +205,6 @@ game_html = """
                 h.style.top = currentY + "px";
                 h.intervalId = hInt;
                 
-                // If stickman breaches scope screen canvas perimeter, trip death frame
                 if (currentH > 90) {
                     triggerGameOver();
                     clearInterval(hInt);
