@@ -30,17 +30,36 @@ game_html = """
     .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #434952, #2c3036); clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%); z-index: 2; }
     .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 8px; height: 100%; background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 25px, transparent 25px, transparent 50px); transform: translateX(-50%); opacity: 0.4; }
 
-    /* Moving Vehicle Styling */
+   /* 🚗 REALISTIC 3D PERSPECTIVE GETAWAY SUV */
     #car {
-        position: absolute; top: 195px; left: 110px; width: 160px; height: 95px;
-        background: linear-gradient(to bottom, #3a3d40, #181a1b, #0f1012); border-radius: 14px;
-        box-shadow: 0 12px 24px rgba(0,0,0,0.6); z-index: 4;
-        border: 1px solid #232526;
-        transition: left 0.1s linear;
+        position: absolute; 
+        top: 175px; 
+        left: 110px; 
+        width: 160px; 
+        height: 100px;
+        background: linear-gradient(to bottom, #222, #111); 
+        border-radius: 12px 12px 4px 4px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.5); 
+        z-index: 4;
+        will-change: transform, left, top;
+        transform-origin: center bottom; /* Crucial for realistic 3D forward scaling */
     }
-    .window { position: absolute; top: 12px; left: 14px; width: 132px; height: 32px; background: linear-gradient(180deg, rgba(142,202,230,0.6), rgba(2,48,71,0.5)); border-radius: 6px; border: 2px solid #000; }
-    .light-l { position: absolute; bottom: 18px; left: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
-    .light-r { position: absolute; bottom: 18px; right: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
+    /* Slanted 3D roof and rear windshield glass */
+    .window { 
+        position: absolute; top: 10px; left: 15px; width: 130px; height: 35px; 
+        background: linear-gradient(180deg, rgba(100, 200, 255, 0.6), rgba(20, 50, 80, 0.6)); 
+        border-radius: 8px 8px 2px 2px; border: 2px solid #000;
+        box-shadow: inset 0 5px 5px rgba(255,255,255,0.2);
+    }
+    /* Individual 3D rear tires showing depth below the bumper */
+    #car::before {
+        content: ''; position: absolute; bottom: -12px; left: 15px; width: 30px; height: 15px; background: #0b0b0b; border-radius: 4px; box-shadow: inset 0 0 5px #000;
+    }
+    #car::after {
+        content: ''; position: absolute; bottom: -12px; right: 15px; width: 30px; height: 15px; background: #0b0b0b; border-radius: 4px; box-shadow: inset 0 0 5px #000;
+    }
+    .light-l { position: absolute; bottom: 20px; left: 12px; width: 22px; height: 12px; background: radial-gradient(circle, #ff3333, #a00); border-radius: 3px; box-shadow: 0 0 12px #ff3333; }
+    .light-r { position: absolute; bottom: 20px; right: 12px; width: 22px; height: 12px; background: radial-gradient(circle, #ff3333, #a00); border-radius: 3px; box-shadow: 0 0 12px #ff3333; }
 
     /* 🔫 DETAILED SEMI-AUTOMATIC PISTOL (MATCHES REFERENCE PHOTO PROFILE) */
     #weapon {
@@ -264,20 +283,42 @@ game_html = """
     }
 
     function runEngineLoops() {
-        // 1. Core Vehicle & Threat Pin Synchronization Clock Loop
+     // 1. Core Vehicle & Threat Pin Synchronization 3D Loop
+        let distanceScale = 0.2; // Starts tiny far down the road horizon
+        
         physicsTimerId = setInterval(() => {
             if (isOver) return;
             
-            // Move car side to side smoothly
-            carPos += carDir;
-            if (carPos > 180 || carPos < 40) carDir *= -1;
-            car.style.left = carPos + "px";
+            // Advance the car forward toward the screen player perspective
+            distanceScale += 0.004; 
+            
+            // Lock and reset if car zooms past view thresholds
+            if (distanceScale > 1.6) {
+                distanceScale = 0.2; 
+                // Shuffle lateral tracking points so it drives down a different lane path next loop
+                carPos = Math.random() * 80 + 70;
+            }
 
-            // Safely anchor out criminals and tracking rings right onto the car frame coordinates
+            // Apply 3D scale and perspective height displacement down the road
+            let currentTopY = 160 + (distanceScale * 45); 
+            car.style.transform = `scale(${distanceScale})`;
+            car.style.left = carPos + "px";
+            car.style.top = currentTopY + "px";
+
+            // Un-glue threats: Project individual scaling offsets onto the criminals
             threatsList.forEach((t) => {
                 let updatedX = carPos + t.sideOffset;
+                // Offset shifts lower as scale increases to simulate climbing out of doors/windows
+                let threatY = currentTopY + (t.baseTopY - 195) * distanceScale;
+                
+                t.el.style.transform = `scale(${distanceScale})`;
                 t.el.style.left = updatedX + "px";
+                t.el.style.top = threatY + "px";
+                
+                // Keep target ring tracking exactly over center body mass elements
+                t.ring.style.transform = `scale(${distanceScale}) translate(-30px, -30px)`;
                 t.ring.style.left = (updatedX + 20) + "px";
+                t.ring.style.top = (threatY + 15) + "px";
             });
         }, 30);
 
@@ -285,28 +326,12 @@ game_html = """
         spawnTimerId = setInterval(() => {
             if (isOver || threatsList.length >= 4) return;
 
-            let el = document.createElement("div");
-            el.className = "threat";
-            
-            let roll = Math.random();
-            let sideOffset, topY, armClass;
-            
+           let sideOffset, topY, armClass;
             if (roll < 0.25) { sideOffset = -25; topY = 185; armClass = "arm-l"; }
             else if (roll < 0.5) { sideOffset = 145; topY = 185; armClass = "arm-r"; }
             else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; }
             else { sideOffset = 135; topY = 210; armClass = "arm-r"; }
 
-             el.innerHTML = `
-                <div class="t-head">
-                    <div class="t-eyes"></div>
-                </div>
-                <div class="t-torso">
-                    <div class="t-arm ${armClass}"></div>
-                </div>
-                <div class="t-legs">
-                    <div class="t-leg"></div>
-                    <div class="t-leg"></div>
-                </div>`;
             el.style.left = (carPos + sideOffset) + "px";
             el.style.top = topY + "px";
             gameArea.appendChild(el);
@@ -317,9 +342,9 @@ game_html = """
             ring.style.top = (topY + 15) + "px";
             gameArea.appendChild(ring);
 
-            let threatObj = { el: el, ring: ring, sideOffset: sideOffset };
+            // Store original y coordinate on the object array for 3D physics multiplication
+            let threatObj = { el: el, ring: ring, sideOffset: sideOffset, baseTopY: topY };
             threatsList.push(threatObj);
-
             // Command locking ring shrinkage instantly
             setTimeout(() => {
                 if (ring.parentNode) {
