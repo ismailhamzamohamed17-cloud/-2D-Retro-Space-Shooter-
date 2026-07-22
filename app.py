@@ -96,8 +96,15 @@ game_html = """
 <body>
 
 <div id="gameContainer">
-    <canvas id="gameCanvas"></canvas>
+    <!-- Clean layer blocks that do not use canvas code -->
+    <div id="gameBoard" style="position:relative; width:100%; height:100%; background:#000000; border:2px solid #30363d; border-radius:8px; overflow:hidden;">
+        <div id="menuScreen" style="position:absolute; width:100%; height:100%; background:#21262d; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ffffff; font-weight:bold; cursor:pointer; font-size:20px;">
+            <span style="color:#58a6ff; margin-bottom:15px;">SPACE SHOOTER</span>
+            <span style="font-size:14px; background:#238636; padding:10px 15px; border-radius:4px;">CLICK HERE TO PLAY</span>
+        </div>
+    </div>
 </div>
+
 
 <div id="controls">
     <div class="nav-cluster">
