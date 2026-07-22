@@ -95,15 +95,20 @@ game_html = """
 </head>
 <body>
 
-<div id="gameContainer">
-    <!-- Clean layer blocks that do not use canvas code -->
-    <div id="gameBoard" style="position:relative; width:100%; height:100%; background:#000000; border:2px solid #30363d; border-radius:8px; overflow:hidden;">
-        <div id="menuScreen" style="position:absolute; width:100%; height:100%; background:#21262d; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ffffff; font-weight:bold; cursor:pointer; font-size:20px;">
+<div id="gameContainer" style="position:relative; width:95vw; max-width:400px; height:55vh; max-height:450px; background:#000000; border:2px solid #30363d; border-radius:8px; overflow:hidden;">
+    <!-- Main Interactive Surface -->
+    <div id="gameBoard" style="position:relative; width:100%; height:100%;">
+        <!-- Rocket Ship Entity Layer -->
+        <div id="playerShip" style="position:absolute; bottom:20px; left:180px; width:40px; height:40px; background:#238636; clip-path:polygon(50% 0%, 0% 100%, 100% 100%); display:none;"></div>
+        
+        <!-- Interactive Start Overlay Panel -->
+        <div id="menuScreen" onclick="startGame()" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#21262d; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ffffff; font-weight:bold; cursor:pointer; font-size:20px; z-index:100;">
             <span style="color:#58a6ff; margin-bottom:15px;">SPACE SHOOTER</span>
             <span style="font-size:14px; background:#238636; padding:10px 15px; border-radius:4px;">CLICK HERE TO PLAY</span>
         </div>
     </div>
 </div>
+
 
 
 <div id="controls">
@@ -114,259 +119,66 @@ game_html = """
     <div id="fireBtn" class="btn">FIRE</div>
 </div>
 
-<script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    let playerX = 180;
+    const board = document.getElementById("gameBoard");
+    const ship = document.getElementById("playerShip");
+    const menu = document.getElementById("menuScreen");
 
-    canvas.width = 400;
-    canvas.height = 500;
+    // Click handler embedded at root window scope level to bypass iframe blocking
+    window.startGame = function() {
+        menu.style.display = "none";
+        ship.style.display = "block";
+        spawnLoop();
+    };
 
-    const player = { x: canvas.width / 2 - 20, y: canvas.height - 60, width: 40, height: 40, speed: 6, color: "#238636" };
-    const bullets = [];
-    const enemies = [];
-    let score = 0;
-    let gameStarted = false; // Fixes blank browser safety state
-    let gameOver = false;
-    let spawnTimeout = null;
-    
-    const inputs = { left: false, right: false };
-    let audioCtx = null;
+    // Responsive Action Handlers
+    window.movePlayer = function(direction) {
+        if (direction === 'left' && playerX > 10) playerX -= 25;
+        if (direction === 'right' && playerX < (board.clientWidth - 50)) playerX += 25;
+        ship.style.left = playerX + "px";
+    };
 
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
+    window.fireBullet = function() {
+        const bullet = document.createElement("div");
+        bullet.style.cssText = `position:absolute; bottom:60px; left:${playerX + 17}px; width:6px; height:15px; background:#58a6ff; border-radius:2px;`;
+        board.appendChild(bullet);
 
-    function playLaserSound() {
-        initAudio();
-        if (!audioCtx) return;
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
-    }
-
-    function playExplosionSound() {
-        initAudio();
-        if (!audioCtx) return;
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-    }
-
-    function handleInteractionStart() {
-        if (!gameStarted) {
-            gameStarted = true;
-            resetGame();
-            return true;
-        }
-        if (gameOver) {
-            resetGame();
-            return true;
-        }
-        return false;
-    }
-
-    // Keyboard Bindings
-    window.addEventListener("keydown", (e) => {
-        if (!gameStarted || gameOver) {
-            if (e.key === "Enter" || e.key === " ") {
-                handleInteractionStart();
+        // Standard CSS transition manipulation bypasses game animation lag
+        let currentBottom = 60;
+        const bInterval = setInterval(() => {
+            currentBottom += 8;
+            bullet.style.bottom = currentBottom + "px";
+            if (currentBottom > board.clientHeight) {
+                clearInterval(bInterval);
+                bullet.remove();
             }
-            return;
-        }
-        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") inputs.left = true;
-        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = true;
-        if (e.key === " " || e.key === "Spacebar") fireBullet();
-    });
+        }, 1000 / 60);
+    };
 
-    window.addEventListener("keyup", (e) => {
-        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") inputs.left = false;
-        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = false;
-    });
+    function spawnLoop() {
+        setInterval(() => {
+            const enemy = document.createElement("div");
+            const randomX = Math.random() * (board.clientWidth - 40);
+            enemy.style.cssText = `position:absolute; top:0px; left:${randomX}px; width:30px; height:30px; background:#f85149; border-radius:4px;`;
+            board.appendChild(enemy);
 
-    // Touch and Click Interactions
-    function setupTouch(elementId, stateProperty) {
-        const btn = document.getElementById(elementId);
-        btn.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            if (handleInteractionStart()) return;
-            inputs[stateProperty] = true;
-        }, { passive: false });
-
-        btn.addEventListener("touchend", (e) => {
-            e.preventDefault();
-            inputs[stateProperty] = false;
-        }, { passive: false });
-    }
-
-    setupTouch("leftBtn", "left");
-    setupTouch("rightBtn", "right");
-
-    function fireBullet() {
-        bullets.push({ x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 9, color: "#58a6ff" });
-        playLaserSound();
-    }
-
-    document.getElementById("fireBtn").addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        if (handleInteractionStart()) return;
-        fireBullet();
-    }, { passive: false });
-
-    // PC Click Handler / Mobile Canvas Fallback
-      document.getElementById("menuScreen").addEventListener("click", () => {
-        document.getElementById("menuScreen").style.display = "none"; // Hide menu layer
-        gameStarted = true;
-        resetGame();
-    });
-    canvas.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        handleInteractionStart();
-    }, { passive: false });
-
-    function spawnEnemy() {
-        if (!gameStarted || gameOver) return;
-        const size = Math.random() * 15 + 20;
-        const x = Math.random() * (canvas.width - size);
-        enemies.push({ x: x, y: -size, width: size, height: size, speed: Math.random() * 1.5 + 1.5, color: "#f85149" });
-        
-        const nextSpawn = Math.max(500, 1200 - score * 6);
-        spawnTimeout = setTimeout(spawnEnemy, nextSpawn);
-    }
-
-    function resetGame() {
-        if (spawnTimeout) clearTimeout(spawnTimeout);
-        score = 0;
-        bullets.length = 0;
-        enemies.length = 0;
-        player.x = canvas.width / 2 - 20;
-        gameOver = false;
-        inputs.left = false;
-        inputs.right = false;
-        spawnEnemy();
-    }
-
-function drawLoop() {
-        if (!gameStarted || gameOver) {
-            requestAnimationFrame(drawLoop);
-            return;
-        }
-
-        // Handle ship lateral movement values
-        if (inputs.left && player.x > 0) player.x -= player.speed;
-        if (inputs.right && player.x < board.clientWidth - player.width) player.x += player.speed;
-        
-        // Match the physical ship element to the tracking position coordinates
-        shipEl.style.left = player.x + "px";
-        shipEl.style.top = player.y + "px";
-
-        // Logic loops for bullets & hostiles go here seamlessly...
-        requestAnimationFrame(drawLoop);
-    }
-
-        if (gameOver) {
-            ctx.fillStyle = "#da3633";
-            ctx.fillRect(50, 150, 300, 200);
-            
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "24px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("GAME OVER", canvas.width / 2, 230);
-            ctx.font = "14px Arial";
-            ctx.fillText("CLICK TO RESTART", canvas.width / 2, 290);
-            return;
-        }
-
-        if (inputs.left && player.x > 0) player.x -= player.speed;
-        if (inputs.right && player.x < canvas.width - player.width) player.x += player.speed;
-
-        // Render Green Player Ship
-        ctx.fillStyle = player.color;
-        ctx.beginPath();
-        ctx.moveTo(player.x + player.width / 2, player.y);
-        ctx.lineTo(player.x, player.y + player.height);
-        ctx.lineTo(player.x + player.width, player.y + player.height);
-        ctx.closePath();
-        ctx.fill();
-
-        // Projectiles Controller
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            bullets[i].y -= bullets[i].speed;
-            if (bullets[i].y < 0) {
-                bullets.splice(i, 1);
-                continue;
-            }
-            ctx.fillStyle = bullets[i].color;
-            ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-        }
-
-        // Hostiles Controller
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            enemies[i].y += enemies[i].speed;
-            
-            if (enemies[i].y > canvas.height) {
-                gameOver = true;
-                playExplosionSound();
-            }
-
-            ctx.fillStyle = enemies[i].color;
-            ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
-
-            if (enemies[i].x < player.x + player.width &&
-                enemies[i].x + enemies[i].width > player.x &&
-                enemies[i].y < player.y + player.height &&
-                enemies[i].y + enemies[i].height > player.y) {
-                gameOver = true;
-                playExplosionSound();
-            }
-
-            for (let j = bullets.length - 1; j >= 0; j--) {
-                if (bullets[j].x < enemies[i].x + enemies[i].width &&
-                    bullets[j].x + bullets[j].width > enemies[i].x &&
-                    bullets[j].y < enemies[i].y + enemies[i].height &&
-                    bullets[j].y + bullets[j].height > enemies[i].y) {
-                    
-                    enemies.splice(i, 1);
-                    bullets.splice(j, 1);
-                    score += 10;
-                    playExplosionSound();
-                    break;
+            let currentTop = 0;
+            const eInterval = setInterval(() => {
+                currentTop += 3;
+                enemy.style.top = currentTop + "px";
+                if (currentTop > board.clientHeight) {
+                    clearInterval(eInterval);
+                    enemy.remove();
                 }
-            }
-        }
-
-        // Render Score Counter Text
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "16px Arial";
-        ctx.textAlign = "left";
-        ctx.fillText("Score: " + score, 15, 30);
+            }, 1000 / 60);
+        }, 1200);
     }
 
+    // Connect standard hardware buttons up dynamically
+    document.getElementById("leftBtn").addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer('left'); });
+    document.getElementById("rightBtn").addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer('right'); });
+    document.getElementById("fireBtn").addEventListener("touchstart", (e) => { e.preventDefault(); fireBullet(); });
 
-
-requestAnimationFrame(drawLoop);
-}
-// Start rendering the title screen immediately
-    // Force browser engine loop inside Streamlit container structures
-    setInterval(drawLoop, 1000 / 60);
-</script>
 
 
 """
