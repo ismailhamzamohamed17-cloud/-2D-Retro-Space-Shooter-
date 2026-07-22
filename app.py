@@ -249,16 +249,60 @@ game_html = '''
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); triggerFire(); } });
         // FIXED: Complete 8-Chapter dictionary table handles independent map layers flawlessly
+        // UPDATED CAMPAIGN MATRIX: Explicitly defines whether an environment is an outdoor road layout or indoor/craft zone
     const mapChapters = {
-        1: { name: "CITY STREETS", bg: "linear-gradient(to bottom, #4a777a, #a1c4fd 40%, #727d8c 41%, #3a4454)", road: "none", code: "city" },
-        2: { name: "DARK FOREST", bg: "linear-gradient(to bottom, #132a13, #3f5e30 40%, #283618 41%, #061105)", road: "brightness(0.5) sepia(0.4) hue-rotate(50deg)", code: "tree" },
-        3: { name: "NEON CARNIVAL", bg: "linear-gradient(to bottom, #240046, #5a189a 40%, #3c096c 41%, #10002b)", road: "brightness(0.7) contrast(1.4) saturate(1.5)", code: "carnival" },
-        4: { name: "AIRPORT RUNWAY", bg: "linear-gradient(to bottom, #ffb703, #fb8500 40%, #219ebc 41%, #023047)", road: "brightness(0.8) grayscale(0.2)", code: "airport" },
-        5: { name: "SHIPPING DOCKS", bg: "linear-gradient(to bottom, #000814, #001d3d 40%, #003566 41%, #001d3d)", road: "brightness(0.4) contrast(1.1)", code: "docks" },
-        6: { name: "HOTEL SUITE", bg: "linear-gradient(to bottom, #6a040f, #9d0208 40%, #370617 41%, #03071e)", road: "brightness(0.6) sepia(0.2)", code: "hotel" },
-        7: { name: "HOSPITAL WARD", bg: "linear-gradient(to bottom, #d8f3dc, #b7e4c7 40%, #74c69d 41%, #40916c)", road: "brightness(1.1) grayscale(0.5)", code: "hospital" },
-        8: { name: "SUPERMARKET", bg: "linear-gradient(to bottom, #ffccd5, #ffb3c1 40%, #c9184a 41%, #800f2f)", road: "brightness(0.95) saturate(1.2)", code: "market" }
+        1: { name: "CITY STREETS", bg: "linear-gradient(to bottom, #4a777a, #a1c4fd 40%, #727d8c 41%, #3a4454)", road: "none", isRoad: true, code: "city" },
+        2: { name: "DARK FOREST", bg: "linear-gradient(to bottom, #132a13, #3f5e30 40%, #283618 41%, #061105)", road: "brightness(0.5) sepia(0.4) hue-rotate(50deg)", isRoad: true, code: "tree" },
+        3: { name: "CARGO SHIP TARMAC", bg: "linear-gradient(to bottom, #1d2d44, #3e5c76 40%, #0d1b2a 41%, #010813)", road: "brightness(0.4) contrast(1.2)", isRoad: false, code: "ship" },
+        4: { name: "COMMERCIAL AIRPLANE", bg: "linear-gradient(to bottom, #74a4bc, #b3d1ff 40%, #ffffff 41%, #d0e1fd)", road: "none", isRoad: false, code: "plane" },
+        5: { name: "SHIPPING DOCKS", bg: "linear-gradient(to bottom, #000814, #001d3d 40%, #003566 41%, #001d3d)", road: "brightness(0.4) contrast(1.1)", isRoad: true, code: "docks" },
+        6: { name: "HOTEL PENTHOUSE SUITE", bg: "linear-gradient(to bottom, #3a0ca3, #7209b7 40%, #150029 41%, #0a0014)", road: "none", isRoad: false, code: "hotel" },
+        7: { name: "HOSPITAL WARD", bg: "linear-gradient(to bottom, #d8f3dc, #b7e4c7 40%, #74c69d 41%, #40916c)", road: "none", isRoad: false, code: "hospital" },
+        8: { name: "HUGE SUPERMARKET", bg: "linear-gradient(to bottom, #ffccd5, #ffb3c1 40%, #c9184a 41%, #800f2f)", road: "none", isRoad: false, code: "market" }
     };
+
+    function updateLevelAtmosphere() {
+        let meta = mapChapters[activeChapter];
+        let maxNeeded = 5 + (activeChapter - 1) * 2;
+        chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`;
+        targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
+        gameArea.style.background = meta.bg;
+        
+        let roadwayEl = document.querySelector(".roadway");
+        let carEl = document.getElementById("car");
+
+        // --- ASSET HIDING MECHANICS: HIDES ROAD AND SUV OUTSIDE CHAPTERS 1, 2, AND 5 ---
+        if (meta.isRoad) {
+            roadwayEl.style.display = "block";
+            roadwayEl.style.filter = meta.road;
+            carEl.style.display = "block";
+        } else {
+            roadwayEl.style.display = "none"; // Delete road lane mesh instantly
+            carEl.style.display = "none";     // Strip getaway vehicle chassis out completely
+        }
+        
+        sceneryContainer.innerHTML = "";
+        
+        // Render detailed customized indoor 3D structures based on the map matrix code
+        if (meta.code === "city") {
+            sceneryContainer.innerHTML = '<div class="b-3d-left"></div><div class="b-3d-right"></div>';
+        } else if (meta.code === "tree") {
+            sceneryContainer.innerHTML = '<div class="tree-3d" style="left:25px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:25px; bottom:120px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>';
+        } else if (meta.code === "ship") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; bottom:0; left:0; width:100%; height:200px; background:#4f5d75; border-top:6px solid #2d3142; z-index:2;"><div style="width:100%; height:20px; background:#ef8354; margin-top:20px; border-bottom:4px solid #000;"></div></div>';
+        } else if (meta.code === "plane") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; inset:0; background:repeating-linear-gradient(to right, #e0e1dd 0px, #e0e1dd 30px, #778da9 30px, #778da9 35px); z-index:1;"><div style="position:absolute; top:80px; left:0; width:100%; height:80px; background:linear-gradient(to bottom, #1b263b, transparent); display:flex; justify-content:space-around; align-items:center; padding:0 20px;"><div style="width:25px; height:20px; background:#8ecae6; border-radius:5px 5px 0 0;"></div><div style="width:25px; height:20px; background:#8ecae6; border-radius:5px 5px 0 0;"></div><div style="width:25px; height:20px; background:#8ecae6; border-radius:5px 5px 0 0;"></div></div></div>';
+        } else if (meta.code === "docks") {
+            sceneryContainer.innerHTML = '<div class="cargo-box" style="left:20px; bottom:120px;"><div class="cargo-ribs"></div></div><div class="cargo-box" style="right:15px; bottom:140px; background:linear-gradient(135deg,#005f73,#0a9396);"><div class="cargo-ribs"></div></div>';
+        } else if (meta.code === "hotel") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; inset:0; background:#3d0066; z-index:1;"><div style="position:absolute; bottom:0; left:10%; width:80%; height:120px; background:#e0a96d; border-radius:8px 8px 0 0; border:4px solid #1a0033;"><div style="width:100%; height:30px; background:#fff; border-bottom:2px solid #000;"></div></div></div>';
+        } else if (meta.code === "hospital") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; inset:0; background:#f4f9f4; z-index:1;"><div style="position:absolute; bottom:100px; left:30px; width:65px; height:45px; background:#fff; border:2px solid #95d5b2; border-radius:4px; box-shadow:0 6px 12px rgba(0,0,0,0.1);"><div style="width:10px; height:45px; background:#74c69d; float:left;"></div></div></div>';
+        } else if (meta.code === "market") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; inset:0; background:#fffdf7; z-index:1;"><div class="shelf-3d" style="left:15px; bottom:20px;"><div class="shelf-row"></div><div class="shelf-row"></div></div><div class="shelf-3d" style="right:15px; bottom:20px;"><div class="shelf-row"></div><div class="shelf-row"></div></div></div>';
+        }
+    }
+
 
     function updateLevelAtmosphere() {
         let meta = mapChapters[activeChapter];
@@ -336,28 +380,42 @@ game_html = '''
     }
 
     function runEngineLoops() {
+                // 1. Core Scenery & Target Pin Synchronization 3D Loop
         physicsTimerId = setInterval(() => {
             if (isOver) return;
-            if (!carParked) {
-                distanceScale += 0.015; // 3D Approach acceleration speed
-                if (distanceScale >= 1.0) { 
-                    distanceScale = 1.0; 
-                    carParked = true; 
-                    car.classList.add("parked-open"); // FIXED: Forces the 3D doors to physically swing open on stop!
+            
+            let meta = mapChapters[activeChapter];
+
+            if (meta.isRoad) {
+                if (!carParked) {
+                    distanceScale += 0.015;
+                    if (distanceScale >= 1.0) { 
+                        distanceScale = 1.0; 
+                        carParked = true; 
+                        car.classList.add("parked-open"); 
+                    }
                 }
+                let currentTopY = 165 + (distanceScale * 45); 
+                car.style.transform = `scale(${distanceScale})`;
+                car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
+            } else {
+                // If it is an indoor room layout or craft deck, bypass car movement tracking entirely
+                carParked = true;
+                distanceScale = 1.0; // Force full sizing scale on room targets instantly
             }
 
-            let currentTopY = 165 + (distanceScale * 45); 
-            car.style.transform = `scale(${distanceScale})`;
-            car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
+            let currentTopY = 165 + (distanceScale * 45);
 
             threatsList.forEach((t) => {
-                if (t.isDying) return; 
-                let updatedX = carPos + (t.sideOffset * distanceScale);
-                let threatY = currentTopY + (t.baseTopY - 195) * distanceScale;
+                if (t.isDying) return;
+                
+                // Map coordinates adapt flawlessly depending on outdoor road speeds or stationary rooms
+                let updatedX = meta.isRoad ? (carPos + (t.sideOffset * distanceScale)) : (140 + t.sideOffset);
+                let threatY = meta.isRoad ? (currentTopY + (t.baseTopY - 195) * distanceScale) : t.baseTopY;
                 
                 t.el.style.transform = `scale(${distanceScale})`;
-                t.el.style.left = updatedX + "px"; t.el.style.top = threatY + "px";
+                t.el.style.left = updatedX + "px"; 
+                t.el.style.top = threatY + "px";
                 
                 t.ring.style.width = (90 * (1.3 - (t.age / 40))) + "px";
                 t.ring.style.height = (90 * (1.3 - (t.age / 40))) + "px";
@@ -367,6 +425,7 @@ game_html = '''
                 t.age += 1;
             });
         }, 30);
+
 
                  spawnTimerId = setInterval(() => {
             // FIXED: Automatically scales the maximum simultaneous screen capacity relative to the level formula!
