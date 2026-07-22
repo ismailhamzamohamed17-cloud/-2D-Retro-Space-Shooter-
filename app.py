@@ -368,8 +368,9 @@ game_html = '''
             });
         }, 30);
 
-        spawnTimerId = setInterval(() => {
-            if (isOver || threatsList.length >= 2 || !carParked) return;
+         spawnTimerId = setInterval(() => {
+            // INCREASED: Cap changed to 6 simultaneous threats so multiple enemies pop out at once
+            if (isOver || threatsList.length >= 6 || !carParked) return;
 
             let el = document.createElement("div"); el.className = "threat";
             let roll = Math.random(); let sideOffset, topY, armClass;
