@@ -263,26 +263,23 @@ game_html = """
         spawnEnemy();
     }
 
-      function drawLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (!gameStarted) {
-            // Draw a bright green box to show the game engine is alive
-            ctx.fillStyle = "#238636";
-            ctx.fillRect(40, 125, 320, 200);
-            
-            // Draw a bright blue triangle (start arrow) instead of text strings
-            ctx.fillStyle = "#58a6ff";
-            ctx.beginPath();
-            ctx.moveTo(200, 180);
-            ctx.lineTo(170, 240);
-            ctx.lineTo(230, 240);
-            ctx.closePath();
-            ctx.fill();
-            
+function drawLoop() {
+        if (!gameStarted || gameOver) {
             requestAnimationFrame(drawLoop);
             return;
         }
+
+        // Handle ship lateral movement values
+        if (inputs.left && player.x > 0) player.x -= player.speed;
+        if (inputs.right && player.x < board.clientWidth - player.width) player.x += player.speed;
+        
+        // Match the physical ship element to the tracking position coordinates
+        shipEl.style.left = player.x + "px";
+        shipEl.style.top = player.y + "px";
+
+        // Logic loops for bullets & hostiles go here seamlessly...
+        requestAnimationFrame(drawLoop);
+    }
 
         if (gameOver) {
             ctx.fillStyle = "#da3633";
