@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Arcade FPS", layout="centered")
+st.set_page_config(page_title="Virtua Cop Arcade", layout="centered")
 st.title("🚓 Virtua Arcade Shooter")
 
 game_html = """
@@ -12,13 +12,13 @@ game_html = """
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
         
-        /* Enhanced Screen Sizing Container Optimized for Arcade Layout */
-        #board { 
+        /* 1. Large Arcade Layout Optimized for Mobile & PC Viewports */
+        #gameArea { 
             position: relative; 
             width: 380px; 
             height: 480px; 
             background: linear-gradient(to bottom, #4a777a 0%, #a1c4fd 40%, #727d8c 41%, #3a4454 100%); 
-            border: 3px solid #555; 
+            border: 4px solid #444; 
             overflow: hidden; 
             margin: auto; 
             border-radius: 16px; 
@@ -26,474 +26,301 @@ game_html = """
             box-shadow: 0 12px 32px rgba(0,0,0,0.6);
         }
         
-        /* 3D City Boulevard Layout (Retro Skyscrapers & Road Perspective) */
-        .skyline-left {
-            position: absolute; top: 50px; left: 0; width: 130px; height: 150px;
-            background: repeating-linear-gradient(to bottom, #1b263b 0px, #1b263b 14px, transparent 14px, transparent 20px), #0d1b2a;
-            border-right: 4px solid #0d1b2a; z-index: 1; opacity: 0.95;
-        }
-        .skyline-right {
-            position: absolute; top: 40px; right: 0; width: 110px; height: 160px;
-            background: repeating-linear-gradient(to bottom, #14213d 0px, #14213d 10px, transparent 10px, transparent 16px), #000814;
-            border-left: 4px solid #000814; z-index: 1; opacity: 0.95;
-        }
-        .road-surface {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 280px;
-            background: linear-gradient(to bottom, #434952, #2c3036); clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%); z-index: 2;
-        }
-        /* Road lane dash indicators */
-        .road-surface::before {
-            content: ''; position: absolute; top: 0; left: 50%; width: 8px; height: 100%;
-            background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 25px, transparent 25px, transparent 50px);
-            transform: translateX(-50%); opacity: 0.4;
-        }
+        /* 3D Pseudo Arcade Horizon Buildings & Lanes */
+        .building-l { position: absolute; top: 50px; left: 0; width: 130px; height: 150px; background: repeating-linear-gradient(to bottom, #1b263b 0px, #1b263b 14px, transparent 14px, transparent 20px), #0d1b2a; z-index: 1; }
+        .building-r { position: absolute; top: 40px; right: 0; width: 110px; height: 160px; background: repeating-linear-gradient(to bottom, #14213d 0px, #14213d 10px, transparent 10px, transparent 16px), #000814; z-index: 1; }
+        .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #434952, #2c3036); clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%); z-index: 2; }
+        .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 8px; height: 100%; background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 25px, transparent 25px, transparent 50px); transform: translateX(-50%); opacity: 0.4; }
 
-        /* --- HIGHLY REALISTIC 3D-SHADED GETAWAY SUV VEHICLE --- */
-        #getawayCar {
+        /* 2. Getaway SUV Car utilizing CSS transitions to prevent frame freezing blocks */
+        #car {
             position: absolute; top: 195px; left: 110px; width: 160px; height: 95px;
-            background: linear-gradient(to bottom, #3a3d40, #181a1b, #0f1012); border-radius: 14px 14px 8px 8px;
-            box-shadow: 0 16px 28px rgba(0,0,0,0.7), inset 0 2px 4px rgba(255,255,255,0.2); z-index: 4; will-change: transform;
+            background: linear-gradient(to bottom, #3a3d40, #181a1b, #0f1012); border-radius: 14px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.6); z-index: 4;
             border: 1px solid #232526;
+            transition: left 0.1s linear; /* Bulletproof movement mechanism */
         }
-        /* Rear Windshield Glass Shading */
-        .car-window {
-            position: absolute; top: 12px; left: 14px; width: 132px; height: 32px;
-            background: linear-gradient(180deg, rgba(142, 202, 230, 0.6) 0%, rgba(33, 158, 188, 0.3) 70%, rgba(2, 48, 71, 0.5) 100%); 
-            border-radius: 6px; border: 2px solid #070808;
-            box-shadow: inset 0 4px 6px rgba(255,255,255,0.15);
-        }
-        /* Chrome bumper bar styling */
-        #getawayCar::after {
-            content: ''; position: absolute; bottom: 8px; left: 10px; width: 140px; height: 6px;
-            background: linear-gradient(to bottom, #e5e5e5, #b5b5b5, #666); border-radius: 3px;
-        }
-        /* Glowing taillight pods */
-        .car-light-l { position: absolute; bottom: 18px; left: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; border: 1px solid #800f2f; }
-        .car-light-r { position: absolute; bottom: 18px; right: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; border: 1px solid #800f2f; }
+        .window { position: absolute; top: 12px; left: 14px; width: 132px; height: 32px; background: linear-gradient(180deg, rgba(142,202,230,0.6), rgba(2,48,71,0.5)); border-radius: 6px; border: 2px solid #000; }
+        .light-l { position: absolute; bottom: 18px; left: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
+        .light-r { position: absolute; bottom: 18px; right: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
 
-        /* REPOSITIONED & OVERHAULED GUN ON THE RIGHT SIDE */
-        #gun {
-            position: absolute; bottom: -35px; right: 40px; width: 80px; height: 180px;
-            transform: rotate(0deg); transform-origin: bottom center; pointer-events: none; z-index: 25; will-change: transform;
+        /* 3. FIXED RIGHT-HAND SEMI-AUTOMATIC PISTOL DISPLAY WITH FIRE RECOIL STYLING */
+        #weapon {
+            position: absolute; bottom: -30px; right: 20px; width: 100px; height: 180px; transform: rotate(15deg); pointer-events: none; z-index: 25;
         }
-        .gun-slide {
-            position: absolute; top: 10px; left: -30px; width: 110px; height: 26px; 
-            background: linear-gradient(to bottom, #2b2b2b, #151515, #222);
-            border-radius: 4px 2px 2px 2px; border-bottom: 2px solid #0d0d0d;
-            box-shadow: -4px 4px 10px rgba(0,0,0,0.5);
-        }
-        .gun-slide::before { content: ''; position: absolute; left: -4px; top: 6px; width: 4px; height: 10px; background: #000; border-radius: 1px; }
-        .gun-hammer { position: absolute; top: 6px; right: -36px; width: 10px; height: 14px; background: #0d0d0d; border-radius: 50% 50% 0 0; transform: rotate(35deg); }
-        .gun-grip {
-            position: absolute; top: 34px; left: 25px; width: 34px; height: 110px; 
-            background: repeating-linear-gradient(45deg, #3d2b1f, #3d2b1f 2px, #241911 2px, #241911 4px);
-            border: 3px solid #0a0a0a; border-radius: 4px 6px 12px 6px; transform: rotate(-10deg);
-            box-shadow: -6px 6px 12px rgba(0,0,0,0.6);
-        }
-        .gun-frame { position: absolute; top: 32px; left: -15px; width: 50px; height: 25px; background: #1a1a1a; border-radius: 0 0 10px 4px; }
-        .gun-trigger-guard { position: absolute; top: 30px; left: -5px; width: 22px; height: 22px; border: 3px solid #1a1a1a; border-radius: 50%; }
+        .w-slide { position: absolute; top: 10px; left: 0; width: 110px; height: 26px; background: linear-gradient(to bottom, #2b2b2b, #151515, #222); border-radius: 4px; border-bottom: 2px solid #0d0d0d; }
+        .w-grip { position: absolute; top: 34px; left: 45px; width: 34px; height: 110px; background: repeating-linear-gradient(45deg, #3d2b1f, #3d2b1f 2px, #241911 2px, #241911 4px); border: 3px solid #0a0a0a; border-radius: 4px 6px 12px 6px; transform: rotate(-10deg); box-shadow: -6px 6px 12px rgba(0,0,0,0.6); }
+        .w-frame { position: absolute; top: 32px; left: 15px; width: 50px; height: 25px; background: #1a1a1a; }
+        .w-guard { position: absolute; top: 30px; left: 20px; width: 22px; height: 22px; border: 3px solid #1a1a1a; border-radius: 50%; }
 
-        /* Blue Tactical Crosshair Scope Circle */
-        #crosshair { 
-            position: absolute; top: 218px; left: 168px; width: 30px; height: 30px; 
-            border: 2px solid #00f0ff; border-radius: 50%; will-change: left, top; z-index: 15; pointer-events: none;
-            box-shadow: 0 0 6px rgba(0,240,255,0.4);
-        }
-        #crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 1px; background: #00f0ff; }
-        #crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 1px; height: 30px; background: #00f0ff; }
-        
-        /* Virtua Cop Yellow Locking Target Ring */
-        .lockon-ring {
-            position: absolute; border: 3px dashed #ffea00; border-radius: 50%;
-            pointer-events: none; z-index: 10; animation: shrinkLock 1.3s linear infinite;
-            will-change: width, height, left, top;
-            box-shadow: 0 0 8px rgba(255,234,0,0.3);
-        }
-        @keyframes shrinkLock {
-            0% { width: 95px; height: 95px; transform: translate(-32px, -32px); opacity: 1; }
-            100% { width: 35px; height: 35px; transform: translate(-2px, -2px); opacity: 0.9; }
-        }
+        /* Muzzle Flash Fire Effect */
+        #flash { position: absolute; top: -10px; left: -25px; width: 35px; height: 35px; background: radial-gradient(circle, #fff 10%, #ffea00 40%, transparent 70%); border-radius: 50%; display: none; z-index: 26; }
 
-        /* --- HIGHLY DETAILED REALISTIC ARCADE CRIMINAL HUMANOID TARGETS --- */
-        .humanoid { 
-            position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; will-change: left, top;
-        }
-        /* Shaded head with 3D profile depth hair layer */
-        .human-head { 
-            background: linear-gradient(135deg, #e0a96d 0%, #c48b53 100%); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #111; 
-            box-shadow: inset -2px -2px 3px rgba(0,0,0,0.3), 0 4px 6px rgba(0,0,0,0.3); position: relative;
-        }
-        .human-head::before {
-            content: ''; position: absolute; top: -2px; left: 2px; width: 20px; height: 8px; background: #2b1d0c; border-radius: 4px 4px 0 0;
-        }
-        /* Tactical vest shaded clothing torso body design */
-        .human-torso { 
-            background: linear-gradient(to right, #1d3557 0%, #457b9d 50%, #1d3557 100%); width: 32px; height: 42px; border-radius: 5px; margin-top: 1px; position: relative; border: 1.5px solid #111; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        /* Shaded arms tracking and aiming a handgun directly at user cockpit views */
-        .human-arm { 
-            position: absolute; top: 6px; width: 28px; height: 12px; 
-            background: linear-gradient(to bottom, #457b9d, #1d3557); border: 1.5px solid #111; border-radius: 3px; 
-        }
-        .arm-left-side { left: -18px; transform: rotate(-15deg); transform-origin: right center; }
-        .arm-right-side { right: -18px; transform: rotate(15deg); transform-origin: left center; }
-        
-        .human-weapon { position: absolute; top: -2px; width: 15px; height: 11px; background: linear-gradient(to bottom, #444, #111); border-radius: 2px; border-bottom: 2px solid #000; }
-        .weapon-left-side { left: -28px; }
-        .weapon-right-side { right: -28px; }
+        /* Blue Aim Crosshair Circle */
+        #sight { position: absolute; top: 218px; left: 168px; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; z-index: 20; box-shadow: 0 0 6px rgba(0,240,255,0.5); }
+        #sight::before { content: ''; position: absolute; top: 15px; left: 0; width: 32px; height: 1px; background: #00f0ff; }
+        #sight::after { content: ''; position: absolute; top: 0; left: 15px; width: 1px; height: 32px; background: #00f0ff; }
 
-        #scoreTxt { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
-        .retry-btn { margin-top: 30px; padding: 12px 28px; background: #e63946; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(230,57,70,0.5); }
+        /* 4. Virtua Cop Retro Shinking Target Locking Ring */
+        .target-ring { position: absolute; width: 90px; height: 90px; border: 3px dashed #ffea00; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-30px, -30px); transition: width 1.3s linear, height 1.3s linear, transform 1.3s linear; }
+
+        /* Detailed Criminal Threat Target Leaning Out */
+        .threat { position: absolute; width: 40px; height: 60px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
+        .t-head { background: linear-gradient(135deg, #e0a96d, #c48b53); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #111; }
+        .t-torso { background: linear-gradient(to right, #1d3557, #457b9d, #1d3557); width: 32px; height: 42px; border-radius: 5px; border: 1.5px solid #111; position: relative; }
+        .t-arm { position: absolute; top: 6px; width: 26px; height: 11px; background: #1d3557; border: 1.5px solid #111; border-radius: 2px; }
+        .arm-l { left: -15px; transform: rotate(-15deg); }
+        .arm-r { right: -15px; transform: rotate(15deg); }
+
+        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; }
+        #overScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
+        .retry-btn { padding: 12px 28px; background: #e63946; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(230,57,70,0.5); }
     </style>
 </head>
 <body>
 
-    <div id="board">
-        <div id="scoreTxt">00200</div>
-        <div class="skyline-left"></div>
-        <div class="skyline-right"></div>
-        <div class="road-surface"></div>
+    <div id="gameArea">
+        <div id="scoreCounter">00200</div>
+        <div class="building-l"></div>
+        <div class="building-r"></div>
+        <div class="roadway"></div>
         
-        <div id="getawayCar">
-            <div class="car-window"></div>
-            <div class="car-light-l"></div>
-            <div class="car-light-r"></div>
+        <div id="car">
+            <div class="window"></div>
+            <div class="light-l"></div>
+            <div class="light-r"></div>
         </div>
 
-        <div id="crosshair"></div>
-        <div id="gun">
-            <div class="gun-slide"></div>
-            <div class="gun-hammer"></div>
-            <div class="gun-frame"></div>
-            <div class="gun-trigger-guard"></div>
-            <div class="gun-grip"></div>
+        <div id="sight"></div>
+        
+        <div id="weapon">
+            <div id="flash"></div>
+            <div class="w-slide"></div>
+            <div class="w-frame"></div>
+            <div class="w-guard"></div>
+            <div class="w-grip"></div>
+        </div>
+
+        <!-- Stable Dedicated Death Interface Context -->
+        <div id="overScreen">
+            <div style="color:#ffea00; font-size:32px; font-weight:bold; font-family:monospace; text-shadow:0 0 8px red;">GAME OVER</div>
+            <div id="finalScore" style="color:white; font-size:18px; margin-top:10px;">Score: 200</div>
+            <button class="retry-btn" onclick="resetArcadeEngine()">CONTINUE 🪙</button>
         </div>
     </div>
-     let aimX = 168; 
-    let aimY = 218; 
-    let score = 200; 
-    let gameOver = false;
-    let isMovingCrosshair = false;
-    let touchMovedFlag = false;
-    
-    let board = document.getElementById("board");
-    let crosshair = document.getElementById("crosshair");
-    let scoreTxt = document.getElementById("scoreTxt");
-    let gun = document.getElementById("gun");
-    let car = document.getElementById("getawayCar");
-    
-    let activeEnemies = [];
-    let audioCtx = null; 
-    let spawnInt = null; 
-    let carXOffset = 0; 
-    let carDirection = 1;
 
-    function initAudio() {
-        if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+<script>
+    let currentX = 168, currentY = 218, score = 200, isOver = false;
+    let carPos = 110, carDir = 2;
+    let threatsList = [];
+    let audioCtx = null, spawnTimerId = null, physicsTimerId = null;
+
+    const gameArea = document.getElementById("gameArea");
+    const sight = document.getElementById("sight");
+    const weapon = document.getElementById("weapon");
+    const flash = document.getElementById("flash");
+    const car = document.getElementById("car");
+    const scoreCounter = document.getElementById("scoreCounter");
+    const overScreen = document.getElementById("overScreen");
+    const finalScore = document.getElementById("finalScore");
+
+    function setupAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    function playSoundFX(type) {
-        initAudio(); 
-        if (!audioCtx) return;
-        let osc = audioCtx.createOscillator(); 
-        let gain = audioCtx.createGain();
-        osc.connect(gain); 
-        gain.connect(audioCtx.destination);
+    function sound(type) {
+        setupAudio(); if (!audioCtx) return;
+        let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
         
-        if (type === "shoot") {
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(550, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.14);
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.14);
-        }
-        else if (type === "hit") {
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(950, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(1300, audioCtx.currentTime + 0.08);
+        if (type === "zap") {
+            osc.type = "sawtooth"; osc.frequency.setValueAtTime(580, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        } else if (type === "ding") {
+            osc.type = "sine"; osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.08);
-        }
-        else if (type === "damage") {
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.35);
-            gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.35);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+        } else if (type === "boom") {
+            osc.type = "sawtooth"; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
         }
     }
-
-    function updatePosition(e) {
-        if (gameOver) return;
-        let pointer = e.touches ? e.touches : e;
-        let boardRect = board.getBoundingClientRect();
+    // Bulletproof Aiming Engine: Snaps directly to finger coordinates instantly
+    function aim(e) {
+        if (isOver) return;
+        let evt = e.touches ? e.touches[0] : e;
+        let bounds = gameArea.getBoundingClientRect();
         
-        aimX = Math.max(-10, Math.min(345, pointer.clientX - boardRect.left - 15));
-        aimY = Math.max(-10, Math.min(445, pointer.clientY - boardRect.top - 15));
+        currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
+        currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
         
-        if (crosshair) {
-            crosshair.style.left = aimX + "px";
-            crosshair.style.top = aimY + "px";
-        }
+        sight.style.left = currentX + "px";
+        sight.style.top = currentY + "px";
         
-        if (gun) {
-            let rotationAngle = (aimX - 168) / 15;
-            let horizontalShift = (aimX - 168) / 8;
-            let verticalShift = (aimY - 218) / 12;
-            gun.style.transform = `rotate(${rotationAngle}deg) translateX(${horizontalShift}px) translateY(${verticalShift}px)`;
-        }
+        // Realistic Pistol sway linked directly to target locations
+        let sway = (currentX - 168) / 12;
+        weapon.style.transform = `rotate(${15 + sway}deg) translateY(${(currentY - 218) / 15}px)`;
     }
 
-    function onStart(e) {
-        if (gameOver) return;
-        initAudio();
-        isMovingCrosshair = true;
-        touchMovedFlag = false;
-        updatePosition(e);
-    }
-
-    function onMove(e) {
-        if (!isMovingCrosshair || gameOver) return;
-        if (e.touches) e.preventDefault();
-        touchMovedFlag = true;
-        updatePosition(e);
-    }
-
-    function onEnd(e) {
-        if (!isMovingCrosshair || gameOver) return;
-        isMovingCrosshair = false;
-        if (!touchMovedFlag) {
-            fireArcadePistol();
-        }
-    }
-
- function registerDeviceListeners() {
-        board = document.getElementById("board");
-        crosshair = document.getElementById("crosshair");
-        scoreTxt = document.getElementById("scoreTxt");
-        gun = document.getElementById("gun");
-        car = document.getElementById("getawayCar");
-    }
-
-    // Bind listeners to global window object so they never duplicate or crash
-    window.addEventListener("touchstart", (e) => {
-        // Only trigger if touching inside the arcade board arena
-        if (!board.contains(e.target) || gameOver) return;
-        initAudio();
-        isMovingCrosshair = true;
-        touchMovedFlag = false;
-        updatePosition(e);
+    // Connect movement listeners cleanly to container tracking layers
+    gameArea.addEventListener("mousemove", aim);
+    gameArea.addEventListener("touchmove", (e) => { 
+        e.preventDefault(); 
+        aim(e); 
     }, { passive: false });
 
-    window.addEventListener("mousedown", (e) => {
-        if (!board.contains(e.target) || gameOver) return;
-        initAudio();
-        isMovingCrosshair = true;
-        touchMovedFlag = false;
-        updatePosition(e);
+    // Tap / Click action fires pistol instantly
+    gameArea.addEventListener("mousedown", (e) => { 
+        if (e.target.className !== "retry-btn") triggerFire(); 
+    });
+    gameArea.addEventListener("touchstart", (e) => { 
+        if (e.target.className !== "retry-btn") { 
+            e.preventDefault(); 
+            triggerFire(); 
+        } 
     });
 
-    window.addEventListener("touchmove", (e) => {
-        if (!isMovingCrosshair || gameOver) return;
-        if (e.touches) e.preventDefault(); // Prevents screen pulling on mobile
-        touchMovedFlag = true;
-        updatePosition(e);
-    }, { passive: false });
-
-    window.addEventListener("mousemove", (e) => {
-        if (!isMovingCrosshair || gameOver) return;
-        touchMovedFlag = true;
-        updatePosition(e);
-    });
-
-    window.addEventListener("touchend", (e) => {
-        if (!isMovingCrosshair || gameOver) return;
-        isMovingCrosshair = false;
-        if (!touchMovedFlag) {
-            fireArcadePistol();
-        }
-    });
-
-    window.addEventListener("mouseup", (e) => {
-        if (!isMovingCrosshair || gameOver) return;
-        isMovingCrosshair = false;
-        if (!touchMovedFlag) {
-            fireArcadePistol();
-        }
-    });
-    window.addEventListener("touchmove", onMove, { passive: false });
-    window.addEventListener("touchend", onEnd);
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onEnd);
-
-    function fireArcadePistol() {
-        if (gameOver) return;
-        playSoundFX("shoot");
+    function triggerFire() {
+        if (isOver) return;
+        sound("zap");
         
-        if (crosshair) crosshair.style.borderColor = "white";
-        setTimeout(() => {
-            if (!gameOver && crosshair) crosshair.style.borderColor = "#00f0ff";
-        }, 70);
+        // Visual Snappy Kick Recoil Animation
+        flash.style.display = "block";
+        weapon.style.bottom = "-45px";
+        setTimeout(() => { 
+            flash.style.display = "none"; 
+            weapon.style.bottom = "-30px"; 
+        }, 60);
 
-        activeEnemies.forEach((enemyObj) => {
-            let e = enemyObj.element;
-            let r = enemyObj.ring;
-            let boardRect = board.getBoundingClientRect();
-            let eRect = e.getBoundingClientRect();
-            
-            let eX = eRect.left - boardRect.left;
-            let eY = eRect.top - boardRect.top;
-            
-            let centerScopeX = aimX + 15;
-            let centerScopeY = aimY + 15;
-            
-            if (centerScopeX >= eX && centerScopeX <= eX + 40 && centerScopeY >= eY && centerScopeY <= eY + 60) {
-                playSoundFX("hit");
+        let hitCenterXTarg = currentX + 16;
+        let hitCenterYTarg = currentY + 16;
+
+        // Check if shot box coordinates overlap any spawned threats
+        threatsList.forEach((t, index) => {
+            let tRect = t.el.getBoundingClientRect();
+            let areaRect = gameArea.getBoundingClientRect();
+            let tX = tRect.left - areaRect.left;
+            let tY = tRect.top - areaRect.top;
+
+            if (hitCenterXTarg >= tX && hitCenterXTarg <= tX + 40 && hitCenterYTarg >= tY && hitCenterYTarg <= tY + 60) {
+                sound("ding");
                 score += 100;
-                if (scoreTxt) scoreTxt.innerText = String(score).padStart(5, '0');
-                if (enemyObj.timeoutId) clearTimeout(enemyObj.timeoutId);
-                e.remove();
-                r.remove();
-                activeEnemies = activeEnemies.filter(item => item !== enemyObj);
+                scoreCounter.innerText = String(score).padStart(5, '0');
+                
+                t.el.remove();
+                t.ring.remove();
+                threatsList.splice(index, 1);
             }
         });
     }
 
-     function restartGame() {
-        // Clear all active tracking elements and intervals completely
-        if (spawnInt) clearInterval(spawnInt);
-        activeEnemies.forEach(obj => {
-            if (obj.element) obj.element.remove();
-            if (obj.ring) obj.ring.remove();
-        });
-        
-        activeEnemies = []; 
-        score = 200; 
-        aimX = 168; 
-        aimY = 218; 
-        carXOffset = 0;
-        isMovingCrosshair = false; 
-        gameOver = false;
-        
-        // Reset the inner layout elements without duplicates
-        board.innerHTML = `
-            <div id="scoreTxt">00200</div> 
-            <div class="skyline-left"></div> 
-            <div class="skyline-right"></div> 
-            <div class="road-surface"></div> 
-            <div id="getawayCar"> 
-                <div class="car-window"></div> 
-                <div class="car-light-l"></div> 
-                <div class="car-light-r"></div> 
-            </div> 
-            <div id="crosshair" style="left:168px; top:218px;"></div> 
-            <div id="gun"> 
-                <div class="gun-slide"></div> 
-                <div class="gun-hammer"></div> 
-                <div class="gun-frame"></div> 
-                <div class="gun-trigger-guard"></div> 
-                <div class="gun-grip"></div> 
-            </div>`;
+    function runEngineLoops() {
+        // 1. Core Vehicle & Threat Pin Synchronization Clock Loop
+        physicsTimerId = setInterval(() => {
+            if (isOver) return;
             
-        // Rebind the system nodes instantly to clear freezing locks
-        setTimeout(() => {
-            registerDeviceListeners();
-            initAudio();
-            startSpawner();
-        }, 50);
-    }
+            // Move car side to side smoothly
+            carPos += carDir;
+            if (carPos > 180 || carPos < 40) carDir *= -1;
+            car.style.left = carPos + "px";
 
-    setInterval(() => {
-        if (gameOver || !car) return;
-        carXOffset += carDirection * 1.5;
-        if (carXOffset > 70) carDirection = -1;
-        if (carXOffset < -70) carDirection = 1;
-        car.style.transform = `translateX(${carXOffset}px)`;
-    }, 30);
+            // Safely anchor out criminals and tracking rings right onto the car frame coordinates
+            threatsList.forEach((t) => {
+                let updatedX = carPos + t.sideOffset;
+                t.el.style.left = updatedX + "px";
+                t.ring.style.left = (updatedX + 20) + "px";
+            });
+        }, 30);
 
-    function startSpawner() {
-        // --- UPGRADED ARCADE COOLDOWN SPAWNER ACTION ---
-        spawnInt = setInterval(() => {
-            if (gameOver) { clearInterval(spawnInt); return; }
-            if (activeEnemies.length >= 4) return;
+        // 2. High-Speed Threat Generator Clock Loop
+        spawnTimerId = setInterval(() => {
+            if (isOver || threatsList.length >= 4) return;
+
+            let el = document.createElement("div");
+            el.className = "threat";
             
-            // Randomize spatial positioning variants across vehicle segments
-            let positionRoll = Math.random();
-            let side, currentY, innerHTML;
+            let roll = Math.random();
+            let sideOffset, topY, armClass;
             
-            if (positionRoll < 0.25) { // Left-side driver window
-                side = -25; currentY = 185;
-                innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm arm-left-side"></div><div class="human-weapon weapon-left-side"></div></div>';
-            } else if (positionRoll < 0.50) { // Right-side passenger window
-                side = 145; currentY = 185;
-                innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm arm-right-side"></div><div class="human-weapon weapon-right-side"></div></div>';
-            } else if (positionRoll < 0.75) { // Low left door position
-                side = -15; currentY = 210;
-                innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm arm-left-side"></div><div class="human-weapon weapon-left-side"></div></div>';
-            } else { // Low right door position
-                side = 135; currentY = 210;
-                innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm arm-right-side"></div><div class="human-weapon weapon-right-side"></div></div>';
-            }
-            
-            let enemy = document.createElement("div");
-            enemy.className = "humanoid";
-            enemy.innerHTML = innerHTML;
-            
-            let currentX = 110 + carXOffset + side;
-            enemy.style.cssText = `position:absolute; top:${currentY}px; left:${currentX}px; width:40px; height:60px; z-index: 5;`;
-            board.appendChild(enemy);
-            
+            if (roll < 0.25) { sideOffset = -25; topY = 185; armClass = "arm-l"; }
+            else if (roll < 0.5) { sideOffset = 145; topY = 185; armClass = "arm-r"; }
+            else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; }
+            else { sideOffset = 135; topY = 210; armClass = "arm-r"; }
+
+            el.innerHTML = `<div class="t-head"></div><div class="t-torso"><div class="t-arm ${armClass}"></div></div>`;
+            el.style.left = (carPos + sideOffset) + "px";
+            el.style.top = topY + "px";
+            gameArea.appendChild(el);
+
             let ring = document.createElement("div");
-            ring.className = "lockon-ring";
-            ring.style.cssText = `top:${currentY + 15}px; left:${currentX + 20}px;`;
-            board.appendChild(ring);
-            
-            let enemyObj = { element: enemy, ring: ring, side: side, currentY: currentY };
-            activeEnemies.push(enemyObj);
-            
-            let trackingInterval = setInterval(() => {
-                if (gameOver || !enemy.parentNode) {
-                    clearInterval(trackingInterval);
-                    return;
+            ring.className = "target-ring";
+            ring.style.left = (carPos + sideOffset + 20) + "px";
+            ring.style.top = (topY + 15) + "px";
+            gameArea.appendChild(ring);
+
+            let threatObj = { el: el, ring: ring, sideOffset: sideOffset };
+            threatsList.push(threatObj);
+
+            // Command locking ring shrinkage instantly
+            setTimeout(() => {
+                if (ring.parentNode) {
+                    ring.style.width = "35px"; 
+                    ring.style.height = "35px";
+                    ring.style.transform = "translate(-2px, -2px)";
                 }
-                let updatedX = 110 + carXOffset + side;
-                enemy.style.left = updatedX + "px";
-                ring.style.left = (updatedX + 2) + "px";
-            }, 30);
-            
-            enemyObj.timeoutId = setTimeout(() => {
-                if (gameOver || !enemy.parentNode) return;
-                playSoundFX("damage");
-                triggerGameOver();
-            }, 1400);
-        }, 1100);
-    }
-    function triggerGameOver() {
-        gameOver = true;
-        isMovingCrosshair = false;
-        activeEnemies.forEach(obj => {
-            if (obj.timeoutId) clearTimeout(obj.timeoutId);
-        });
-        
-        board.innerHTML = `
-            <div style='color:#ffea00; font-size:28px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:140px; font-family:monospace;'>
-                GAME OVER<br>
-                <span style='color:white; font-size:16px; font-weight:normal;'>Arcade Score: ${score}</span><br>
-                <button class='retry-btn' onclick='restartGame()'>CONTINUE 🪙</button>
-            </div>`;
+            }, 50);
+
+            // Timer monitoring lock closure: if countdown reaches 0, execute Game Over
+            setTimeout(() => {
+                if (!isOver && el.parentNode) {
+                    isOver = true;
+                    sound("boom");
+                    clearInterval(spawnTimerId);
+                    clearInterval(physicsTimerId);
+                    
+                    finalScore.innerText = "Arcade Score: " + score;
+                    overScreen.style.display = "flex";
+                }
+            }, 1350);
+
+        }, 1000); // Fast arcade generation cadence
     }
 
-    registerDeviceListeners();
-    startSpawner();
+    window.resetArcadeEngine = function() {
+        // Pure variable cleanup routines
+        clearInterval(spawnTimerId);
+        clearInterval(physicsTimerId);
+        
+        threatsList.forEach(t => { t.el.remove(); t.ring.remove(); });
+        threatsList = [];
+        
+        score = 200;
+        isOver = false;
+        carPos = 110;
+        carDir = 2;
+        currentX = 168;
+        currentY = 218;
+
+        scoreCounter.innerText = "00200";
+        sight.style.left = "168px";
+        sight.style.top = "218px";
+        weapon.style.transform = "rotate(15deg)";
+        overScreen.style.display = "none";
+
+        runEngineLoops();
+    };
+
+    // Spin up engine immediately upon app boot layout load
+    runEngineLoops();
 </script>
 </body>
 </html>
 """
 
 components.html(game_html, height=560)
-    
+
