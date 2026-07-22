@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 st.title("🚀 Mobile Space Shooter with Sound")
-st.write("Turn your sound up! Press **FIRE / ◀ / ▶** on mobile to play and restart.")
+st.write("Turn your sound up! Press **FIRE / ◀ / ▶** on mobile or **WASD / Space** on PC to play.")
 
 game_html = """
 <!DOCTYPE html>
@@ -119,12 +119,11 @@ game_html = """
     const bullets = [];
     const enemies = [];
     let score = 0;
+    let gameStarted = false; // Fixes blank browser safety state
     let gameOver = false;
     let spawnTimeout = null;
     
     const inputs = { left: false, right: false };
-
-    // Web Audio Synthesizer Engine
     let audioCtx = null;
 
     function initAudio() {
@@ -136,20 +135,15 @@ game_html = """
     function playLaserSound() {
         initAudio();
         if (!audioCtx) return;
-        
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
-        
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(440, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.15);
-        
         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        
         osc.start();
         osc.stop(audioCtx.currentTime + 0.15);
     }
@@ -157,26 +151,25 @@ game_html = """
     function playExplosionSound() {
         initAudio();
         if (!audioCtx) return;
-
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
-
         osc.type = "triangle";
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-
         gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start();
         osc.stop(audioCtx.currentTime + 0.3);
     }
 
-    // Centralized Restart Function
-    function checkAndRestart() {
+    function handleInteractionStart() {
+        if (!gameStarted) {
+            gameStarted = true;
+            resetGame();
+            return true;
+        }
         if (gameOver) {
             resetGame();
             return true;
@@ -186,12 +179,15 @@ game_html = """
 
     // Keyboard Bindings
     window.addEventListener("keydown", (e) => {
-        if (gameOver && e.key === "Enter") { resetGame(); return; }
+        if (!gameStarted || gameOver) {
+            if (e.key === "Enter" || e.key === " ") {
+                handleInteractionStart();
+            }
+            return;
+        }
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") inputs.left = true;
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = true;
-        if (e.key === " " || e.key === "Spacebar") {
-            if (!gameOver) fireBullet();
-        }
+        if (e.key === " " || e.key === "Spacebar") fireBullet();
     });
 
     window.addEventListener("keyup", (e) => {
@@ -199,14 +195,12 @@ game_html = """
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") inputs.right = false;
     });
 
-    // Device Touch Bindings
+    // Touch and Click Interactions
     function setupTouch(elementId, stateProperty) {
         const btn = document.getElementById(elementId);
-        
         btn.addEventListener("touchstart", (e) => {
             e.preventDefault();
-            initAudio(); 
-            if (checkAndRestart()) return;
+            if (handleInteractionStart()) return;
             inputs[stateProperty] = true;
         }, { passive: false });
 
@@ -226,19 +220,21 @@ game_html = """
 
     document.getElementById("fireBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
-        initAudio();
-        if (checkAndRestart()) return;
+        if (handleInteractionStart()) return;
         fireBullet();
     }, { passive: false });
 
+    // PC Click Handler / Mobile Canvas Fallback
+    canvas.addEventListener("mousedown", (e) => {
+        handleInteractionStart();
+    });
     canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
-        initAudio();
-        checkAndRestart();
+        handleInteractionStart();
     }, { passive: false });
 
     function spawnEnemy() {
-        if (gameOver) return;
+        if (!gameStarted || gameOver) return;
         const size = Math.random() * 15 + 20;
         const x = Math.random() * (canvas.width - size);
         enemies.push({ x: x, y: -size, width: size, height: size, speed: Math.random() * 1.5 + 1.5, color: "#f85149" });
@@ -257,10 +253,25 @@ game_html = """
         inputs.left = false;
         inputs.right = false;
         spawnEnemy();
-        update();
     }
 
-    function update() {
+    function drawLoop() {
+        // Menu Mode Rendering
+        if (!gameStarted) {
+            ctx.fillStyle = "#010409";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#58a6ff";
+            ctx.font = "bold 24px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("SPACE SHOOTER", canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("CLICK HERE OR TAP A BUTTON TO START", canvas.width / 2, canvas.height / 2 + 20);
+            requestAnimationFrame(drawLoop);
+            return;
+        }
+
+        // Death Layout Rendering
         if (gameOver) {
             ctx.fillStyle = "rgba(1, 4, 9, 0.85)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -270,10 +281,12 @@ game_html = """
             ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
             ctx.fillStyle = "#ffffff";
             ctx.font = "16px sans-serif";
-            ctx.fillText("Tap ANY Button to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Click Canvas or Tap Any Button to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            requestAnimationFrame(drawLoop);
             return;
         }
 
+        // Live Frame Computations
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (inputs.left && player.x > 0) player.x -= player.speed;
@@ -290,37 +303,37 @@ game_html = """
         for (let i = bullets.length - 1; i >= 0; i--) {
             bullets[i].y -= bullets[i].speed;
             if (bullets[i].y < 0) {
-                bullets.splice(i, 1);
-                continue;
-            }
-            ctx.fillStyle = bullets[i].color;
-            ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-        }
+bullets.splice(i, 1);
+continue;
+}
+ctx.fillStyle = bullets[i].color;
+ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+}
 
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            enemies[i].y += enemies[i].speed;
-            
-            if (enemies[i].y > canvas.height) {
-                gameOver = true;
-                playExplosionSound();
-            }
+for (let i = enemies.length - 1; i >= 0; i--) {
+enemies[i].y += enemies[i].speed;
 
-            ctx.fillStyle = enemies[i].color;
-            ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
+if (enemies[i].y > canvas.height) {
+gameOver = true;
+playExplosionSound();
+}
 
-            if (enemies[i].x < player.x + player.width &&
-                enemies[i].x + enemies[i].width > player.x &&
-                enemies[i].y < player.y + player.height &&
-                enemies[i].y + enemies[i].height > player.y) {
-                gameOver = true;
-                playExplosionSound();
-            }
+ctx.fillStyle = enemies[i].color;
+ctx.fillRect(enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height);
 
-            for (let j = bullets.length - 1; j >= 0; j--) {
-            if (bullets[j].x < enemies[i].x + enemies[i].width &&
+if (enemies[i].x < player.x + player.width &&
+enemies[i].x + enemies[i].width > player.x &&
+enemies[i].y < player.y + player.height &&
+enemies[i].y + enemies[i].height > player.y) {
+gameOver = true;
+playExplosionSound();
+}
+
+for (let j = bullets.length - 1; j >= 0; j--) {
+if (bullets[j].x < enemies[i].x + enemies[i].width &&
 bullets[j].x + bullets[j].width > enemies[i].x &&
 bullets[j].y < enemies[i].y + enemies[i].height &&
-bullets[j].y + bullets[j].height > enemies[i].y) {
+bullets[j].y + bullets[j].height > enemies[i].y) 
 
 enemies.splice(i, 1);
 bullets.splice(j, 1);
@@ -336,15 +349,11 @@ ctx.font = "bold 18px sans-serif";
 ctx.textAlign = "left";
 ctx.fillText(Score: ${score}, 15, 30);
 
-requestAnimationFrame(update);
+requestAnimationFrame(drawLoop);
 }
-
-resetGame();
-
+// Start rendering the title screen immediately
+drawLoop();
 
 """
 
 components.html(game_html, height=750, scrolling=False)
-            
-            
-
