@@ -272,17 +272,60 @@ game_html = """
         }
     }
 
-    function registerDeviceListeners() {
+ function registerDeviceListeners() {
         board = document.getElementById("board");
         crosshair = document.getElementById("crosshair");
         scoreTxt = document.getElementById("scoreTxt");
         gun = document.getElementById("gun");
         car = document.getElementById("getawayCar");
-        
-        board.addEventListener("touchstart", onStart, { passive: false });
-        board.addEventListener("mousedown", onStart);
     }
 
+    // Bind listeners to global window object so they never duplicate or crash
+    window.addEventListener("touchstart", (e) => {
+        // Only trigger if touching inside the arcade board arena
+        if (!board.contains(e.target) || gameOver) return;
+        initAudio();
+        isMovingCrosshair = true;
+        touchMovedFlag = false;
+        updatePosition(e);
+    }, { passive: false });
+
+    window.addEventListener("mousedown", (e) => {
+        if (!board.contains(e.target) || gameOver) return;
+        initAudio();
+        isMovingCrosshair = true;
+        touchMovedFlag = false;
+        updatePosition(e);
+    });
+
+    window.addEventListener("touchmove", (e) => {
+        if (!isMovingCrosshair || gameOver) return;
+        if (e.touches) e.preventDefault(); // Prevents screen pulling on mobile
+        touchMovedFlag = true;
+        updatePosition(e);
+    }, { passive: false });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isMovingCrosshair || gameOver) return;
+        touchMovedFlag = true;
+        updatePosition(e);
+    });
+
+    window.addEventListener("touchend", (e) => {
+        if (!isMovingCrosshair || gameOver) return;
+        isMovingCrosshair = false;
+        if (!touchMovedFlag) {
+            fireArcadePistol();
+        }
+    });
+
+    window.addEventListener("mouseup", (e) => {
+        if (!isMovingCrosshair || gameOver) return;
+        isMovingCrosshair = false;
+        if (!touchMovedFlag) {
+            fireArcadePistol();
+        }
+    });
     window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("touchend", onEnd);
     window.addEventListener("mousemove", onMove);
