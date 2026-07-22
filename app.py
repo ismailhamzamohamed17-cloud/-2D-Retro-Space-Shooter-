@@ -231,8 +231,10 @@ game_html = """
     }, { passive: false });
 
     // PC Click Handler / Mobile Canvas Fallback
-    canvas.addEventListener("mousedown", (e) => {
-        handleInteractionStart();
+      document.getElementById("menuScreen").addEventListener("click", () => {
+        document.getElementById("menuScreen").style.display = "none"; // Hide menu layer
+        gameStarted = true;
+        resetGame();
     });
     canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
