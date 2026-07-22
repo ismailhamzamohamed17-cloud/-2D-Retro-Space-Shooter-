@@ -12,12 +12,12 @@ game_html = """
     <style>
     body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
     
-    /* 1. Real Image Desert Horizon Viewport */
+    /* Layered 3D Desert Horizon (No external images) */
     #board { 
         position: relative; 
         width: 320px; 
         height: 350px; 
-        background: url('https://unsplash.com') center bottom/cover no-repeat; 
+        background: linear-gradient(to bottom, #ff9e7d 0%, #feb47b 40%, #e07a5f 70%, #d88060 100%); 
         border: 3px solid #444; 
         overflow: hidden; 
         margin: auto; 
@@ -26,21 +26,35 @@ game_html = """
         box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
     
-    /* 2. Realistic Sniper Rifle stock image overlay on the right side */
+    /* Realistic CSS Sand Dunes */
+    #board::before {
+        content: ''; position: absolute; bottom: 0; left: -40px; width: 220px; height: 120px; background: #c2593f; clip-path: polygon(0% 100%, 60% 15%, 100% 100%); opacity: 0.8; z-index: 1;
+    }
+    #board::after {
+        content: ''; position: absolute; bottom: 0; right: -40px; width: 240px; height: 100px; background: #a64630; clip-path: polygon(0% 100%, 35% 5%, 100% 100%); opacity: 0.9; z-index: 2;
+    }
+    
+    /* 3D Realistic Gun Shape on the Right Side */
     #gun {
         position: absolute;
-        bottom: -20px;
-        right: -10px;
-        width: 160px;
-        height: 180px;
-        background: url('https://unsplash.com') center center/contain no-repeat;
-        transform: rotate(-15deg);
+        bottom: -10px;
+        right: 10px;
+        width: 30px;
+        height: 140px;
+        background: linear-gradient(to right, #222, #111, #333);
+        transform: rotate(35deg);
+        transform-origin: bottom right;
         pointer-events: none;
         z-index: 25;
-        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7)) brightness(0.4);
+        border-radius: 4px;
+        box-shadow: -5px 5px 10px rgba(0,0,0,0.5);
+        will-change: transform;
+    }
+    #gun::after {
+        content: ''; position: absolute; top: -30px; left: 8px; width: 14px; height: 50px; background: #000; border-radius: 2px;
     }
 
-    /* Green Tactical Crosshair Scope Circle */
+    /* Green Tactical Crosshair Scope */
     #crosshair { 
         position: absolute; 
         top: 153px; 
@@ -57,17 +71,24 @@ game_html = """
     #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
     
     #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 16px; z-index: 30; background: rgba(255,255,255,0.7); padding: 3px 8px; border-radius: 4px; }
-    .retry-btn { margin-top: 100px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+    .retry-btn { margin-top: 20px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
     
-    /* 3. Realistic Moving Soldier Sprite Target */
+    /* Code-Generated Realistic Humanoid Figure Target */
     .humanoid { 
         position: absolute; 
         z-index: 5; 
         pointer-events: none; 
-        background: url('https://unsplash.com') center center/cover no-repeat;
-        border-radius: 4px;
-        filter: brightness(0.6) drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        will-change: left, top, width, height;
     }
+    .head { background: #1d1e2c; border-radius: 50%; width: 100%; height: 25%; }
+    .torso { background: #1d1e2c; width: 60%; height: 50%; border-radius: 4px; margin-top: 5%; position: relative; }
+    .limb-l { position: absolute; left: -30%; top: 10%; width: 30%; height: 80%; background: #1d1e2c; transform: rotate(15deg); }
+    .limb-r { position: absolute; right: -30%; top: 10%; width: 30%; height: 80%; background: #1d1e2c; transform: rotate(-15deg); }
+    .legs { display: flex; justify-content: space-around; width: 60%; height: 20%; margin-top: auto; }
+    .leg { background: #1d1e2c; width: 35%; height: 100%; }
 </style>
 </head>
 <body>
@@ -241,17 +262,19 @@ game_html = """
         }, 60);
     }
 
-    function startSpawner() {
+     function startSpawner() {
         spawnInt = setInterval(() => {
             if (gameOver) { clearInterval(spawnInt); return; }
             
+            // Build the humanoid target assembly using code shape nodes
             let h = document.createElement("div");
             h.className = "humanoid";
+            h.innerHTML = '<div class="head"></div><div class="torso"><div class="limb-l"></div><div class="limb-r"></div></div><div class="legs"><div class="leg"></div><div class="leg"></div></div>';
             
             let finalTrajectoryX = Math.random() * 240 + 30;
-            let currentWidth = 4; let currentHeight = 8;
+            let currentWidth = 6; let currentHeight = 12;
             
-            // Horizon lineup elevation starting points
+            // Set starting location at the desert horizon ridge line
             h.style.cssText = `position:absolute; top:190px; left:160px; width:${currentWidth}px; height:${currentHeight}px;`;
             board.appendChild(h); activeEnemies.push(h);
             
@@ -262,8 +285,8 @@ game_html = """
                 if (gameOver) { clearInterval(hInt); return; }
                 steps += 1;
                 
-                // Realistic 3D perspective sizing adjustments
-                currentWidth += 0.5; currentHeight += 1.0;
+                // Continuous 3D scaling loops
+                currentWidth += 0.45; currentHeight += 0.9;
                 
                 let speedX = (finalTrajectoryX - 160) / 95;
                 let positionX = 160 + (speedX * steps) - (currentWidth / 2);
