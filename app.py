@@ -12,75 +12,73 @@ game_html = '''
     <style>
         body { margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
         
-        /* Main 3D Arcade Arena Box Frame */
+        /* Main 3D Viewport View */
         #gameArea { 
             position: relative; width: 380px; height: 480px; 
             background: linear-gradient(to bottom, #4a777a 0%, #a1c4fd 40%, #727d8c 41%, #3a4454 100%); 
             border: 4px solid #444; overflow: hidden; margin: auto; border-radius: 16px; touch-action: none;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.7); perspective: 800px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.7); perspective: 600px;
         }
 
-        /* 🌲 DYNAMIC 3D SCENERY PROJECTIONS (Matrix Managed via JS Classes) */
-        .scenery-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
+        /* 🌆 PURE 3D ARCHITECTURE MAPPING LAYER */
+        #sceneryContainer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; }
         
-        /* 3D Roadway with high-density perspective grid */
-        .ground-3d { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; 
-            background: #434952; clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%); z-index: 2; 
-        }
-        .ground-3d::before { 
-            content: ''; position: absolute; top: 0; left: 50%; width: 10px; height: 100%; 
-            background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 30px, transparent 30px, transparent 60px); 
-            transform: translateX(-50%); opacity: 0.5; 
-        }
+        .b-3d-left { position: absolute; top: 40px; left: 0; width: 120px; height: 160px; background: linear-gradient(135deg, #1b263b, #0d1b2a); border-right: 4px solid #000; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
+        .b-3d-right { position: absolute; top: 30px; right: 0; width: 110px; height: 170px; background: linear-gradient(225deg, #14213d, #000814); border-left: 4px solid #000; box-shadow: -10px 0 20px rgba(0,0,0,0.5); }
+        
+        .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #434952, #2c3036); clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%); z-index: 2; }
+        .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 8px; height: 100%; background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 25px, transparent 25px, transparent 50px); transform: translateX(-50%); opacity: 0.4; }
 
-        /* Chapter 2: Detailed 3D Trees */
-        .tree-3d { position: absolute; bottom: 150px; width: 40px; height: 120px; z-index: 3; }
-        .tree-trunk { position: absolute; bottom: 0; left: 16px; width: 8px; height: 40px; background: linear-gradient(to right, #4a2c11, #2b1704); border-radius: 2px; }
-        .tree-foliage { position: absolute; bottom: 35px; left: 0; width: 40px; height: 85px; background: radial-gradient(circle at center, #2d6a4f, #1b4332); border-radius: 50% 50% 40% 40%; box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 0 8px 12px rgba(0,0,0,0.3); }
+        /* Chapter 2: Shaded 3D Trees */
+        .tree-3d { position: absolute; bottom: 160px; width: 50px; height: 130px; transform-style: preserve-3d; }
+        .tree-trunk { position: absolute; bottom: 0; left: 21px; width: 8px; height: 45px; background: linear-gradient(to right, #4a2c11, #2b1704); }
+        .tree-foliage { position: absolute; bottom: 40px; left: 0; width: 50px; height: 90px; background: radial-gradient(circle at center, #2d6a4f, #1b4332); border-radius: 50%; box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 0 8px 12px rgba(0,0,0,0.3); }
 
-        /* Chapter 5: Shipping Docks Containers */
-        .cargo-box { position: absolute; width: 70px; height: 50px; background: linear-gradient(135deg, #ae2012, #6a040f); border: 2px solid #370617; border-radius: 4px; box-shadow: -5px 10px 15px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(0,0,0,0.5); z-index: 3; }
-        .cargo-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.3) 6px, rgba(0,0,0,0.3) 8px); }
+        /* Chapter 5: Shipping Container Blocks */
+        .cargo-box { position: absolute; bottom: 140px; width: 75px; height: 55px; background: linear-gradient(135deg, #ae2012, #6a040f); border: 2px solid #222; border-radius: 4px; box-shadow: -5px 8px 15px rgba(0,0,0,0.4); }
+        .cargo-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 8px); }
 
-        /* Chapter 8: Supermarket Aisles */
-        .shelf-3d { position: absolute; width: 65px; height: 140px; background: linear-gradient(to right, #bc4749, #6a040f); border: 1px solid #333; z-index: 3; box-shadow: -8px 8px 16px rgba(0,0,0,0.5); }
-        .shelf-row { width: 100%; height: 20%; border-bottom: 3px solid #d8f3dc; background: repeating-linear-gradient(to right, #f77f00 0px, #f77f00 8px, #fcbf49 8px, #fcbf49 16px); }
-
-        /* 🚗 ULTRA-REALISTIC 3D SHADED GETAWAY SUV */
+        /* Chapter 8: Supermarket Shelves */
+        .shelf-3d { position: absolute; bottom: 130px; width: 65px; height: 130px; background: linear-gradient(to right, #bc4749, #6a040f); border: 2px solid #222; box-shadow: -6px 6px 12px rgba(0,0,0,0.4); }
+        .shelf-row { width: 100%; height: 25%; border-bottom: 2px solid #ddd; background: repeating-linear-gradient(to right, #f77f00 0px, #f77f00 6px, #fcbf49 6px, #fcbf49 12px); }
+                /* 🚗 TRUE 3D PROFILED SUV WITH ACTIVE MECHANICAL OPENING DOORS */
         #car {
             position: absolute; top: 175px; left: 110px; width: 160px; height: 105px;
-            background: linear-gradient(to bottom, #2b2d42, #1d1e2c, #0d0e15); border-radius: 14px 14px 6px 6px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.2); z-index: 4;
+            background: linear-gradient(to bottom, #2b2d42, #1d1e2c, #0d0e15); border-radius: 12px 12px 6px 6px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.6); z-index: 4;
             border: 1px solid #15161e; will-change: transform, left, top; transform-origin: center bottom;
         }
-        .window { position: absolute; top: 12px; left: 15px; width: 130px; height: 35px; background: linear-gradient(180deg, rgba(142,202,230,0.7) 0%, rgba(2,48,71,0.6) 100%); border-radius: 8px 8px 2px 2px; border: 2px solid #050505; box-shadow: inset 0 6px 6px rgba(255,255,255,0.2); }
-        .wheel { position: absolute; background: #0a0a0a; border-radius: 4px; box-shadow: inset 0 0 8px #000; border: 1.5px solid #222; }
-        .w-front-l { bottom: 12px; left: -8px; width: 10px; height: 26px; transform: rotate(-4deg); }
-        .w-front-r { bottom: 12px; right: -8px; width: 10px; height: 26px; transform: rotate(4deg); }
+        .window { position: absolute; top: 12px; left: 15px; width: 130px; height: 35px; background: linear-gradient(180deg, rgba(142,202,230,0.7), rgba(2,48,71,0.6)); border-radius: 8px 8px 2px 2px; border: 2px solid #050505; }
+        
+        /* 3D Wheel Profile Layout */
+        .wheel { position: absolute; background: #0e0e0e; border-radius: 4px; box-shadow: inset 0 0 8px #000; border: 1.5px solid #252525; }
+        .w-front-l { bottom: 12px; left: -8px; width: 10px; height: 28px; transform: rotate(-5deg); }
+        .w-front-r { bottom: 12px; right: -8px; width: 10px; height: 28px; transform: rotate(5deg); }
         .w-rear-l { bottom: -12px; left: 16px; width: 34px; height: 18px; }
         .w-rear-r { bottom: -12px; right: 16px; width: 34px; height: 18px; }
+        
+        /* Left and Right Side Mechanical Wings (Swing open dynamically when parked) */
+        .suv-door {
+            position: absolute; top: 48px; width: 22px; height: 45px; 
+            background: linear-gradient(to bottom, #1d1e2c, #0d0e15); border: 1.5px solid #000;
+            z-index: 5; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+        }
+        .door-l { left: -5px; border-radius: 4px 0 0 4px; transform-origin: right center; }
+        .door-r { right: -5px; border-radius: 0 4px 4px 0; transform-origin: left center; }
+        
+        /* Trigger states executed via Javascript engine injection classes */
+        #car.parked-open .door-l { transform: rotateY(-75deg) skewY(10deg); box-shadow: -8px 8px 15px rgba(0,0,0,0.6); }
+        #car.parked-open .door-r { transform: rotateY(75deg) skewY(-10deg); box-shadow: 8px 8px 15px rgba(0,0,0,0.6); }
+
         .light-l { position: absolute; bottom: 22px; left: 12px; width: 24px; height: 12px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 14px #ff4d6d; }
         .light-r { position: absolute; bottom: 22px; right: 12px; width: 24px; height: 14px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 14px #ff4d6d; }
-        /* 🔫 METALLIC SHADED TACTICAL PISTOL ON THE RIGHT SIDE */
-        #weapon {
-            position: absolute; bottom: -35px; right: 45px; width: 95px; height: 190px; 
-            transform: rotate(0deg); transform-origin: bottom center; pointer-events: none; z-index: 25; will-change: transform;
-        }
-        /* Heavy steel frame slide with metallic highlighting shadows */
-        .w-slide { 
-            position: absolute; top: 10px; left: -32px; width: 115px; height: 28px; 
-            background: linear-gradient(to bottom, #444 0%, #1c1c1c 45%, #0a0a0a 100%); border-radius: 5px 2px 2px 2px; border-bottom: 2px solid #000;
-            box-shadow: -5px 6px 12px rgba(0,0,0,0.6), inset 0 2px 3px rgba(255,255,255,0.2);
-        }
+
+        /* 🔫 3D-SHADED AUTOMATIC WEAPON INTERFACE LAYER */
+        #weapon { position: absolute; bottom: -35px; right: 45px; width: 95px; height: 190px; transform: rotate(0deg); transform-origin: bottom center; pointer-events: none; z-index: 25; will-change: transform; }
+        .w-slide { position: absolute; top: 10px; left: -32px; width: 115px; height: 28px; background: linear-gradient(to bottom, #444 0%, #1c1c1c 45%, #0a0a0a 100%); border-radius: 5px 2px 2px 2px; border-bottom: 2px solid #000; box-shadow: -5px 6px 12px rgba(0,0,0,0.6), inset 0 2px 3px rgba(255,255,255,0.2); }
         .w-slide::before { content: ''; position: absolute; left: -4px; top: 6px; width: 4px; height: 10px; background: #000; }
-        /* Ergonomic diamond-textured checking grip plate */
-        .w-grip { 
-            position: absolute; top: 36px; left: 26px; width: 36px; height: 115px; 
-            background: repeating-linear-gradient(45deg, #2b1e17, #2b1e17 2px, #140d0a 2px, #140d0a 4px);
-            border: 3px solid #050505; border-radius: 5px 6px 14px 6px; transform: rotate(-9deg);
-            box-shadow: -8px 8px 16px rgba(0,0,0,0.6);
-        }
+        .w-grip { position: absolute; top: 36px; left: 26px; width: 36px; height: 115px; background: repeating-linear-gradient(45deg, #2b1e17, #2b1e17 2px, #140d0a 2px, #140d0a 4px); border: 3px solid #050505; border-radius: 5px 6px 14px 6px; transform: rotate(-9deg); box-shadow: -8px 8px 16px rgba(0,0,0,0.6); }
         .w-frame { position: absolute; top: 34px; left: -16px; width: 52px; height: 26px; background: #1c1c1c; border-radius: 0 0 10px 4px; }
         .w-guard { position: absolute; top: 32px; left: -6px; width: 24px; height: 24px; border: 3px solid #1c1c1c; border-radius: 50%; }
         #flash { position: absolute; top: -12px; left: -38px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 10%, #ffea00 50%, transparent 75%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 8px #ffea00); }
@@ -90,8 +88,8 @@ game_html = '''
         #sight::after { content: ''; position: absolute; top: 0; left: 15px; width: 1px; height: 32px; background: #00f0ff; }
         .target-ring { position: absolute; width: 90px; height: 90px; border: 3px dashed #ffea00; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-30px, -30px); }
 
-        /* 🏃 SHADED 3D CRIMINAL THREAT MODULES */
-        .threat { position: absolute; width: 45px; height: 75px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; will-change: transform, top, left, opacity; }
+        /* 🏃 3D ARCADE THREAT STYLING */
+        .threat { position: absolute; width: 45px; height: 75px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; will-change: transform, top, left, opacity; transition: transform 0.4s ease-out, top 0.4s ease-out, opacity 0.4s ease-out; }
         .t-head { background: linear-gradient(135deg, #e0a96d, #b57a53); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #111; position: relative; }
         .t-head::before { content: ''; position: absolute; top: -2px; left: -1px; width: 26px; height: 10px; background: #2b1a08; border-radius: 12px 12px 0 0; }
         .t-eyes { position: absolute; top: 11px; left: 4px; width: 14px; height: 4px; display: flex; justify-content: space-between; }
@@ -100,56 +98,51 @@ game_html = '''
         .t-arm { position: absolute; top: 6px; width: 26px; height: 11px; background: #1d3557; border: 1.5px solid #111; border-radius: 3px; transform-origin: right center; }
         .arm-l { left: -16px; transform: rotate(-15deg); }
         .arm-r { right: -16px; transform: rotate(15deg); transform-origin: left center; }
-        .t-weapon { position: absolute; top: -2px; width: 14px; height: 11px; background: #222; border-radius: 2px; border-bottom: 1.5px solid #000; }
+        .t-weapon { position: absolute; top: -2px; width: 14px; height: 11px; background: linear-gradient(to bottom, #444, #111); border-radius: 2px; border-bottom: 1.5px solid #000; }
         .arm-l .t-weapon { left: -12px; } .arm-r .t-weapon { right: -12px; }
         .t-legs { display: flex; justify-content: space-around; width: 28px; height: 16px; margin-top: auto; }
         .t-leg { background: #212529; width: 9px; height: 100%; border-radius: 2px; border: 1px solid #000; animation: walkCycle 0.22s ease-in-out infinite alternate; }
         .t-leg:nth-child(2) { animation-delay: 0.11s; }
         @keyframes walkCycle { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 
-        /* 🩸 EXPLOSIVE BLOOD EFFUSIONS & POOLS */
+        /* 🩸 RAGDOLL SPRAY PARTICLES & BLOOD POOLS */
         .blood-drop { position: absolute; width: 4px; height: 4px; background: #94000d; border-radius: 50%; z-index: 12; pointer-events: none; animation: explodeBlood 0.35s ease-out forwards; }
         @keyframes explodeBlood { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--vx), var(--vy)) scale(0.3); opacity: 0; } }
-        
-        /* Persistent ground blood pool layout stay */
-        .blood-pool { 
-            position: absolute; width: 50px; height: 14px; background: radial-gradient(circle, #7a0006 20%, #4a0002 70%, transparent 100%); 
-            border-radius: 50%; z-index: 3; pointer-events: none; transform-origin: center center; opacity: 0; animation: spreadPool 1s ease-out forwards;
-        }
+        .blood-pool { position: absolute; width: 50px; height: 14px; background: radial-gradient(circle, #7a0006 20%, #4a0002 70%, transparent 100%); border-radius: 50%; z-index: 3; pointer-events: none; animation: spreadPool 1s ease-out forwards; }
         @keyframes spreadPool { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 0.85; } }
 
         /* HUD Panels */
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
-        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 13px; z-index: 30; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 6px; border: 1px solid #444; }
-        #targetTracker { position: absolute; top: 50px; right: 12px; color: #ff3333; font-weight: bold; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.75); padding: 3px 8px; border-radius: 4px; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 6px; border: 1px solid #444; }
+        #targetTracker { position: absolute; top: 50px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.75); padding: 3px 8px; border-radius: 4px; }
 
-        /* Overlay screens */
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
         #overScreen { background: rgba(0,0,0,0.9); }
         #intermissionScreen { background: rgba(0,0,0,0.85); }
         #winScreen { background: linear-gradient(135deg, rgba(29,53,87,0.95), rgba(69,123,157,0.95)); }
         
         .retry-btn { padding: 12px 28px; background: #e63946; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(230,57,70,0.5); }
-        .win-btn { padding: 12px 28px; background: #38b000; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(56,176,0,0.5); }
+        .win-btn { padding: 12px 28px; background: #ffea00; color: #000; font-size: 16px; font-weight: 'Arial Black'; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(255,234,0,0.5); }
         .intermission-title { color: #ffea00; font-size: 26px; font-weight: bold; text-shadow: 0 0 10px #ffea00; text-align: center; }
     </style>
 </head>
 <body>
     <div id="gameArea">
         <div id="scoreCounter">00200</div>
-        <div id="chapterTxt">CHAPTER 1/8</div>
+        <div id="chapterTxt">CH. 1: CITY STREETS</div>
         <div id="targetTracker">TARGETS CLEAR: 0/5</div>
         
-        <!-- Dynamic Scenery Nodes Layered for Depth -->
-        <div id="sceneryContainer" class="scenery-layer"></div>
+        <div id="sceneryContainer"></div>
         <div class="roadway"></div>
         
         <div id="car">
             <div class="wheel w-front-l"></div>
             <div class="wheel w-front-r"></div>
+            <div class="suv-door door-l"></div> <!-- Left mechanical swinging wing -->
             <div class="window"></div>
             <div class="light-l"></div>
             <div class="light-r"></div>
+            <div class="suv-door door-r"></div> <!-- Right mechanical swinging wing -->
             <div class="wheel w-rear-l"></div>
             <div class="wheel w-rear-r"></div>
         </div>
@@ -163,7 +156,6 @@ game_html = '''
             <div class="w-grip"></div>
         </div>
 
-        <!-- System Reset Overlay Panels -->
         <div id="overScreen">
             <div style="color:#ffea00; font-size:32px; font-weight:bold; text-shadow:0 0 8px red;">OUTPOST OVERRUN</div>
             <button class="retry-btn" onclick="resetArcadeEngine(true)">REDEPLOY FROM CH. 1 🔄</button>
@@ -171,7 +163,6 @@ game_html = '''
 
         <div id="intermissionScreen">
             <div class="intermission-title">MISSION ACCOMPLISHED! 🎉</div>
-            <div style="color:white; font-size:15px; margin-top:10px;">Outpost Sector Secured Successfully.</div>
             <button class="win-btn" onclick="advanceToNextChapter()">CONTINUE MISSION ➡️</button>
         </div>
 
@@ -232,7 +223,6 @@ game_html = '''
             gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
         } else if (type === "shout_aaa") {
-            // Explicit synthesized "AAA!" scream wave
             osc.type = "sawtooth"; osc.frequency.setValueAtTime(280, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(190, audioCtx.currentTime + 0.28);
             gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
@@ -241,7 +231,7 @@ game_html = '''
     }
 
     function aim(e) {
-        if (isOver) return;
+        if (isOver || intermissionScreen.style.display === "flex") return;
         let evt = e.touches ? e.touches[0] : e;
         let bounds = gameArea.getBoundingClientRect();
         currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
@@ -258,15 +248,15 @@ game_html = '''
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); triggerFire(); } });
-    // Map Meta Array dictionary mapping styles across all 8 locations
+        // FIXED: Complete 8-Chapter dictionary table handles independent map layers flawlessly
     const mapChapters = {
-        1: { name: "CITY STREETS", bg: "linear-gradient(to bottom, #4a777a, #a1c4fd 40%, #727d8c 41%, #3a4454)", road: "brightness(1)", code: "" },
+        1: { name: "CITY STREETS", bg: "linear-gradient(to bottom, #4a777a, #a1c4fd 40%, #727d8c 41%, #3a4454)", road: "none", code: "city" },
         2: { name: "DARK FOREST", bg: "linear-gradient(to bottom, #132a13, #3f5e30 40%, #283618 41%, #061105)", road: "brightness(0.5) sepia(0.4) hue-rotate(50deg)", code: "tree" },
         3: { name: "NEON CARNIVAL", bg: "linear-gradient(to bottom, #240046, #5a189a 40%, #3c096c 41%, #10002b)", road: "brightness(0.7) contrast(1.4) saturate(1.5)", code: "carnival" },
         4: { name: "AIRPORT RUNWAY", bg: "linear-gradient(to bottom, #ffb703, #fb8500 40%, #219ebc 41%, #023047)", road: "brightness(0.8) grayscale(0.2)", code: "airport" },
         5: { name: "SHIPPING DOCKS", bg: "linear-gradient(to bottom, #000814, #001d3d 40%, #003566 41%, #001d3d)", road: "brightness(0.4) contrast(1.1)", code: "docks" },
         6: { name: "HOTEL SUITE", bg: "linear-gradient(to bottom, #6a040f, #9d0208 40%, #370617 41%, #03071e)", road: "brightness(0.6) sepia(0.2)", code: "hotel" },
-        7: { name: "HOSPITAL WARD", bg: "linear-gradient(to bottom, #d8f3dc, #b7e4c7 40%, #74c69d 41%, #40916c)", road: "brightness(1.1) grayscale(0.5) invert(0.05)", code: "hospital" },
+        7: { name: "HOSPITAL WARD", bg: "linear-gradient(to bottom, #d8f3dc, #b7e4c7 40%, #74c69d 41%, #40916c)", road: "brightness(1.1) grayscale(0.5)", code: "hospital" },
         8: { name: "SUPERMARKET", bg: "linear-gradient(to bottom, #ffccd5, #ffb3c1 40%, #c9184a 41%, #800f2f)", road: "brightness(0.95) saturate(1.2)", code: "market" }
     };
 
@@ -278,21 +268,24 @@ game_html = '''
         gameArea.style.background = meta.bg;
         document.querySelector(".roadway").style.filter = meta.road;
         
-        // Wipe old items and build specialized 3D geometry nodes
+        // FIXED: Clear out former elements before painting alternative 3D projections
         sceneryContainer.innerHTML = "";
-        if (meta.code === "tree") {
-            sceneryContainer.innerHTML = '<div class="tree-3d" style="left:30px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:30px; bottom:130px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>';
+        if (meta.code === "city") {
+            sceneryContainer.innerHTML = '<div class="b-3d-left"></div><div class="b-3d-right"></div>';
+        } else if (meta.code === "tree") {
+            sceneryContainer.innerHTML = '<div class="tree-3d" style="left:25px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:25px; bottom:120px;"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>';
         } else if (meta.code === "docks") {
-            sceneryContainer.innerHTML = '<div class="cargo-box" style="left:20px; bottom:120px;"><div class="cargo-ribs"></div></div><div class="cargo-box" style="right:15px; bottom:150px; background:linear-gradient(135deg,#005f73,#0a9396);"><div class="cargo-ribs"></div></div>';
+            sceneryContainer.innerHTML = '<div class="cargo-box" style="left:20px; bottom:120px;"><div class="cargo-ribs"></div></div><div class="cargo-box" style="right:15px; bottom:140px; background:linear-gradient(135deg,#005f73,#0a9396);"><div class="cargo-ribs"></div></div>';
         } else if (meta.code === "market") {
             sceneryContainer.innerHTML = '<div class="shelf-3d" style="left:15px; bottom:110px;"><div class="shelf-row"></div><div class="shelf-row"></div></div><div class="shelf-3d" style="right:15px; bottom:110px;"><div class="shelf-row"></div><div class="shelf-row"></div></div>';
         } else if (meta.code === "hospital") {
-            sceneryContainer.innerHTML = '<div style="position:absolute; bottom:120px; left:20px; width:50px; height:30px; background:#fff; border:2px solid #aaa; border-radius:4px; z-index:3; box-shadow:0 6px 12px rgba(0,0,0,0.2);"></div>';
+            sceneryContainer.innerHTML = '<div style="position:absolute; bottom:120px; left:25px; width:55px; height:35px; background:#fff; border:2px solid #bbb; border-radius:4px; z-index:3; box-shadow:0 6px 12px rgba(0,0,0,0.15);"></div>';
+        } else if (meta.code === "carnival") {
+            sceneryContainer.innerHTML = '<div style="position:absolute; top:40px; left:50%; transform:translateX(-50%); color:#fff; font-size:11px; letter-spacing:4px; text-shadow:0 0 8px #ff00ff; z-index:2;">★ CARNIVAL ★</div>';
         }
     }
 
     function spawnBloodSpit(x, y) {
-        // Red pixel spray particles
         for (let i = 0; i < 10; i++) {
             let drop = document.createElement("div"); drop.className = "blood-drop";
             drop.style.left = x + "px"; drop.style.top = y + "px";
@@ -301,9 +294,8 @@ game_html = '''
             gameArea.appendChild(drop);
             setTimeout(() => drop.remove(), 350);
         }
-        // Pour out a dynamic pool below body center mass points
         let pool = document.createElement("div"); pool.className = "blood-pool";
-        pool.style.left = (x - 25) + "px"; pool.style.top = (y + 20) + "px";
+        pool.style.left = (x - 25) + "px"; pool.style.top = (y + 25) + "px";
         gameArea.appendChild(pool);
     }
 
@@ -325,32 +317,34 @@ game_html = '''
                 targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
 
                 t.ring.remove();
+                t.el.style.transform += " rotate(85deg)"; 
+                t.el.style.top = (parseFloat(t.el.style.top) + 25) + "px"; 
                 
-                // --- RAGDOLL PHYSICS: GRAVITY DEATH LEAN SLIDE ---
-                t.el.style.transform += " rotate(85deg)"; // Rotates flat onto ground
-                t.el.style.top = (parseFloat(t.el.style.top) + 25) + "px"; // Drops down
-                
-                // Chapter 6 Camera Transition modifier
+                // Chapter 6 Hotel: Shifts viewpoint target lanes on impact
                 if(mapChapters[activeChapter].code === "hotel") {
-                    setTimeout(() => { carPos = Math.random() * 80 + 70; }, 200);
+                    setTimeout(() => { carPos = Math.random() * 80 + 70; }, 150);
                 }
 
-                // LEVEL END GATE CONTEXT CHECKING
                 if (chapterKills >= maxNeeded) {
                     clearInterval(spawnTimerId); clearInterval(physicsTimerId);
                     if (activeChapter >= 8) { winScreen.style.display = "flex"; return; }
                     sound("level");
-                    intermissionScreen.style.display = "flex"; // Manual confirmation pause state
+                    intermissionScreen.style.display = "flex";
                 }
             }
         });
     }
-     function runEngineLoops() {
+
+    function runEngineLoops() {
         physicsTimerId = setInterval(() => {
             if (isOver) return;
             if (!carParked) {
-                distanceScale += 0.016; // Advanced driving zoom velocity parameters
-                if (distanceScale >= 1.0) { distanceScale = 1.0; carParked = true; }
+                distanceScale += 0.015; // 3D Approach acceleration speed
+                if (distanceScale >= 1.0) { 
+                    distanceScale = 1.0; 
+                    carParked = true; 
+                    car.classList.add("parked-open"); // FIXED: Forces the 3D doors to physically swing open on stop!
+                }
             }
 
             let currentTopY = 165 + (distanceScale * 45); 
@@ -358,7 +352,7 @@ game_html = '''
             car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
 
             threatsList.forEach((t) => {
-                if (t.isDying) return; // Retain ragdoll body pose flat on the pavement floor
+                if (t.isDying) return; 
                 let updatedX = carPos + (t.sideOffset * distanceScale);
                 let threatY = currentTopY + (t.baseTopY - 195) * distanceScale;
                 
@@ -411,31 +405,42 @@ game_html = '''
         }, 1100);
     }
 
-    // Wipes all blood pools, nodes, and traces between screen loads
     function clearDeadBodiesAndBlood() {
         document.querySelectorAll(".threat, .target-ring, .blood-pool, .blood-drop").forEach(el => el.remove());
         threatsList = [];
     }
-
     window.advanceToNextChapter = function() {
-        activeChapter += 1; chapterKills = 0;
+        activeChapter += 1; 
+        chapterKills = 0;
         intermissionScreen.style.display = "none";
         clearDeadBodiesAndBlood();
         resetArcadeEngine(false);
-    }
+    };
 
     window.resetArcadeEngine = function(resetFullCampaign) {
-        clearInterval(spawnTimerId); clearInterval(physicsTimerId);
+        clearInterval(spawnTimerId); 
+        clearInterval(physicsTimerId);
         clearDeadBodiesAndBlood();
         
-        if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; scoreCounter.innerText = "00200"; }
+        if (resetFullCampaign) { 
+            score = 200; 
+            activeChapter = 1; 
+            chapterKills = 0; 
+            scoreCounter.innerText = "00200"; 
+        }
         
         updateLevelAtmosphere();
-        isOver = false; distanceScale = 0.2; carParked = false; carPos = Math.random() * 80 + 70;
+        isOver = false; 
+        distanceScale = 0.2; 
+        carParked = false;
+        car.classList.remove("parked-open"); // Seal wings on drive boot
+        carPos = Math.random() * 80 + 70;
         
-        sight.style.left = "168px"; sight.style.top = "218px";
+        sight.style.left = "168px"; 
+        sight.style.top = "218px";
         weapon.style.transform = "rotate(0deg) translateX(0px) translateY(0px)";
-        overScreen.style.display = "none"; winScreen.style.display = "none";
+        overScreen.style.display = "none"; 
+        winScreen.style.display = "none";
         
         runEngineLoops();
     };
@@ -448,3 +453,7 @@ game_html = '''
 '''
 
 components.html(game_html, height=560)
+
+
+
+
