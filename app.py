@@ -342,3 +342,216 @@ game_html = """
 """
 
 components.html(game_html, height=560)
+let currentX = 168, currentY = 218, score = 200, isOver = false, activeChapter = 1;
+    let carPos = 110, carDir = 1.5, distanceScale = 0.2;
+    let threatsList = [];
+    let audioCtx = null, spawnTimerId = null, physicsTimerId = null;
+
+    const gameArea = document.getElementById("gameArea");
+    const sight = document.getElementById("sight");
+    const weapon = document.getElementById("weapon");
+    const flash = document.getElementById("flash");
+    const car = document.getElementById("car");
+    const scoreCounter = document.getElementById("scoreCounter");
+    const chapterTxt = document.getElementById("chapterTxt");
+    const overScreen = document.getElementById("overScreen");
+    const finalScore = document.getElementById("finalScore");
+
+    function setupAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function sound(type) {
+        setupAudio(); if (!audioCtx) return;
+        let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        
+        if (type === "zap") {
+            osc.type = "sawtooth"; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.14);
+            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.14);
+        } else if (type === "ding") {
+            osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1300, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+        } else if (type === "boom") {
+            osc.type = "sawtooth"; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+        }
+    }
+
+    function aim(e) {
+        if (isOver) return;
+        let evt = e.touches ? e.touches[0] : e;
+        let bounds = gameArea.getBoundingClientRect();
+        
+        currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
+        currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
+        
+        sight.style.left = currentX + "px";
+        sight.style.top = currentY + "px";
+        
+        let rotationAngle = (currentX - 168) / 15;
+        let horizontalShift = (currentX - 168) / 8;
+        let verticalShift = (currentY - 218) / 12;
+        weapon.style.transform = `rotate(${rotationAngle}deg) translateX(${horizontalShift}px) translateY(${verticalShift}px)`;
+    }
+
+    gameArea.addEventListener("mousemove", aim);
+    gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+    gameArea.addEventListener("mousedown", (e) => { if(e.target.className !== "retry-btn") triggerFire(); });
+    gameArea.addEventListener("touchstart", (e) => { if(e.target.className !== "retry-btn") { e.preventDefault(); triggerFire(); } });
+
+    function triggerFire() {
+        if (isOver) return;
+        sound("zap");
+        flash.style.display = "block";
+        setTimeout(() => { flash.style.display = "none"; }, 60);
+        
+        let hitCenterX = currentX + 16;
+        let hitCenterY = currentY + 16;
+
+        threatsList.forEach((t, index) => {
+            let tRect = t.el.getBoundingClientRect();
+            let areaRect = gameArea.getBoundingClientRect();
+            let tX = tRect.left - areaRect.left;
+            let tY = tRect.top - areaRect.top;
+            let tW = tRect.width;
+            let tH = tRect.height;
+
+            if (hitCenterX >= tX && hitCenterX <= tX + tW && hitCenterY >= tY && hitCenterY <= tY + tH) {
+                sound("ding");
+                score += 100;
+                scoreCounter.innerText = String(score).padStart(5, '0');
+
+                if (score >= 1200 && activeChapter === 2) {
+                    activeChapter = 3;
+                    chapterTxt.innerText = "CHAPTER 3: NIGHTTIME";
+                    gameArea.style.background = "linear-gradient(to bottom, #023047 0%, #03071e 40%, #141519 41%, #0b0c10 100%)";
+                    document.querySelectorAll(".building-l, .building-r, .roadway").forEach(el => el.style.filter = "brightness(0.3) contrast(1.2)");
+                } else if (score >= 600 && activeChapter === 1) {
+                    activeChapter = 2;
+                    chapterTxt.innerText = "CHAPTER 2: DUSK TIME";
+                    gameArea.style.background = "linear-gradient(to bottom, #f77f00 0%, #fcbf49 40%, #4a4e69 41%, #22223b 100%)";
+                    document.querySelectorAll(".building-l, .building-r, .roadway").forEach(el => el.style.filter = "brightness(0.6) sepia(0.3)");
+                }
+                
+                t.el.remove();
+                t.ring.remove();
+                threatsList.splice(index, 1);
+            }
+        });
+    }
+
+    function runEngineLoops() {
+        // 1. Core Vehicle & Threat Pin Synchronization 3D Loop
+        physicsTimerId = setInterval(() => {
+            if (isOver) return;
+            
+            distanceScale += 0.005;
+            if (distanceScale > 1.7) {
+                distanceScale = 0.2;
+                carPos = Math.random() * 100 + 60;
+            }
+            
+            let currentTopY = 165 + (distanceScale * 45);
+            car.style.transform = `scale(${distanceScale})`;
+            car.style.left = carPos + "px";
+            car.style.top = currentTopY + "px";
+
+            threatsList.forEach((t) => {
+                let updatedX = carPos + (t.sideOffset * distanceScale);
+                let threatY = currentTopY + (t.baseTopY - 195) * distanceScale;
+                
+                t.el.style.transform = `scale(${distanceScale})`;
+                t.el.style.left = updatedX + "px";
+                t.el.style.top = threatY + "px";
+                
+                t.ring.style.width = (90 * (1.3 - (t.age / 45))) + "px";
+                t.ring.style.height = (90 * (1.3 - (t.age / 45))) + "px";
+                let rSize = 90 * (1.3 - (t.age / 45));
+                t.ring.style.left = (updatedX + (20 * distanceScale) - (rSize / 2) + 15) + "px";
+                t.ring.style.top = (threatY + (15 * distanceScale) - (rSize / 2) + 30) + "px";
+                t.age += 1;
+            });
+        }, 30);
+
+        // 2. High-Speed Threat Generator Clock Loop
+        spawnTimerId = setInterval(() => {
+            if (isOver || threatsList.length >= 2) return;
+
+            let el = document.createElement("div");
+            el.className = "threat";
+            
+            let roll = Math.random();
+            let sideOffset, topY, armClass;
+            
+            if (roll < 0.25) { sideOffset = -25; topY = 185; armClass = "arm-l"; }
+            else if (roll < 0.5) { sideOffset = 145; topY = 185; armClass = "arm-r"; }
+            else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; }
+            else { sideOffset = 135; topY = 210; armClass = "arm-r"; }
+
+            el.innerHTML = `
+                <div class="t-head"><div class="t-eyes"></div></div> 
+                <div class="t-torso"><div class="t-arm ${armClass}"><div class="t-weapon"></div></div></div> 
+                <div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>`;
+                
+            let updatedX = carPos + (sideOffset * distanceScale);
+            let threatY = (165 + (distanceScale * 45)) + (topY - 195) * distanceScale;
+            
+            el.style.left = updatedX + "px";
+            el.style.top = threatY + "px";
+            el.style.transform = `scale(${distanceScale})`;
+            gameArea.appendChild(el);
+
+            let ring = document.createElement("div");
+            ring.className = "target-ring";
+            gameArea.appendChild(ring);
+
+            let threatObj = { el: el, ring: ring, sideOffset: sideOffset, baseTopY: topY, age: 0 };
+            threatsList.push(threatObj);
+
+            setTimeout(() => {
+                if (!isOver && el.parentNode) {
+                    isOver = true;
+                    sound("boom");
+                    clearInterval(spawnTimerId);
+                    clearInterval(physicsTimerId);
+                    finalScore.innerText = "Final Arcade Score: " + score;
+                    overScreen.style.display = "flex";
+                }
+            }, 1400);
+        }, 1200);
+    }
+
+    window.resetArcadeEngine = function() {
+        clearInterval(spawnTimerId);
+        clearInterval(physicsTimerId);
+        
+        threatsList.forEach(t => { t.el.remove(); t.ring.remove(); });
+        threatsList = [];
+        
+        score = 200; isOver = false; carPos = 110; distanceScale = 0.2; activeChapter = 1;
+        scoreCounter.innerText = "00200";
+        chapterTxt.innerText = "CHAPTER 1: MORNING";
+        gameArea.style.background = "linear-gradient(to bottom, #4a777a 0%, #a1c4fd 40%, #727d8c 41%, #3a4454 100%)";
+        document.querySelectorAll(".building-l, .building-r, .roadway").forEach(el => el.style.filter = "none");
+        
+        sight.style.left = "168px"; sight.style.top = "218px";
+        weapon.style.transform = "rotate(0deg) translateX(0px) translateY(0px)";
+        overScreen.style.display = "none";
+        
+        runEngineLoops();
+    };
+
+    runEngineLoops();
+</script>
+</body>
+</html>
+"""
+
+components.html(game_html, height=560)
