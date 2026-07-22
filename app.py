@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Cop Arcade", layout="centered")
-st.title("🚓 Virtua Arcade Shooter")
+st.set_page_config(page_title="Hamza shooting game", layout="centered")
+st.title("🚓 Shooting game made by Hamza")
 
 game_html = """
 <!DOCTYPE html>
