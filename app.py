@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Desert Outpost FPS", layout="centered")
-st.title("🏜️ Outpost Sniper Defense")
+st.set_page_config(page_title="Virtua Arcade FPS", layout="centered")
+st.title("🚓 Virtua Arcade Shooter")
 
 game_html = """
 <!DOCTYPE html>
@@ -12,12 +12,12 @@ game_html = """
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
         
-        /* 1. Maximized Screen Sizing Container Optimized for iPhone 17 Pro Max */
+        /* 1. Maximized Screen Sizing Container Optimized for Arcade Layout */
         #board { 
             position: relative; 
             width: 380px; 
             height: 480px; 
-            background: linear-gradient(to bottom, #ff9e7d 0%, #feb47b 40%, #e07a5f 70%, #d88060 100%); 
+            background: linear-gradient(to bottom, #7ca1d9 0%, #a1c4fd 40%, #8397a6 41%, #4e5d6c 100%); 
             border: 3px solid #555; 
             overflow: hidden; 
             margin: auto; 
@@ -26,111 +26,140 @@ game_html = """
             box-shadow: 0 12px 32px rgba(0,0,0,0.6);
         }
         
-        /* Deep background canyons and ground trenches */
-        #board::before {
-            content: ''; position: absolute; bottom: 0; left: -40px; width: 260px; height: 160px; background: #c2593f; clip-path: polygon(0% 100%, 60% 30%, 100% 100%); opacity: 0.8; z-index: 1; border-top: 2px solid #e07a5f;
+        /* City Grid Architecture Layout (Retro Skyscrapers & Road Perspective) */
+        .skyline-left {
+            position: absolute; top: 80px; left: 0; width: 140px; height: 120px;
+            background: repeating-linear-gradient(to bottom, #2b3a4a 0px, #2b3a4a 12px, transparent 12px, transparent 18px), #1e2936;
+            border-right: 4px solid #151d26; z-index: 1;
         }
-        #board::after {
-            content: ''; position: absolute; bottom: 0; right: -40px; width: 280px; height: 130px; background: #a64630; clip-path: polygon(0% 100%, 35% 15%, 100% 100%); opacity: 0.9; z-index: 2; border-top: 2px solid #c2593f;
+        .skyline-right {
+            position: absolute; top: 60px; right: 0; width: 120px; height: 140px;
+            background: repeating-linear-gradient(to right, #243b34 0px, #243b34 8px, #1a2924 8px, #1a2924 16px);
+            border-left: 4px solid #111; z-index: 1;
         }
-        
-        /* Underground Trench Lip Mask Overlay */
-        .trench-floor {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; background: #8c3523; z-index: 3; border-top: 4px solid #5e2114;
+        .road-surface {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 280px;
+            background: #555e6b; clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%); z-index: 2;
         }
-        
-        /* 2. Massive, Detailed Prominent 3D-Style Sniper Rifle Stock */
+        /* Road lane dash indicators */
+        .road-surface::before {
+            content: ''; position: absolute; top: 0; left: 50%; width: 6px; height: 100%;
+            background: repeating-linear-gradient(to bottom, #fff 0px, #fff 20px, transparent 20px, transparent 40px);
+            transform: translateX(-30%) skewX(-10deg); opacity: 0.6;
+        }
+
+        /* 2. Getaway Enemy Vehicle in the Center Lane */
+        #getawayCar {
+            position: absolute; top: 190px; left: 110px; width: 160px; height: 90px;
+            background: linear-gradient(to bottom, #222, #111); border-radius: 8px 8px 4px 4px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 4; will-change: transform;
+        }
+        /* Windshield / Windows zone */
+        .car-window {
+            position: absolute; top: 10px; left: 10px; width: 140px; height: 30px;
+            background: rgba(135, 206, 235, 0.4); border-radius: 4px; border: 2px solid #000;
+        }
+        /* Red brake taillights */
+        .car-light-l { position: absolute; bottom: 15px; left: 10px; width: 25px; height: 10px; background: red; border-radius: 2px; }
+        .car-light-r { position: absolute; bottom: 15px; right: 10px; width: 25px; height: 10px; background: red; border-radius: 2px; }
+
+        /* 3. Gun Positioned at the Bottom-Left Corner pointing up and right */
         #gun {
             position: absolute;
-            bottom: -35px;
-            right: 25px;
-            width: 60px;
-            height: 220px;
-            transform: rotate(28deg);
-            transform-origin: bottom right;
+            bottom: -30px;
+            left: 30px;
+            width: 80px;
+            height: 180px;
+            transform: rotate(-15deg);
+            transform-origin: bottom left;
             pointer-events: none;
             z-index: 25;
             will-change: transform;
         }
-        .gun-barrel {
-            position: absolute; top: -65px; left: 24px; width: 12px; height: 110px; 
-            background: linear-gradient(to right, #1a1a1a, #555, #2d2d2d); border-radius: 3px;
+        .gun-slide {
+            position: absolute; top: 10px; left: -10px; width: 110px; height: 26px; 
+            background: linear-gradient(to bottom, #333, #1f1f1f, #2b2b2b); border-radius: 2px 4px 2px 2px; border-bottom: 2px solid #111;
         }
-        .gun-muzzle {
-            position: absolute; top: -80px; left: 21px; width: 18px; height: 16px; 
-            background: #0a0a0a; border-radius: 2px;
+        .gun-hammer {
+            position: absolute; top: 6px; left: -14px; width: 10px; height: 14px; background: #111; border-radius: 50% 50% 0 0; transform: rotate(-35deg);
         }
-        .gun-receiver {
-            position: absolute; top: 40px; left: 10px; width: 38px; height: 100px; 
-            background: linear-gradient(to right, #222, #3d3d3d, #1a1a1a); border-radius: 6px;
-            box-shadow: -8px 8px 16px rgba(0,0,0,0.7);
+        .gun-grip {
+            position: absolute; top: 34px; left: 10px; width: 34px; height: 110px; 
+            background: repeating-linear-gradient(45deg, #4a3319, #4a3319 2px, #332211 2px, #332211 4px);
+            border: 3px solid #1a1a1a; border-radius: 6px 4px 6px 12px; transform: rotate(10deg);
         }
-        .gun-scope-tube {
-            position: absolute; top: 15px; left: -4px; width: 16px; height: 65px; 
-            background: linear-gradient(to right, #111, #444, #222); border-radius: 3px;
+        .gun-frame {
+            position: absolute; top: 32px; left: 10px; width: 50px; height: 25px; background: #1f1f1f;
         }
-        .gun-stock {
-            position: absolute; top: 140px; left: 16px; width: 32px; height: 80px; 
-            background: linear-gradient(to right, #151515, #2a2a2a); border-radius: 4px;
+        .gun-trigger-guard {
+            position: absolute; top: 30px; left: 35px; width: 22px; height: 22px; border: 3px solid #1f1f1f; border-radius: 50%;
         }
 
-        /* Green Tactical Sniper Crosshair Scope Circle */
+        /* Tactical Crosshair Scope Circle */
         #crosshair { 
-            position: absolute; 
-            top: 218px; 
-            left: 168px; 
-            width: 44px; 
-            height: 44px; 
-            border: 2px solid #00ff66; 
-            border-radius: 50%; 
-            will-change: left, top; 
-            z-index: 15; 
-            pointer-events: none;
+            position: absolute; top: 218px; left: 168px; width: 30px; height: 30px; 
+            border: 2px solid #388bfd; border-radius: 50%; will-change: left, top; z-index: 15; pointer-events: none;
         }
-        #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
-        #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
+        #crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 1px; background: #388bfd; }
+        #crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 1px; height: 30px; background: #388bfd; }
         
-        #scoreTxt { position: absolute; top: 12px; left: 12px; color: #00ff66; font-weight: bold; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.75); padding: 4px 10px; border: 1px solid #444; border-radius: 6px; }
-        .retry-btn { margin-top: 30px; padding: 12px 28px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(231,111,81,0.4); }
-        
-        /* 3. Code-Generated Realistic Human Sapper Enemies */
+        /* 4. Virtua Cop Retro Yellow Locking Target Ring */
+        .lockon-ring {
+            position: absolute; border: 3px dashed #ffea00; border-radius: 50%;
+            pointer-events: none; z-index: 10; animation: shrinkLock 1.5s linear infinite;
+            will-change: width, height, left, top;
+        }
+        @keyframes shrinkLock {
+            0% { width: 90px; height: 90px; transform: translate(-30px, -30px); opacity: 1; }
+            100% { width: 35px; height: 35px; transform: translate(-2px, -2px); opacity: 0.8; }
+        }
+
+        /* 5. Arcade Criminal / Threat Target leaning out of car */
         .humanoid { 
-            position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; will-change: left, top, width, height;
+            position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; will-change: left, top;
         }
-        /* Caucasian / Desert camouflage skin-tone mapping elements */
-        .human-head { background: #e0a96d; border-radius: 50%; width: 100%; height: 25%; box-shadow: inset -1px -1px 2px rgba(0,0,0,0.2); }
-        /* Combat fatigue torso clothing layer */
-        .human-torso { background: #4f5d2f; width: 65%; height: 50%; border-radius: 3px; margin-top: 3%; position: relative; }
-        /* Moving human arms arms */
-        .human-arm-l { position: absolute; left: -35%; top: 10%; width: 35%; height: 90%; background: #4f5d2f; transform: rotate(20deg); transform-origin: top right; border-radius: 2px; }
-        .human-arm-r { position: absolute; right: -35%; top: 10%; width: 35%; height: 90%; background: #4f5d2f; transform: rotate(-20deg); transform-origin: top left; border-radius: 2px; }
-        /* Combat trousers & boots legs structure */
-        .human-legs { display: flex; justify-content: space-around; width: 65%; height: 22%; margin-top: auto; }
-        .human-leg { background: #35401b; width: 40%; height: 100%; border-radius: 1px; }
+        .human-head { background: #e0a96d; border-radius: 50%; width: 24px; height: 24px; border: 1px solid #000; }
+        .human-torso { background: #d90429; width: 32px; height: 40px; border-radius: 4px; margin-top: 2px; position: relative; border: 1px solid #000; }
+        /* Arms pointing weapon toward player */
+        .human-arm { position: absolute; left: -15px; top: 5px; width: 25px; height: 10px; background: #d90429; border: 1px solid #000; transform: rotate(-10deg); }
+        .human-weapon { position: absolute; left: -24px; top: 0px; width: 12px; height: 10px; background: #222; }
+
+        #scoreTxt { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: monospace; font-size: 20px; z-index: 30; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 4px; border: 2px solid #555; }
+        .retry-btn { margin-top: 30px; padding: 12px 28px; background: #d90429; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(217,4,41,0.5); }
     </style>
 </head>
 <body>
 
     <div id="board">
-        <div id="scoreTxt">Score: 0</div>
+        <div id="scoreTxt">00200</div>
+        <div class="skyline-left"></div>
+        <div class="skyline-right"></div>
+        <div class="road-surface"></div>
+        
+        <!-- Getaway Car Setup -->
+        <div id="getawayCar">
+            <div class="car-window"></div>
+            <div class="car-light-l"></div>
+            <div class="car-light-r"></div>
+        </div>
+
         <div id="crosshair"></div>
         <div id="gun">
-            <div class="gun-muzzle"></div>
-            <div class="gun-barrel"></div>
-            <div class="gun-scope-tube"></div>
-            <div class="gun-receiver"></div>
-            <div class="gun-stock"></div>
+            <div class="gun-hammer"></div>
+            <div class="gun-slide"></div>
+            <div class="gun-frame"></div>
+            <div class="gun-trigger-guard"></div>
+            <div class="gun-grip"></div>
         </div>
-        <div class="trench-floor"></div> <!-- Structural ground line barrier -->
     </div>
 
-    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 15px; font-family: sans-serif; line-height: 1.4; padding: 0 10px;">
-        🎮 <b>Drag anywhere inside the box</b> to sweep your close-up sniper rifle scope.<br>
-        🎯 <b>Tap cleanly once without dragging</b> to eliminate targets running from trenches!
+    <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 15px; font-family: sans-serif; line-height: 1.4;">
+        🕹️ <b>Drag anywhere inside the box</b> to guide your weapon sight scope.<br>
+        💥 <b>Tap cleanly once without dragging</b> to shoot targets before the ring locks!
     </p>
 
 <script>
-    let aimX = 168; let aimY = 218; let score = 0; let gameOver = false;
+    let aimX = 168; let aimY = 218; let score = 200; let gameOver = false;
     let isMovingCrosshair = false;
     let touchMovedFlag = false;
     
@@ -138,31 +167,14 @@ game_html = """
     let crosshair = document.getElementById("crosshair");
     let scoreTxt = document.getElementById("scoreTxt");
     let gun = document.getElementById("gun");
+    let car = document.getElementById("getawayCar");
     
     let activeEnemies = [];
-    let audioCtx = null; let spawnInt = null; let bgLoop = null;
+    let audioCtx = null; let spawnInt = null; let carXOffset = 0; let carDirection = 1;
 
     function initAudio() {
         if (audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        startSynthAmbientMusic();
-    }
-
-    function startSynthAmbientMusic() {
-        try {
-            let osc1 = audioCtx.createOscillator(); let osc2 = audioCtx.createOscillator();
-            bgLoop = audioCtx.createGain();
-            osc1.type = "sine"; osc1.frequency.setValueAtTime(60.00, audioCtx.currentTime);
-            osc2.type = "sine"; osc2.frequency.setValueAtTime(90.00, audioCtx.currentTime);
-            bgLoop.gain.setValueAtTime(0.03, audioCtx.currentTime);
-            osc1.connect(bgLoop); osc2.connect(bgLoop);
-            bgLoop.connect(audioCtx.destination);
-            osc1.start(); osc2.start();
-        } catch(e) {}
-    }
-
-    function stopSynthAmbientMusic() {
-        if (bgLoop) { try { audioCtx.close(); audioCtx = null; } catch(e){} }
     }
 
     function playSoundFX(type) {
@@ -170,27 +182,27 @@ game_html = """
         let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
 
-        if (type === "sniper") {
+        if (type === "shoot") { // Arcade gun snap explosion discharge
             osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(700, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2);
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        } 
-        else if (type === "shout") { // Aggressive soldier shout warning indicator frequencies
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(340, audioCtx.currentTime + 0.08);
-            osc.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.25);
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-        }
-        else if (type === "hit") {
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        } 
+        else if (type === "hit") { // Retro point score indicator echo sound wave
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+        else if (type === "damage") { // Heavy synth hit alert crash
+            osc.type = "sawtooth";
+                        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            osc.start(); 
+            osc.stop(audioCtx.currentTime + 0.3);
         }
     }
 
@@ -199,16 +211,20 @@ game_html = """
         let pointer = e.touches ? e.touches[0] : e;
         let boardRect = board.getBoundingClientRect();
         
-        aimX = Math.max(-10, Math.min(345, pointer.clientX - boardRect.left - 22));
-        aimY = Math.max(-10, Math.min(445, pointer.clientY - boardRect.top - 22));
+        aimX = Math.max(-10, Math.min(345, pointer.clientX - boardRect.left - 15));
+        aimY = Math.max(-10, Math.min(445, pointer.clientY - boardRect.top - 15));
         
-        if(crosshair) {
+        if (crosshair) {
             crosshair.style.left = aimX + "px";
             crosshair.style.top = aimY + "px";
         }
-                // Massive immersive recoil sweep linking rifle rotation to aiming vector parameters
+        
+        // Pivot weapon barrel on the bottom left corner to point directly at your crosshair
         if (gun) {
-            gun.style.transform = `rotate(${28 + (aimX - 168) / 20}deg) translateX(${(aimX - 168) / 12}px) translateY(${(aimY - 218) / 18}px)`;
+            let dx = aimX - 50;
+            let dy = 450 - aimY;
+            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            gun.style.transform = `rotate(${-90 + angle}deg)`;
         }
     }
 
@@ -231,7 +247,7 @@ game_html = """
         if (!isMovingCrosshair || gameOver) return;
         isMovingCrosshair = false;
         if (!touchMovedFlag) {
-            fireSniperRifle();
+            fireArcadePistol();
         }
     }
 
@@ -240,6 +256,7 @@ game_html = """
         crosshair = document.getElementById("crosshair");
         scoreTxt = document.getElementById("scoreTxt");
         gun = document.getElementById("gun");
+        car = document.getElementById("getawayCar");
         
         board.addEventListener("touchstart", onStart, { passive: false });
         board.addEventListener("mousedown", onStart);
@@ -250,65 +267,72 @@ game_html = """
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onEnd);
 
-    function fireSniperRifle() {
+    function fireArcadePistol() {
         if (gameOver) return;
-        playSoundFX("sniper");
+        playSoundFX("shoot");
         
-        if (crosshair) crosshair.style.borderColor = "#ff0055";
+        if (crosshair) crosshair.style.borderColor = "white";
         setTimeout(() => { 
-            if (!gameOver && crosshair) crosshair.style.borderColor = "#00ff66"; 
+            if (!gameOver && crosshair) crosshair.style.borderColor = "#388bfd"; 
         }, 70);
 
-        activeEnemies.forEach((e) => {
-            let eX = parseFloat(e.style.left) || 0;
-            let eY = parseFloat(e.style.top) || 0;
-            let eW = parseFloat(e.style.width) || 0;
-            let eH = parseFloat(e.style.height) || 0;
+        activeEnemies.forEach((enemyObj) => {
+            let e = enemyObj.element;
+            let r = enemyObj.ring;
+            let boardRect = board.getBoundingClientRect();
+            let eRect = e.getBoundingClientRect();
             
-            let centerTargetX = eX + (eW / 2);
-            let centerTargetY = eY + (eH / 2);
-            let centerScopeX = aimX + 22;
-            let centerScopeY = aimY + 22;
+            let eX = eRect.left - boardRect.left;
+            let eY = eRect.top - boardRect.top;
+            
+            let centerScopeX = aimX + 15;
+            let centerScopeY = aimY + 15;
 
-            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 16) && Math.abs(centerScopeY - centerTargetY) < (eH / 2 + 16) && eW > 6) {
+            // Box collision parameters to verify accurate arcade hit bounds
+            if (centerScopeX >= eX && centerScopeX <= eX + 40 && centerScopeY >= eY && centerScopeY <= eY + 60) {
                 playSoundFX("hit");
-                score += 10;
-                if (scoreTxt) scoreTxt.innerText = "Score: " + score;
-                if (e.intervalId) clearInterval(e.intervalId);
+                score += 100;
+                if (scoreTxt) scoreTxt.innerText = String(score).padStart(5, '0');
+                if (enemyObj.timeoutId) clearTimeout(enemyObj.timeoutId);
                 e.remove();
-                activeEnemies = activeEnemies.filter(item => item !== e);
+                r.remove();
+                activeEnemies = activeEnemies.filter(item => item !== enemyObj);
             }
         });
     }
 
     function restartGame() {
-        stopSynthAmbientMusic();
         if (spawnInt) clearInterval(spawnInt);
-        
-        activeEnemies.forEach(e => { 
-            if (e.intervalId) clearInterval(e.intervalId); 
-            e.remove(); 
+        activeEnemies.forEach(obj => { 
+            obj.element.remove(); 
+            obj.ring.remove(); 
         });
         
         activeEnemies = []; 
-        score = 0; 
+        score = 200; 
         aimX = 168; 
         aimY = 218; 
         isMovingCrosshair = false; 
         gameOver = false;
-
-        // Re-inject pristine clean layout structural frames
+        
         board.innerHTML = `
-            <div id="scoreTxt">Score: 0</div> 
-            <div id="crosshair" style="left: 168px; top: 218px;"></div> 
-            <div id="gun"> 
-                <div class="gun-muzzle"></div> 
-                <div class="gun-barrel"></div> 
-                <div class="gun-scope-tube"></div> 
-                <div class="gun-receiver"></div> 
-                <div class="gun-stock"></div> 
+            <div id="scoreTxt">00200</div> 
+            <div class="skyline-left"></div> 
+            <div class="skyline-right"></div> 
+            <div class="road-surface"></div> 
+            <div id="getawayCar"> 
+                <div class="car-window"></div> 
+                <div class="car-light-l"></div> 
+                <div class="car-light-r"></div> 
             </div> 
-            <div class="trench-floor"></div>`;
+            <div id="crosshair" style="left:168px; top:218px;"></div> 
+            <div id="gun"> 
+                <div class="gun-hammer"></div> 
+                <div class="gun-slide"></div> 
+                <div class="gun-frame"></div> 
+                <div class="gun-trigger-guard"></div> 
+                <div class="gun-grip"></div> 
+            </div>`;
             
         setTimeout(() => {
             registerDeviceListeners();
@@ -317,71 +341,76 @@ game_html = """
         }, 60);
     }
 
+    // Horizontal car drifting vector mechanics engine loop
+    setInterval(() => {
+        if (gameOver || !car) return;
+        carXOffset += carDirection * 1.5;
+        if (carXOffset > 70) carDirection = -1;
+        if (carXOffset < -70) carDirection = 1;
+        car.style.transform = `translateX(${carXOffset}px)`;
+    }, 30);
+
     function startSpawner() {
         spawnInt = setInterval(() => {
             if (gameOver) { 
                 clearInterval(spawnInt); 
                 return; 
             }
+            if (activeEnemies.length >= 2) return; // Cap maximum simultaneous criminal window spawns
             
-            let h = document.createElement("div");
-            h.className = "humanoid";
-            h.innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm-l"></div><div class="human-arm-r"></div></div><div class="human-legs"><div class="human-leg"></div><div class="human-leg"></div></div>';
+            let enemy = document.createElement("div");
+            enemy.className = "humanoid";
+            enemy.innerHTML = '<div class="human-head"></div><div class="human-torso"><div class="human-arm"></div><div class="human-weapon"></div></div>';
             
-            let finalTrajectoryX = Math.random() * 280 + 40;
-            let currentWidth = 8; 
-            let currentHeight = 16;
+            // Randomly lean criminal model left or right out of car trunk windows
+            let side = Math.random() > 0.5 ? -25 : 145;
+            let currentX = 110 + carXOffset + side;
+            let currentY = 185;
             
-            // FIXED: Enemies spawn underground inside trench horizons (top:370px instead of sky top:190px)
-            h.style.cssText = `position:absolute; top:370px; left:190px; width:${currentWidth}px; height:${currentHeight}px;`;
+            enemy.style.cssText = `position:absolute; top:${currentY}px; left:${currentX}px; width:40px; height:60px; z-index: 5;`;
+            board.appendChild(enemy);
             
-            // Append target nodes underneath trench lip barrier to make them rise up realistically
-            board.insertBefore(h, document.querySelector(".trench-floor"));
-            activeEnemies.push(h);
+            // Build retro yellow locking ring layer around spawned target element
+            let ring = document.createElement("div");
+            ring.className = "lockon-ring";
+            ring.style.cssText = `top:${currentY + 15}px; left:${currentX + 20}px;`;
+            board.appendChild(ring);
             
-            playSoundFX("shout");
+            let enemyObj = { element: enemy, ring: ring, side: side };
+            activeEnemies.push(enemyObj);
             
-            let steps = 0;
-            let hInt = setInterval(() => {
-                if (gameOver) { 
-                    clearInterval(hInt); 
+            // Continuously pin criminals and rings securely onto the moving car frame coords
+            let trackingInterval = setInterval(() => {
+                if (gameOver || !enemy.parentNode) { 
+                    clearInterval(trackingInterval); 
                     return; 
                 }
-                
-                steps += 1;
-                // Continuous 3D perspective scaling vectors running upwards/outwards towards screen
-                currentWidth += 0.55; 
-                currentHeight += 1.1;
-                
-                let speedX = (finalTrajectoryX - 190) / 85;
-                let positionX = 190 + (speedX * steps) - (currentWidth / 2);
-                // Moves upwards and out from underground trench parameters dynamically
-                let positionY = 370 - (2.2 * steps) - (currentHeight / 2);
-                
-                h.style.width = currentWidth + "px";
-                h.style.height = currentHeight + "px";
-                h.style.left = positionX + "px";
-                h.style.top = positionY + "px";
-                h.intervalId = hInt;
-                
-                // If a human sapper breaks your defensive threshold perimeter context line, fail mission
-                if (positionY < 120) {
-                    triggerGameOver();
-                    clearInterval(hInt);
-                }
+                let updatedX = 110 + carXOffset + side;
+                enemy.style.left = updatedX + "px";
+                ring.style.left = (updatedX + 2) + "px";
             }, 30);
-        }, 1400);
+            
+            // Timer countdown checking lock state: if loop reaches zero, take structural damage
+            enemyObj.timeoutId = setTimeout(() => {
+                if (gameOver || !enemy.parentNode) return;
+                playSoundFX("damage");
+                triggerGameOver();
+            }, 1500);
+        }, 1800);
     }
 
     function triggerGameOver() {
         gameOver = true; 
         isMovingCrosshair = false;
-        stopSynthAmbientMusic();
+        activeEnemies.forEach(obj => { 
+            if (obj.timeoutId) clearTimeout(obj.timeoutId); 
+        });
+        
         board.innerHTML = `
-            <div style='color:#b7094c; font-size:26px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:140px;'> 
-                OUTPOST OVERRUN<br> 
-                <span style='color:white; font-size:16px; font-weight:normal;'>Enemies Neutralized: ${score / 10}</span><br> 
-                <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button> 
+            <div style='color:#ffea00; font-size:28px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:140px; font-family:monospace;'> 
+                GAME OVER<br> 
+                <span style='color:white; font-size:16px; font-weight:normal;'>Arcade Score: ${score}</span><br> 
+                <button class='retry-btn' onclick='restartGame()'>CONTINUE 🪙</button> 
             </div>`;
     }
 
@@ -393,5 +422,3 @@ game_html = """
 """
 
 components.html(game_html, height=560)
-
-        
