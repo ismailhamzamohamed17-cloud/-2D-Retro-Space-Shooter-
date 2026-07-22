@@ -10,64 +10,72 @@ game_html = """
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
-        
-        /* 3D Horizon Desert Landscape Viewport */
-        #board { 
-            position: relative; 
-            width: 320px; 
-            height: 350px; 
-            background: linear-gradient(to bottom, #ff9e7d 0%, #ffcad4 40%, #e07a5f 65%, #f4a261 100%); 
-            border: 3px solid #444; 
-            overflow: hidden; 
-            margin: auto; 
-            border-radius: 12px; 
-            touch-action: none;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        }
-        
-        /* Perspective sand dunes */
-        #board::before {
-            content: ''; position: absolute; bottom: 0; left: -40px; width: 220px; height: 110px; background: #c2593f; clip-path: polygon(0% 100%, 60% 15%, 100% 100%); opacity: 0.8; z-index: 1;
-        }
-        #board::after {
-            content: ''; position: absolute; bottom: 0; right: -40px; width: 240px; height: 95px; background: #a64630; clip-path: polygon(0% 100%, 35% 5%, 100% 100%); opacity: 0.9; z-index: 2;
-        }
+    body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; background: #010409; }
+    
+    /* 1. Real Image Desert Horizon Viewport */
+    #board { 
+        position: relative; 
+        width: 320px; 
+        height: 350px; 
+        background: url('https://unsplash.com') center bottom/cover no-repeat; 
+        border: 3px solid #444; 
+        overflow: hidden; 
+        margin: auto; 
+        border-radius: 12px; 
+        touch-action: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    
+    /* 2. Realistic Sniper Rifle stock image overlay on the right side */
+    #gun {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        width: 160px;
+        height: 180px;
+        background: url('https://unsplash.com') center center/contain no-repeat;
+        transform: rotate(-15deg);
+        pointer-events: none;
+        z-index: 25;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7)) brightness(0.4);
+    }
 
-        /* Sniper Rifle Crosshair Overlay */
-        #crosshair { 
-            position: absolute; 
-            top: 153px; 
-            left: 138px; 
-            width: 44px; 
-            height: 44px; 
-            border: 2px solid #00ff66; 
-            border-radius: 50%; 
-            will-change: left, top; 
-            z-index: 15; 
-            pointer-events: none; /* Allows user to drag background canvas surface directly */
-        }
-        #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
-        #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
-        
-        #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 16px; z-index: 10; background: rgba(255,255,255,0.7); padding: 3px 8px; border-radius: 4px; }
-        .retry-btn { margin-top: 15px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
-        
-        /* 3D Human Silhouette Nodes */
-        .humanoid { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 5; pointer-events: none; }
-        .head { border-radius: 50%; background: #1d1e2c; width: 28%; height: 25%; }
-        .torso { background: #1d1e2c; width: 18%; height: 45%; margin-top: 2%; position: relative; }
-        .arm-l { position: absolute; top: 10%; left: -140%; width: 140%; height: 20%; background: #1d1e2c; transform: rotate(-25deg); transform-origin: right; }
-        .arm-r { position: absolute; top: 10%; right: -140%; width: 140%; height: 20%; background: #1d1e2c; transform: rotate(25deg); transform-origin: left; }
-        .legs { display: flex; justify-content: space-between; width: 100%; height: 28%; }
-        .leg { background: #1d1e2c; width: 22%; height: 100%; }
-    </style>
+    /* Green Tactical Crosshair Scope Circle */
+    #crosshair { 
+        position: absolute; 
+        top: 153px; 
+        left: 138px; 
+        width: 44px; 
+        height: 44px; 
+        border: 2px solid #00ff66; 
+        border-radius: 50%; 
+        will-change: left, top; 
+        z-index: 15; 
+        pointer-events: none;
+    }
+    #crosshair::before { content: ''; position: absolute; top: 22px; left: 0; width: 44px; height: 1px; background: #00ff66; }
+    #crosshair::after { content: ''; position: absolute; top: 0; left: 22px; width: 1px; height: 44px; background: #00ff66; }
+    
+    #scoreTxt { position: absolute; top: 10px; left: 10px; color: black; font-weight: bold; font-size: 16px; z-index: 30; background: rgba(255,255,255,0.7); padding: 3px 8px; border-radius: 4px; }
+    .retry-btn { margin-top: 100px; padding: 12px 25px; background: #e76f51; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+    
+    /* 3. Realistic Moving Soldier Sprite Target */
+    .humanoid { 
+        position: absolute; 
+        z-index: 5; 
+        pointer-events: none; 
+        background: url('https://unsplash.com') center center/cover no-repeat;
+        border-radius: 4px;
+        filter: brightness(0.6) drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    }
+</style>
 </head>
 <body>
 
     <div id="board">
         <div id="scoreTxt">Score: 0</div>
         <div id="crosshair"></div>
+        <div id="gun"></div> <!-- Sniper rifle placeholder block -->
     </div>
 
     <p style="text-align: center; color: #8b949e; font-size: 13px; margin-top: 12px; font-family: sans-serif; line-height: 1.4;">
@@ -78,12 +86,12 @@ game_html = """
 <script>
     let aimX = 138; let aimY = 153; let score = 0; let gameOver = false;
     let isMovingCrosshair = false;
-    let dragStartX = 0; let dragStartY = 0;
-    let touchMovedFlag = false; // Distinguishes dragging from tapping to shoot
+    let touchMovedFlag = false;
     
     const board = document.getElementById("board");
     const crosshair = document.getElementById("crosshair");
     const scoreTxt = document.getElementById("scoreTxt");
+    const gun = document.getElementById("gun");
     
     let activeEnemies = [];
     let audioCtx = null; let spawnInt = null; let bgLoop = null;
@@ -94,17 +102,13 @@ game_html = """
         startSynthAmbientMusic();
     }
 
-    // Creates dynamic space engine hum / desert drone music
     function startSynthAmbientMusic() {
         try {
             let osc1 = audioCtx.createOscillator(); let osc2 = audioCtx.createOscillator();
             bgLoop = audioCtx.createGain();
-            
-            osc1.type = "sine"; osc1.frequency.setValueAtTime(55.00, audioCtx.currentTime); // A1 note
-            osc2.type = "triangle"; osc2.frequency.setValueAtTime(82.41, audioCtx.currentTime); // E2 drone harmony
-            
-            bgLoop.gain.setValueAtTime(0.04, audioCtx.currentTime); // Soft background volume
-            
+            osc1.type = "sine"; osc1.frequency.setValueAtTime(55.00, audioCtx.currentTime);
+            osc2.type = "triangle"; osc2.frequency.setValueAtTime(82.41, audioCtx.currentTime);
+            bgLoop.gain.setValueAtTime(0.04, audioCtx.currentTime);
             osc1.connect(bgLoop); osc2.connect(bgLoop);
             bgLoop.connect(audioCtx.destination);
             osc1.start(); osc2.start();
@@ -115,20 +119,19 @@ game_html = """
         if (bgLoop) { try { audioCtx.close(); audioCtx = null; } catch(e){} }
     }
 
-    // 8-bit Audio Sound FX Generators
     function playSoundFX(type) {
         initAudio(); if (!audioCtx) return;
         let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
 
-        if (type === "sniper") { // Rifle fire discharge
+        if (type === "sniper") {
             osc.type = "sawtooth";
             osc.frequency.setValueAtTime(900, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         } 
-        else if (type === "shout") { // Human shout warning effect
+        else if (type === "shout") {
             osc.type = "sawtooth";
             osc.frequency.setValueAtTime(260, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(420, audioCtx.currentTime + 0.1);
@@ -136,7 +139,7 @@ game_html = """
             gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         }
-        else if (type === "hit") { // Target elimination impact
+        else if (type === "hit") {
             osc.type = "triangle";
             osc.frequency.setValueAtTime(180, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
@@ -145,50 +148,47 @@ game_html = """
         }
     }
 
-    // Touch Interaction Event Matrix
+    // FIXED: Streamlit Frame Independent Touch Positioning Formulas
+    function updatePosition(e) {
+        if (gameOver) return;
+        let pointer = e.touches ? e.touches[0] : e;
+        let boardRect = board.getBoundingClientRect();
+        
+        // Maps absolute finger touch values relative to container boundaries
+        aimX = Math.max(-10, Math.min(288, pointer.clientX - boardRect.left - 22));
+        aimY = Math.max(-10, Math.min(316, pointer.clientY - boardRect.top - 22));
+        
+        crosshair.style.left = aimX + "px";
+        crosshair.style.top = aimY + "px";
+        
+        // Makes the rifle match your aim crosshair subtly for extreme realism
+        gun.style.transform = `rotate(${-15 + (aimX - 138)/30}deg) translateX(${(aimX - 138)/20}px)`;
+    }
+
     function onStart(e) {
         if (gameOver) return;
         initAudio();
         isMovingCrosshair = true;
         touchMovedFlag = false;
-        
-        let pointer = e.touches ? e.touches[0] : e;
-        let boardRect = board.getBoundingClientRect();
-        
-        // Grab drag anchor offsets relative to active center cursor tracking position
-        dragStartX = pointer.clientX - boardRect.left - aimX;
-        dragStartY = pointer.clientY - boardRect.top - aimY;
+        updatePosition(e);
     }
 
     function onMove(e) {
         if (!isMovingCrosshair || gameOver) return;
+        if(e.touches) e.preventDefault(); // Disables vertical browser container pull bouncing
         touchMovedFlag = true;
-        
-        let pointer = e.touches ? e.touches[0] : e;
-        let boardRect = board.getBoundingClientRect();
-        
-        let relativeX = pointer.clientX - boardRect.left - dragStartX;
-        let relativeY = pointer.clientY - boardRect.top - dragStartY;
-        
-        // Lock sight inside boundaries
-        aimX = Math.max(-10, Math.min(288, relativeX));
-        aimY = Math.max(-10, Math.min(316, relativeY));
-        
-        crosshair.style.left = aimX + "px";
-        crosshair.style.top = aimY + "px";
+        updatePosition(e);
     }
 
     function onEnd(e) {
         if (!isMovingCrosshair || gameOver) return;
         isMovingCrosshair = false;
-        
-        // If your finger didn't drag extensively across the screen surface, interpret input as a gunshot
         if (!touchMovedFlag) {
             fireSniperRifle();
         }
     }
 
-    board.addEventListener("touchstart", onStart, {passive: true});
+    board.addEventListener("touchstart", onStart, {passive: false});
     window.addEventListener("touchmove", onMove, {passive: false});
     window.addEventListener("touchend", onEnd);
     board.addEventListener("mousedown", onStart);
@@ -199,7 +199,6 @@ game_html = """
         if (gameOver) return;
         playSoundFX("sniper");
         
-        // Visual weapon recoil flash feedback
         crosshair.style.borderColor = "red";
         setTimeout(() => { if(!gameOver) crosshair.style.borderColor = "#00ff66"; }, 70);
 
@@ -214,115 +213,90 @@ game_html = """
             let centerScopeX = aimX + 22;
             let centerScopeY = aimY + 22;
 
-            // Accurate bounding coordinates distance evaluation calculation
-            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 12) && Math.abs(centerScopeY - centerCenterY) < (eH / 2 + 12) && eW > 10) {
+            if (Math.abs(centerScopeX - centerTargetX) < (eW / 2 + 15) && Math.abs(centerScopeY - centerTargetY) < (eH / 2 + 15) && eW > 8) {
                 playSoundFX("hit");
                 score += 10;
                 scoreTxt.innerText = "Score: " + score;
                 if(e.intervalId) clearInterval(e.intervalId);
                 e.remove();
-            activeEnemies = activeEnemies.filter(item => item !== e);
-        }
-    });
-}
-
-function restartGame() {
-    stopSynthAmbientMusic();
-    if (spawnInt) clearInterval(spawnInt);
-    
-    activeEnemies.forEach(e => { 
-        if (e.intervalId) clearInterval(e.intervalId); 
-        e.remove(); 
-    });
-    
-    activeEnemies = []; 
-    score = 0; 
-    aimX = 138; 
-    aimY = 153; 
-    isMovingCrosshair = false; 
-    gameOver = false;
-    
-    board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 138px; top: 153px;"></div>';
-    
-    setTimeout(() => {
-        globalThis.scoreTxt = document.getElementById("scoreTxt");
-        globalThis.crosshair = document.getElementById("crosshair");
-        initAudio();
-        startSpawner();
-    }, 60);
-}
-
-function startSpawner() {
-    spawnInt = setInterval(() => {
-        if (gameOver) { 
-            clearInterval(spawnInt); 
-            return; 
-        }
-        
-        // Build humanoid target layout
-        let h = document.createElement("div");
-        h.className = "humanoid";
-        h.innerHTML = '<div class="head"></div><div class="torso"><div class="arm-l"></div><div class="arm-r"></div></div><div class="legs"><div class="leg"></div><div class="leg"></div></div>';
-        
-        let finalTrajectoryX = Math.random() * 240 + 30;
-        let currentWidth = 3; 
-        let currentHeight = 6;
-        
-        h.style.cssText = `position:absolute; top:165px; left:160px; width:${currentWidth}px; height:${currentHeight}px;`;
-        board.appendChild(h); 
-        activeEnemies.push(h);
-        
-        // Play shouting voice indicator sound effect upon spawning target
-        playSoundFX("shout");
-        
-        let steps = 0;
-        let hInt = setInterval(() => {
-            if (gameOver) { 
-                clearInterval(hInt); 
-                return; 
+                activeEnemies = activeEnemies.filter(item => item !== e);
             }
-            
-            steps += 1;
-            // Continuous 3D dimensional scaling computations
-            currentWidth += 0.45; 
-            currentHeight += 0.9;
-            
-            let speedX = (finalTrajectoryX - 160) / 95;
-            let positionX = 160 + (speedX * steps) - (currentWidth / 2);
-            let positionY = 165 + (1.25 * steps) - (currentHeight / 2);
-            
-            h.style.width = currentWidth + "px";
-            h.style.height = currentHeight + "px";
-            h.style.left = positionX + "px";
-            h.style.top = positionY + "px";
-            h.intervalId = hInt;
-            
-            // If a target breaches the spatial perimeter boundary proximity threshold, trigger game over
-            if (currentHeight > 85) {
-                triggerGameOver();
-                clearInterval(hInt);
-            }
-        }, 30);
-    }, 1300);
-}
+        });
+    }
 
-function triggerGameOver() {
-    gameOver = true; 
-    isMovingCrosshair = false;
-    stopSynthAmbientMusic();
-    board.innerHTML = `
-        <div style='color:#7a1f1d; font-size:28px; font-weight:bold; text-align:center; margin-top:100px; position:relative; z-index:20; text-shadow: 1px 1px #000;'>
-            MISSION FAILURE<br>
-            <span style='color:white; font-size:18px; font-weight:normal;'>Score achieved: ${score}</span><br>
-            <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button>
-        </div>`;
-}
+    function restartGame() {
+        stopSynthAmbientMusic();
+        if(spawnInt) clearInterval(spawnInt);
+        activeEnemies.forEach(e => { if(e.intervalId) clearInterval(e.intervalId); e.remove(); });
+        
+        activeEnemies = []; score = 0; aimX = 138; aimY = 153; isMovingCrosshair = false; gameOver = false;
+        
+        board.innerHTML = '<div id="scoreTxt">Score: 0</div><div id="crosshair" style="left: 138px; top: 153px;"></div><div id="gun"></div>';
+        setTimeout(() => {
+            globalThis.scoreTxt = document.getElementById("scoreTxt");
+            globalThis.crosshair = document.getElementById("crosshair");
+            globalThis.gun = document.getElementById("gun");
+            initAudio();
+            startSpawner();
+        }, 60);
+    }
 
-// Connect global variables hooks up securely
-globalThis.scoreTxt = scoreTxt; 
-globalThis.crosshair = crosshair;
-startSpawner();
-"""
+    function startSpawner() {
+        spawnInt = setInterval(() => {
+            if (gameOver) { clearInterval(spawnInt); return; }
+            
+            let h = document.createElement("div");
+            h.className = "humanoid";
+            
+            let finalTrajectoryX = Math.random() * 240 + 30;
+            let currentWidth = 4; let currentHeight = 8;
+            
+            // Horizon lineup elevation starting points
+            h.style.cssText = `position:absolute; top:190px; left:160px; width:${currentWidth}px; height:${currentHeight}px;`;
+            board.appendChild(h); activeEnemies.push(h);
+            
+            playSoundFX("shout");
+
+            let steps = 0;
+            let hInt = setInterval(() => {
+                if (gameOver) { clearInterval(hInt); return; }
+                steps += 1;
+                
+                // Realistic 3D perspective sizing adjustments
+                currentWidth += 0.5; currentHeight += 1.0;
+                
+                let speedX = (finalTrajectoryX - 160) / 95;
+                let positionX = 160 + (speedX * steps) - (currentWidth / 2);
+                let positionY = 190 + (1.1 * steps) - (currentHeight / 2);
+                
+                h.style.width = currentWidth + "px";
+                h.style.height = currentHeight + "px";
+                h.style.left = positionX + "px";
+                h.style.top = positionY + "px";
+                h.intervalId = hInt;
+                
+                if (currentHeight > 85) {
+                    triggerGameOver();
+                    clearInterval(hInt);
+                }
+            }, 30);
+        }, 1300);
+    }
+
+    function triggerGameOver() {
+        gameOver = true; isMovingCrosshair = false;
+        stopSynthAmbientMusic();
+        board.innerHTML = `
+            <div style='color:#7a1f1d; font-size:28px; font-weight:bold; text-align:center; position:relative; z-index:40; text-shadow: 2px 2px #000; padding-top:40px;'>
+                MISSION FAILURE<br>
+                <span style='color:white; font-size:18px; font-weight:normal;'>Score achieved: ${score}</span><br>
+                <button class='retry-btn' onclick='restartGame()'>DEPLOY AGAIN 🔄</button>
+            </div>`;
+    }
+
+    globalThis.scoreTxt = scoreTxt; globalThis.crosshair = crosshair; globalThis.gun = gun;
+    startSpawner();
+</script>
 
 components.html(game_html, height=450)
 
