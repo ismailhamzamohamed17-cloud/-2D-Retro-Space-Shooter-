@@ -11,35 +11,33 @@ game_html = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; user-select: none; -webkit-user-select: none; }
-        #board { position: relative; width: 320px; height: 350px; background: black; border: 3px solid #333; overflow: hidden; margin: auto; border-radius: 8px; }
+        #board { position: relative; width: 320px; height: 350px; background: black; border: 3px solid #333; overflow: hidden; margin: auto; border-radius: 8px; cursor: crosshair; }
         #ship { position: absolute; bottom: 10px; left: 140px; width: 40px; height: 40px; background: lime; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); will-change: left; }
-        .btn { padding: 15px 20px; font-size: 16px; margin: 3px; background: #222; color: white; border-radius: 8px; border: 1px solid #555; font-weight: bold; min-width: 80px; touch-action: manipulation; }
-        #fire { background: red; border-color: #a00; min-width: 90px; }
+        .btn { padding: 18px 35px; font-size: 18px; margin: 5px 10px; background: #222; color: white; border-radius: 8px; border: 1px solid #555; font-weight: bold; min-width: 120px; touch-action: manipulation; }
         #scoreTxt { position: absolute; top: 10px; left: 10px; color: white; font-weight: bold; font-size: 16px; z-index: 10; }
         .retry-btn { margin-top: 15px; padding: 12px 25px; background: #238636; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="board">
+    <!-- Tap directly inside this container on your phone screen to fire lasers -->
+    <div id="board" onmousedown="handleScreenTap(event)" ontouchstart="handleScreenTap(event)">
         <div id="scoreTxt">Score: 0</div>
         <div id="ship"></div>
     </div>
 
-    <!-- Layout putting FIRE in between Left and Right with Touch Down/Up Events -->
+    <!-- Simplified movement controls -->
     <div style="text-align: center; margin-top: 15px;">
         <button class="btn" 
                 onmousedown="startMove(-1)" onmouseup="stopMove()" ontouchstart="event.preventDefault(); startMove(-1)" ontouchend="event.preventDefault(); stopMove()">◀ Left</button>
-        <button class="btn" id="fire" 
-                onclick="shoot()" ontouchstart="event.preventDefault(); shoot()">FIRE</button>
         <button class="btn" 
                 onmousedown="startMove(1)" onmouseup="stopMove()" ontouchstart="event.preventDefault(); startMove(1)" ontouchend="event.preventDefault(); stopMove()">Right ▶</button>
     </div>
 
 <script>
     let shipX = 140; let score = 0; let gameOver = false;
-    let moveDirection = 0; // Tracks active continuous movement velocity (-1, 0, or 1)
-    const shipSpeed = 6; // Pixels moved per animation frame cycle
+    let moveDirection = 0;
+    const shipSpeed = 6;
 
     const board = document.getElementById("board");
     const ship = document.getElementById("ship");
@@ -64,7 +62,6 @@ game_html = """
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // High performance continuous velocity controller
     function startMove(dir) {
         if (gameOver) return;
         moveDirection = dir;
@@ -74,13 +71,23 @@ game_html = """
         moveDirection = 0;
     }
 
-    // Hardware accelerated frame rate loop to process fluid positioning data
     function updatePhysicsLoop() {
         if (!gameOver && moveDirection !== 0) {
             shipX = Math.max(0, Math.min(280, shipX + (moveDirection * shipSpeed)));
             if(globalThis.ship) globalThis.ship.style.left = shipX + "px";
         }
         requestAnimationFrame(updatePhysicsLoop);
+    }
+
+    // Handles screening triggers for touchscreen taps & mouse clicks
+    window.handleScreenTap = function(e) {
+        if (gameOver) return;
+        
+        // Safety check to prevent firing when clicking the retry button itself
+        if (e.target.classList.contains('retry-btn')) return;
+        
+        e.preventDefault();
+        shoot();
     }
 
     function shoot() {
@@ -179,9 +186,8 @@ game_html = """
             </div>`;
     }
 
-    // Keyboard support optimized for fluid hold-down movements on PC
     window.addEventListener("keydown", (e) => {
-        if (e.repeat) return; // Ignore native OS double-firing delay
+        if (e.repeat) return;
         if(e.key === "ArrowLeft" || e.key === "a") startMove(-1);
         if(e.key === "ArrowRight" || e.key === "d") startMove(1);
         if(e.key === " " || e.key === "Enter") {
@@ -195,7 +201,6 @@ game_html = """
         if((e.key === "ArrowRight" || e.key === "d") && moveDirection === 1) stopMove();
     });
 
-    // Initialize layout anchors and kick off sub-pixel engine clock loop
     globalThis.scoreTxt = scoreTxt;
     globalThis.ship = ship;
     startSpawner();
