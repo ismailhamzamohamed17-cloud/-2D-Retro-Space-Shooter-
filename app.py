@@ -321,44 +321,48 @@ game_html = """
         });
     }
 
-    function restartGame() {
+     function restartGame() {
+        // Clear all active tracking elements and intervals completely
         if (spawnInt) clearInterval(spawnInt);
         activeEnemies.forEach(obj => {
-            obj.element.remove();
-            obj.ring.remove();
+            if (obj.element) obj.element.remove();
+            if (obj.ring) obj.ring.remove();
         });
         
-        activeEnemies = [];
-        score = 200;
-        aimX = 168;
-        aimY = 218;
-        isMovingCrosshair = false;
+        activeEnemies = []; 
+        score = 200; 
+        aimX = 168; 
+        aimY = 218; 
+        carXOffset = 0;
+        isMovingCrosshair = false; 
         gameOver = false;
         
+        // Reset the inner layout elements without duplicates
         board.innerHTML = `
-            <div id="scoreTxt">00200</div>
-            <div class="skyline-left"></div>
-            <div class="skyline-right"></div>
-            <div class="road-surface"></div>
-            <div id="getawayCar">
-                <div class="car-window"></div>
-                <div class="car-light-l"></div>
-                <div class="car-light-r"></div>
-            </div>
-            <div id="crosshair" style="left:168px; top:218px;"></div>
-            <div id="gun">
-                <div class="gun-slide"></div>
-                <div class="gun-hammer"></div>
-                <div class="gun-frame"></div>
-                <div class="gun-trigger-guard"></div>
-                <div class="gun-grip"></div>
+            <div id="scoreTxt">00200</div> 
+            <div class="skyline-left"></div> 
+            <div class="skyline-right"></div> 
+            <div class="road-surface"></div> 
+            <div id="getawayCar"> 
+                <div class="car-window"></div> 
+                <div class="car-light-l"></div> 
+                <div class="car-light-r"></div> 
+            </div> 
+            <div id="crosshair" style="left:168px; top:218px;"></div> 
+            <div id="gun"> 
+                <div class="gun-slide"></div> 
+                <div class="gun-hammer"></div> 
+                <div class="gun-frame"></div> 
+                <div class="gun-trigger-guard"></div> 
+                <div class="gun-grip"></div> 
             </div>`;
             
+        // Rebind the system nodes instantly to clear freezing locks
         setTimeout(() => {
             registerDeviceListeners();
             initAudio();
             startSpawner();
-        }, 60);
+        }, 50);
     }
 
     setInterval(() => {
