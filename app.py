@@ -31,7 +31,6 @@ game_html = """
         .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #434952, #2c3036); clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%); z-index: 2; transition: filter 0.8s; }
         .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 8px; height: 100%; background: repeating-linear-gradient(to bottom, #e5e5e5 0px, #e5e5e5 25px, transparent 25px, transparent 50px); transform: translateX(-50%); opacity: 0.4; }
 
-        /* 🚗 3D SUV WITH 4 GROUND WHEELS */
         #car {
             position: absolute; top: 175px; left: 110px; width: 160px; height: 105px;
             background: linear-gradient(to bottom, #2c2c2c, #151515, #0a0a0a); border-radius: 14px 14px 6px 6px;
@@ -52,15 +51,14 @@ game_html = """
         .w-rear-r { bottom: -12px; right: 16px; width: 32px; height: 16px; }
         
         .light-l { position: absolute; bottom: 22px; left: 12px; width: 22px; height: 12px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
-        .light-r { position: absolute; bottom: 22px; right: 12px; width: 22px; height: 12px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; }
+        .light-r { position: absolute; bottom: 22px; right: 12px; width: 22px; height: 12px; background: radial-gradient(circle, #ff4d6d, #c9184a); border-radius: 3px; box-shadow: 0 0 12px #ff4d6d; border: 1px solid #800f2f; }
 
-        /* 🔫 SEMI-AUTOMATIC PISTOL */
         #weapon {
             position: absolute; bottom: -35px; right: 45px; width: 90px; height: 180px; transform: rotate(0deg); transform-origin: bottom center; pointer-events: none; z-index: 25; will-change: transform;
         }
         .w-slide { position: absolute; top: 10px; left: -30px; width: 110px; height: 26px; background: linear-gradient(to bottom, #2b2b2b, #151515, #222); border-radius: 4px 2px 2px 2px; border-bottom: 2px solid #0d0d0d; box-shadow: -4px 4px 10px rgba(0,0,0,0.5); }
         .w-grip { position: absolute; top: 34px; left: 25px; width: 34px; height: 110px; background: repeating-linear-gradient(45deg, #3d2b1f, #3d2b1f 2px, #241911 2px, #241911 4px); border: 3px solid #0a0a0a; border-radius: 4px 6px 12px 6px; transform: rotate(-10deg); }
-        .w-frame { position: absolute; top: 32px; left: -15px; width: 50px; height: 25px; background: #1a1a1a; }
+        .w-frame { position: absolute; top: 32px; left: -15px; width: 50px; height: 25px; background: #1a1a1a; border-radius: 0 0 10px 4px; }
         .w-guard { position: absolute; top: 30px; left: -5px; width: 22px; height: 22px; border: 3px solid #1a1a1a; border-radius: 50%; }
         #flash { position: absolute; top: -10px; left: -35px; width: 35px; height: 35px; background: radial-gradient(circle, #fff 10%, #ffea00 40%, transparent 70%); border-radius: 50%; display: none; z-index: 26; }
 
@@ -70,7 +68,6 @@ game_html = """
 
         .target-ring { position: absolute; width: 90px; height: 90px; border: 3px dashed #ffea00; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-30px, -30px); }
 
-        /* 🏃 HUMAN THREATS */
         .threat { position: absolute; width: 45px; height: 75px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; transition: transform 0.4s ease-out, top 0.4s ease-out, opacity 0.4s ease-out; }
         .t-head { background: linear-gradient(135deg, #e0a96d, #c48b53); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #111; position: relative; }
         .t-head::before { content: ''; position: absolute; top: -2px; left: -1px; width: 26px; height: 10px; background: #3d2511; border-radius: 12px 12px 0 0; }
@@ -87,7 +84,6 @@ game_html = """
         .t-leg:nth-child(2) { animation-delay: 0.12s; }
         @keyframes walkCycle { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 
-        /* 🩸 BLOOD SPREAD DUST PARTICLES */
         .blood-drop {
             position: absolute; width: 4px; height: 4px; background: #ba000d; border-radius: 50%; z-index: 12; pointer-events: none;
             animation: explodeBlood 0.35s ease-out forwards;
@@ -97,7 +93,6 @@ game_html = """
             100% { transform: translate(var(--vx), var(--vy)) scale(0.3); opacity: 0; }
         }
 
-        /* Scoring and Overlay Panels */
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; }
         #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-family: monospace; font-size: 13px; z-index: 30; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 6px; border: 1px solid #444; }
         #targetTracker { position: absolute; top: 50px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 4px; }
@@ -115,7 +110,12 @@ game_html = """
     <div id="gameArea">
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CHAPTER 1/20</div>
-         let currentX = 168, currentY = 218, score = 200, isOver = false, activeChapter = 1;
+        <div id="targetTracker">TARGETS CLEAR: 0/5</div>
+        
+        <div class="building-l"></div>
+        <div class="building-r"></div>
+        <div class="roadway"></div>
+        let currentX = 168, currentY = 218, score = 200, isOver = false, activeChapter = 1;
     let carPos = 110, distanceScale = 0.2, carParked = false;
     let threatsList = [];
     let chapterKills = 0;
@@ -163,8 +163,7 @@ game_html = """
             osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
             gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        } else if (type === "shout_aaa") { 
-            // --- SYNTHESIZED "AAA!" HUMAN SCREAM ---
+        } else if (type === "shout_aaa") {
             osc.type = "sawtooth";
             osc.frequency.setValueAtTime(290, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(220, audioCtx.currentTime + 0.25);
@@ -175,12 +174,10 @@ game_html = """
 
     function aim(e) {
         if (isOver) return;
-        let evt = e.touches ? e.touches : e;
+        let evt = e.touches ? e.touches[0] : e;
         let bounds = gameArea.getBoundingClientRect();
-        
         currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
         currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
-        
         sight.style.left = currentX + "px";
         sight.style.top = currentY + "px";
         
@@ -199,8 +196,8 @@ game_html = """
         let maxNeeded = 5 + (activeChapter - 1) * 2;
         chapterTxt.innerText = `CHAPTER ${activeChapter}/20`;
         targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
-        
         let mod = activeChapter % 3;
+        
         if (mod === 1) {
             gameArea.style.background = "linear-gradient(to bottom, #4a777a 0%, #a1c4fd 40%, #727d8c 41%, #3a4454 100%)";
             document.querySelectorAll(".building-l, .building-r, .roadway").forEach(el => el.style.filter = "none");
@@ -212,7 +209,7 @@ game_html = """
             document.querySelectorAll(".building-l, .building-r, .roadway").forEach(el => el.style.filter = "brightness(0.35) contrast(1.2)");
         }
     }
-    // --- EXPLOSIVE RED BLOOD PARTICLE SPRAY INJECTOR ---
+
     function spawnBloodSpit(x, y) {
         for (let i = 0; i < 8; i++) {
             let drop = document.createElement("div");
@@ -220,7 +217,6 @@ game_html = """
             drop.style.left = x + "px";
             drop.style.top = y + "px";
             
-            // Random direction angles
             let vx = (Math.random() * 40 - 20);
             let vy = (Math.random() * -35 - 5);
             drop.style.setProperty('--vx', vx + 'px');
@@ -229,8 +225,7 @@ game_html = """
             setTimeout(() => drop.remove(), 350);
         }
     }
-
-    function triggerFire() {
+     function triggerFire() {
         if (isOver) return;
         sound("zap");
         flash.style.display = "block";
@@ -240,7 +235,7 @@ game_html = """
         let hitCenterY = currentY + 16;
 
         threatsList.forEach((t, index) => {
-            if (t.isDying) return; // Prevent double hitting dying targets
+            if (t.isDying) return;
             
             let tRect = t.el.getBoundingClientRect();
             let areaRect = gameArea.getBoundingClientRect();
@@ -251,8 +246,8 @@ game_html = """
 
             if (hitCenterX >= tX && hitCenterX <= tX + tW && hitCenterY >= tY && hitCenterY <= tY + tH) {
                 t.isDying = true;
-                sound("shout_aaa"); // Trigger human scream sound
-                spawnBloodSpit(hitCenterX, hitCenterY); // Spawn blood spray particles
+                sound("shout_aaa");
+                spawnBloodSpit(hitCenterX, hitCenterY);
                 
                 score += 100;
                 scoreCounter.innerText = String(score).padStart(5, '0');
@@ -261,10 +256,9 @@ game_html = """
                 let maxNeeded = 5 + (activeChapter - 1) * 2;
                 targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
 
-                // --- FALLING BODY ANIMATION MECHANICS ---
                 t.ring.remove();
-                t.el.style.transform += " rotate(80deg)"; // Rotate to lean over
-                t.el.style.top = (parseFloat(t.el.style.top) + 20) + "px"; // Fall downwards
+                t.el.style.transform += " rotate(80deg)";
+                t.el.style.top = (parseFloat(t.el.style.top) + 20) + "px";
                 t.el.style.opacity = "0";
 
                 setTimeout(() => {
@@ -272,7 +266,6 @@ game_html = """
                     threatsList = threatsList.filter(item => item !== t);
                 }, 400);
 
-                // --- ARITHMETIC PROGRESSION DYNAMIC CHAPTER LIMIT ---
                 if (chapterKills >= maxNeeded) {
                     if (activeChapter >= 20) {
                         isOver = true;
@@ -312,7 +305,7 @@ game_html = """
             car.style.top = currentTopY + "px";
 
             threatsList.forEach((t) => {
-                if (t.isDying) return; // Freeze position loops while falling
+                if (t.isDying) return;
                 let updatedX = carPos + (t.sideOffset * distanceScale);
                 let threatY = currentTopY + (t.baseTopY - 195) * distanceScale;
                 
@@ -344,10 +337,11 @@ game_html = """
             else { sideOffset = 130; topY = 210; armClass = "arm-r"; }
 
             el.innerHTML = `
-                <div class="t-head"><div class="t-eyes"></div></div>  
-                <div class="t-torso"><div class="t-arm ${armClass}"><div class="t-weapon"></div></div></div>  
+                <div class="t-head"><div class="t-eyes"></div></div>   
+                <div class="t-torso"><div class="t-arm ${armClass}"><div class="t-weapon"></div></div></div>   
                 <div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>`;
-                let updatedX = carPos + (sideOffset * distanceScale);
+                
+            let updatedX = carPos + (sideOffset * distanceScale);
             let threatY = (165 + (distanceScale * 45)) + (topY - 195) * distanceScale;
             
             el.style.left = updatedX + "px";
