@@ -149,7 +149,6 @@ game_html = '''
 
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
-        // Core background skybox generators
         if (currentSector === "C") {
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
             skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(0.7, "#1e1b4b"); skyGrd.addColorStop(1, "#311042");
@@ -161,8 +160,7 @@ game_html = '''
             ctx.fillStyle = "#030712"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 📦 FIXED: SOLID SHADED STEEL CONTAINER PANEL MATRIX ENGINE ---
-        // Completely strips the raw lines and renders thick solid filled side walls
+        // Draw solid wall panel matrices
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos);
@@ -171,7 +169,6 @@ game_html = '''
 
             let fogOpacity = Math.min(1, z / 65);
 
-            // Shaded concrete pavement floor track sheets
             ctx.fillStyle = "rgba(22, 28, 45, " + (1 - fogOpacity) + ")";
             ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
@@ -180,12 +177,10 @@ game_html = '''
             ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // FIXED: Instantly cuts off walls when standing outside in Sector C
             if (currentSector === "C") continue;
 
             let isRidgeFold = Math.floor(zPos * 2) % 2 === 0;
             
-            // Left Wall Solid Plate Polygon drawing
             ctx.fillStyle = isRidgeFold ? "rgba(13, 148, 136, " + (1 - fogOpacity) + ")" : "rgba(17, 94, 89, " + (1 - fogOpacity) + ")";
             ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
@@ -194,8 +189,6 @@ game_html = '''
             ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // Right Wall Solid Plate Polygon drawing
-            ctx.fillStyle = isRidgeFold ? "rgba(13, 148, 136, " + (1 - fogOpacity) + ")" : "rgba(17, 94, 89, " + (1 - fogOpacity) + ")";
             ctx.beginPath();
             ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
@@ -204,7 +197,6 @@ game_html = '''
             ctx.fill();
         }
 
-        // Draw containers/obstacles
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
@@ -214,7 +206,6 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(p.x + w/2, p.y - h/2); ctx.lineTo(p.x - w/2, p.y + h/2); ctx.stroke();
         });
 
-        // Draw active enemy targets
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
@@ -231,7 +222,10 @@ game_html = '''
             if (t.isFlashing) {
                 let flashGrd = ctx.createRadialGradient(p.x + s, p.y - s/6, 1, p.x + s, p.y - s/6, s * 0.5);
                 flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.4, "#ffaa00"); flashGrd.addColorStop(1, "transparent");
-                ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s, p.y - s/6, s * 0.5, 0, Math.PI*2); fill(); ctx.closePath();
+                ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s, p.y - s/6, s * 0.5, 0, Math.PI*2); 
+                // FIXED: Linked contextual drawing prefix token securely to clear background loop crashes
+                ctx.fill(); 
+                ctx.closePath();
             }
             t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
@@ -275,7 +269,7 @@ game_html = '''
         });
 
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa"); spawnBloodSpit(currentX, currentY);
+            hitTarget.isDying = true; sound("shout_aaa");
             score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector];
             targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
@@ -305,33 +299,18 @@ game_html = '''
         sound("ding");
     }
 
-    // --- 🔄 FIXED: HARD ARCHITECTURAL STATE RESET LEDGER ---
-    // Safely flushes physical camera depth memories to prevent infinite-loop freezes upon restart
     window.resetArcadeEngine = function(fullReset) {
         clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
         if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-        
         document.querySelectorAll(".target-ring").forEach(el => el.remove());
         threatsList = [];
-        
-        cameraZ = 0; targetCameraZ = 0;
-        cameraX = 0; targetCameraX = 0;
-        currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200;
-        isMoving = false; isOver = false;
-        
-        document.getElementById("winScreen").style.display = "none";
-        document.getElementById("overScreen").style.display = "none";
-        gameArea.className = "";
-        
-        healthCounter.innerText = "HP: 100";
-        scoreCounter.innerText = "00200";
+        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0;
+        currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
+        document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
+        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200";
         document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
-        
-        let needed = sectorRequirements[currentSector];
-        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        
-        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-        spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
     };
 
     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
