@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Tactical: 3D Rail Shooter", layout="centered")
-st.title("⚡ Virtua Tactical: 3D Operations")
+st.set_page_config(page_title="Virtua Tactical: 3D Special Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Extreme 3D Operations")
 
 game_html = '''
 <!DOCTYPE html>
@@ -14,51 +14,51 @@ game_html = '''
         
         #gameArea { 
             position: relative; width: 380px; height: 480px; 
-            background: #020617; border: 4px solid #1a1f26; overflow: hidden; margin: auto; border-radius: 16px; touch-action: none;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.9);
+            background: #020617; border: 4px solid #1e293b; overflow: hidden; margin: auto; border-radius: 16px; touch-action: none;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.95);
         }
 
-        /* FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
+        /* 🎬 ADVANCED FILM GRAIN + CRITICAL PULSE DAMAGE LENS VIGNETTE */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.065'/%3E%3C/svg%3E");
             background-size: auto;
-            box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.95), inset 0 0 140px rgba(0, 0, 0, 0.85);
+            box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.95), inset 0 0 160px rgba(0, 0, 0, 0.85);
             background-color: rgba(220, 20, 20, 0);
-            transition: box-shadow 0.1s ease-out, background-color 0.1s ease-out;
+            transition: box-shadow 0.12s ease-out, background-color 0.12s ease-out;
         }
 
         #gameArea.taking-damage::after {
-            background-color: rgba(220, 20, 20, 0.22);
-            box-shadow: inset 0 0 110px rgba(220, 20, 20, 0.95), inset 0 0 180px rgba(180, 0, 0, 0.95);
+            background-color: rgba(220, 20, 20, 0.26);
+            box-shadow: inset 0 0 120px rgba(220, 20, 20, 0.98), inset 0 0 200px rgba(180, 0, 0, 0.98);
         }
-        #gameArea.critical-pulse::after { animation: fullViewportLowHpPulse 0.55s ease-in-out infinite alternate; }
+        #gameArea.critical-pulse::after { animation: fullViewportLowHpPulse 0.5s ease-in-out infinite alternate; }
         @keyframes fullViewportLowHpPulse {
-            0% { background-color: rgba(220, 20, 20, 0.05); box-shadow: inset 0 0 85px rgba(160, 0, 0, 0.7); }
-            100% { background-color: rgba(220, 20, 20, 0.25); box-shadow: inset 0 0 115px rgba(240, 0, 0, 0.95), inset 0 0 170px rgba(200, 0, 0, 0.85); }
+            0% { background-color: rgba(220, 20, 20, 0.04); box-shadow: inset 0 0 90px rgba(160, 0, 0, 0.75); }
+            100% { background-color: rgba(220, 20, 20, 0.28); box-shadow: inset 0 0 130px rgba(254, 0, 0, 0.98), inset 0 0 190px rgba(180, 0, 0, 0.9); }
         }
 
         canvas { position: absolute; top: 0; left: 0; width: 380px; height: 480px; z-index: 1; }
         #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; }
-        .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #111 0%, #2a2a2a 30%, #0d0d0d 50%, #2a2a2a 70%, #111 100%); border-radius: 6px 6px 2px 2px; border-top: 1px solid #444; box-shadow: 0 12px 25px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.1); }
-        .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #1c1c1c; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.1), rgba(0,240,255,0.02)); box-shadow: inset 0 0 8px rgba(0,240,255,0.15); }
-        .w-holo-sight::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #ff003c; border-radius: 50%; box-shadow: 0 0 10px 2px #ff003c; }
-        .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #0a0a0a, #1a1a1a, #050505); border-radius: 3px; }
-        #flash { position: absolute; top: 15px; left: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 15%, #ff3c00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 10px #ff3c00); }
+        .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
+        .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
+        .w-holo-sight::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #ff0055; border-radius: 50%; box-shadow: 0 0 12px 3px #ff0055; }
+        .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #09090b, #18181b, #020202); border-radius: 3px; }
+        #flash { position: absolute; top: 12px; left: 26px; width: 48px; height: 48px; background: radial-gradient(circle, #ffffff 20%, #ff4500 55%, transparent 85%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 12px #ff4500); }
 
-        .target-ring { position: absolute; border: 3px dashed #ff2222; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 10px #ff2222; }
-        #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00ffff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 8px #00ffff; display: none; }
+        .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; }
+        #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: none; }
 
-        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
-        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.85); padding: 6px 12px; border-radius: 6px; border: 1px solid #444; letter-spacing: 1px; }
-        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.85); padding: 3px 8px; border-radius: 4px; }
-        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3333; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 4px; border: 2px solid #ff2222; text-shadow: 0 0 4px #ff0000; }
+        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; }
+        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; }
+        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; }
 
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
-        #overScreen { background: rgba(0,0,0,0.95); } #intermissionScreen { background: rgba(0,0,0,0.85); } #winScreen { background: linear-gradient(135deg, rgba(10,20,35,0.95), rgba(25,40,65,0.95)); }
-        .retry-btn { padding: 12px 28px; background: #b01a25; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(176,26,37,0.5); }
-        .win-btn { padding: 12px 28px; background: #ffea00; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(255,234,0,0.5); }
-        .intermission-title { color: #ffea00; font-size: 26px; font-weight: bold; text-shadow: 0 0 12px #ffea00; text-align: center; }
+        #overScreen { background: rgba(2,2,4,0.97); } #intermissionScreen { background: rgba(2,2,4,0.88); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
+        .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
+        .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
+        .intermission-title { color: #eab308; font-size: 26px; font-weight: bold; text-shadow: 0 0 14px #eab308; text-align: center; }
     </style>
 </head>
 <body>
@@ -76,15 +76,15 @@ game_html = '''
         </div>
 
         <div id="overScreen">
-            <div style="color:#b01a25; font-size:32px; font-weight:bold; text-shadow:0 0 10px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
-            <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Operation Score: 200</div>
-            <button class="retry-btn" onclick="resetArcadeEngine(true)">RETRY MISSION 🔄</button>
+            <div style="color:#ef4444; font-size:32px; font-weight:bold; text-shadow:0 0 12px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
+            <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
+            <button class="retry-btn" onclick="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
         </div>
 
         <div id="winScreen">
-            <div style="color:#ffea00; font-size:28px; font-weight:bold; text-shadow: 0 0 10px #ffea00;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All operations zones cleared successfully!</div>
-            <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 OPERATIONS MASTER VICTORY 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT EXECUTION OFFICER!<br>All hostile threat matrix coordinates completely sanitized.</div>
+            <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY OPERATION 🎮</button>
         </div>
     </div>
 
@@ -102,6 +102,7 @@ game_html = '''
 
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
+    let cycleTick = 0; // Tracks clock times for star and wave oscillations
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     
@@ -139,73 +140,101 @@ game_html = '''
     }
 
     const static3DObstacles = [
-        { x: -2.0, y: 0.5, z: 15, color: "#22c55e" }, 
-        { x: 2.0, y: 0.5, z: 31, color: "#ef4444" },
-        { x: -1.8, y: 0.5, z: 47, color: "#3b82f6" }
+        { x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
+        { x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }
     ];
     function render3DSceneGrid() {
-        cameraZ += (targetCameraZ - cameraZ) * 0.07;
-        cameraX += (targetCameraX - cameraX) * 0.07;
-
+        cycleTick += 0.05;
+        cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
+        // --- 🌅 REALISTIC ENVIRONMENT BACKDROP ENGINE ---
         if (currentSector === "C") {
+            // OUTSIDE PORT: Blends a star-studded night sky with rhythmic ocean waves
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
-            skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(0.7, "#1e1b4b"); skyGrd.addColorStop(1, "#311042");
+            skyGrd.addColorStop(0, "#020205"); skyGrd.addColorStop(0.6, "#09091b"); skyGrd.addColorStop(1, "#181024");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            
+            // Draw procedurally scattered star clusters
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            for (let i = 1; i <= 25; i++) {
+                let sX = (i * 73) % 380; let sY = (i * 37) % 190;
+                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5;
+                ctx.fillRect(sX, sY, twinkle, twinkle);
+            }
+            
+            // Bioluminescent Wave Shaders
             let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
-            seaGrd.addColorStop(0, "#090d16"); seaGrd.addColorStop(1, "#022c22");
+            seaGrd.addColorStop(0, "#05070f"); seaGrd.addColorStop(0.5, "#022c22"); seaGrd.addColorStop(1, "#011e17");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
+            
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.12)"; ctx.lineWidth = 2;
+            for (let waveY = 250; waveY < 480; waveY += 35) {
+                ctx.beginPath();
+                let waveShift = Math.sin(cycleTick + waveY) * 12;
+                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift);
+                ctx.stroke();
+            }
         } else {
-            ctx.fillStyle = "#030712"; ctx.fillRect(0, 0, 380, 480);
+            // INSIDE WAREHOUSE: Intense dark tactical shipping facility void
+            ctx.fillStyle = "#01030a"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // Draw solid wall panel matrices
-        for (let z = 84; z >= 0; z -= 3) {
-            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
-            let pNear = project3D(0, 0, zPos);
-            let pFar = project3D(0, 0, zPos + 3);
+        // --- 📐 ADVANCED REALSITIC POLYGON CONTAINER WALL MATRIX ---
+        for (let z = 84; z >= 0; z -= 1.5) {
+            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 1.5);
+            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 1.5);
             if (!pNear || !pFar) continue;
 
+            // Volumetric lighting multiplier (Simulates darkness drop-offs near the horizon)
             let fogOpacity = Math.min(1, z / 65);
+            let lightScale = 1 - fogOpacity;
 
-            ctx.fillStyle = "rgba(22, 28, 45, " + (1 - fogOpacity) + ")";
-            ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
-            ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
+            // Specular dark concrete warehouse floor paths
+            let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
+            ctx.fillStyle = floorColor; ctx.beginPath();
+            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
+            ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            if (currentSector === "C") continue;
+            if (currentSector === "C") continue; // Strip container walls cleanly outside
 
-            let isRidgeFold = Math.floor(zPos * 2) % 2 === 0;
-            
-            ctx.fillStyle = isRidgeFold ? "rgba(13, 148, 136, " + (1 - fogOpacity) + ")" : "rgba(17, 94, 89, " + (1 - fogOpacity) + ")";
+            // Alternating shadow frequencies drawing heavy corrugated sheet textures
+            let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
+            let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
+            let wallG = isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale);
+            let wallB = isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale);
+            ctx.fillStyle = "rgba(" + wallR + "," + wallG + "," + wallB + ",1)";
+
+            // Left Corrugated Side Wall Panel
             ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size));
-            ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
+            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
+            ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
+            // Right Corrugated Side Wall Panel
             ctx.beginPath();
-            ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size));
-            ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
+            ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
+            ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
         }
 
+        // 📦 DRAW BARRICADES WITH REALISTIC SPECULAR HIGHLIGHTS
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
-            ctx.fillStyle = b.color; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = Math.max(1, p.size * 0.05); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.beginPath(); ctx.moveTo(p.x - w/2, p.y - h/2); ctx.lineTo(p.x + w/2, p.y + h/2); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(p.x + w/2, p.y - h/2); ctx.lineTo(p.x - w/2, p.y + h/2); ctx.stroke();
+            let bOpacity = Math.max(0, 1 - ((b.z - cameraZ) / 65));
+
+            ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
+            
+            // Render depth shading layers inside the core crate structure
+            ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
+            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04);
+            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
         });
 
+        // 🏃 DRAW ENEMIES WITH MILITARY HELMETS, PROTECTION GEAR & FLASHLIGHTS
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
@@ -213,19 +242,27 @@ game_html = '''
             let p = project3D(t.x, t.y, t.z); if (!p) return;
             let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
 
-            ctx.fillStyle = "#14532d"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
-            ctx.strokeStyle = "#000"; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
-            ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#1c210e"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-            ctx.fillStyle = "#111111"; ctx.fillRect(p.x + s/4, p.y - s/4, s * 0.7, s * 0.2);
+            // Camouflage Torso Vest Body Suit
+            ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
+            
+            // Tactical Chest Rig Plates
+            ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
+            
+            // Head + Camouflage Military Helmet Shell Caps
+            ctx.fillStyle = "#d4b38a"; ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke(); // Helmet brim
+            
+            // 24px Proportional Long Legs
+            ctx.fillStyle = "#18181b"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
+            
+            // Premium Low-Profile Carbine Submachine Gun Barrel
+            ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
             if (t.isFlashing) {
-                let flashGrd = ctx.createRadialGradient(p.x + s, p.y - s/6, 1, p.x + s, p.y - s/6, s * 0.5);
-                flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.4, "#ffaa00"); flashGrd.addColorStop(1, "transparent");
-                ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s, p.y - s/6, s * 0.5, 0, Math.PI*2); 
-                // FIXED: Linked contextual drawing prefix token securely to clear background loop crashes
-                ctx.fill(); 
-                ctx.closePath();
+                let flashGrd = ctx.createRadialGradient(p.x + s * 0.9, p.y - s/4, 1, p.x + s * 0.9, p.y - s/4, s * 0.55);
+                flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent");
+                ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
             }
             t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
@@ -253,8 +290,15 @@ game_html = '''
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
-        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex"; }
+
+        if (playerHp <= 20 && !heartbeatIntervalId) {
+            gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
+        }
+        if (playerHp <= 0) {
+            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
+            finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex";
+        }
     }
 
     function triggerFire() {
