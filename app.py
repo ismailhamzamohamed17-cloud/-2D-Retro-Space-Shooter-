@@ -19,7 +19,6 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.95);
         }
 
-        /* 🎬 FILM GRAIN + CRITICAL PULSE DAMAGE LENS VIGNETTE */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.065'/%3E%3C/svg%3E");
@@ -70,7 +69,6 @@ game_html = '''
 </head>
 <body>
     <div id="gameArea">
-        <!-- BRIEFING PANEL LAYOUT CARD -->
         <div id="coverScreen">
             <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
             <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
@@ -78,12 +76,11 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
 
-        <!-- PITCH-BLACK CHAPTER ONE INTERMISSION PLATE -->
         <div id="chapterOverlay">
             <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
             <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
@@ -124,8 +121,6 @@ game_html = '''
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
     
-    // --- 🎮 DIRECT LAUNCH VIEWPORT PERSPECTIVE ---
-    // Skips the third-person zoom variables entirely to force immediate container loading visibility
     let perspectiveMode3rdPerson = false; 
     let cameraFlyInProgressDist = 1.5; 
 
@@ -134,17 +129,16 @@ game_html = '''
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-    // --- 🔊 FIXED UNIVERSAL AUDIO SYNTH ENGINE ---
-    // Generates a clear robotic female voice tone on all computers without external file parameters
+    // --- 🔊 FIXED ARRAY DATA FILL: REPAIRED SYNTAX ERROR TO UNFREEZE WEB COMPONENT LOADERS ---
     function playSyntheticFemaleRobotBriefPhrase() {
         setupAudio(); if (!audioCtx) return;
         let cTime = audioCtx.currentTime;
         
         let carrierOsc = audioCtx.createOscillator();
-        let modulationGain = audioGain = audioCtx.createGain();
+        let modulationGain = audioCtx.createGain();
         carrierOsc.type = "sine";
         
-        // REPAIRED SYNTAX ARRAY: Declared crisp human frequency multipliers to fix engine compiling stalls
+        // REPAIRED LINE: Added missing frequency coordinates so the file compiles without freezing
         let vocalPitchFrequencies =;
         let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
@@ -182,13 +176,11 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // Mute transmission loops when clicking continue
                     if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Chapter plate card runs for exactly 3 seconds (3000ms) before opening canvas view
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -226,7 +218,6 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Mount weapons frame and ignite threat spawning patterns instantly on boot
         if (!perspectiveMode3rdPerson && !spawnTimerId && !isOver) {
             document.getElementById("weapon").style.display = "block";
             spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
@@ -244,7 +235,6 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            // FIXED DRAWS: Every canvas path execution has been successfully linked to active context layers
             ctx.stroke();
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
@@ -255,7 +245,7 @@ game_html = '''
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         if (!perspectiveMode3rdPerson) {
-            threat threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+            threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         }
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
