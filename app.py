@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Shooter by Hamza", layout="centered")
-st.title("⚡ Shooter by Hamza")
+st.set_page_config(page_title="Virtua Tactical: Special Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Elite Operations")
 
 game_html = '''
 <!DOCTYPE html>
@@ -18,7 +18,7 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9); perspective: 800px;
         }
 
-        /* 🎬 GRITTY FILM GRAIN + ATMOSPHERIC RADIAL NOIR VIGNETTE OVERLAY */
+        /* 🎬 FILM GRAIN + VOLUMETRIC NOIR SHADING EFFECTS OVERLAY */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.055'/%3E%3C/svg%3E");
@@ -38,14 +38,14 @@ game_html = '''
         .tree-trunk { position: absolute; bottom: 0; left: 27px; width: 10px; height: 50px; background: linear-gradient(to right, #241407, #0f0702); }
         .tree-foliage { position: absolute; bottom: 45px; left: 0; width: 65px; height: 115px; background: radial-gradient(circle at center, #0f2619, #050d08); border-radius: 50%; box-shadow: inset -5px -8px 15px rgba(0,0,0,0.6), 0 10px 15px rgba(0,0,0,0.4); }
 
-        /* FIXED: Chapter 3: Cinematic Cargo Pier Docks Container Ship & Terminal Elements */
+        /* Chapter 3: Cinematic Cargo Pier Docks Container Ship & Terminal Elements */
         .dock-edge { position: absolute; bottom: 0; left: 0; width: 100%; height: 240px; background: linear-gradient(to bottom, #1b1e22, #0d0f12); z-index: 2; border-top: 8px solid #2d3142; box-shadow: inset 0 15px 30px rgba(0,0,0,0.5); }
         .port-crane-tower { position: absolute; top: 20px; left: 20px; width: 80px; height: 160px; background: linear-gradient(to right, #11161d, #05070a); border-right: 3px solid #000; z-index: 1; opacity: 0.5; }
         .cargo-vessel-hull { position: absolute; top: 80px; right: -20px; width: 150px; height: 120px; background: linear-gradient(to bottom, #090e14, #020406); border-radius: 50% 12px 12px 50%; z-index: 1; border-bottom: 4px solid #000; box-shadow: -15px 15px 30px rgba(0,0,0,0.8); }
         .cargo-container-stack { position: absolute; width: 75px; height: 55px; background: linear-gradient(135deg, #47120c, #1f0402); border: 2px solid #000; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); z-index: 3; }
         .container-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 8px); }
         .wet-reflection { position: absolute; bottom: 40px; left: 20%; width: 120px; height: 20px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 80%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); z-index: 2; }
-        .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
+                .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
         .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 6px; height: 100%; background: repeating-linear-gradient(to bottom, #727a69 0px, #727a69 25px, transparent 25px, transparent 60px); transform: translateX(-50%); opacity: 0.25; }
 
         /* 🚗 MILITARY ARMORED PERSONNEL CARRIER VEHICLE CHASSIS RULES */
@@ -78,7 +78,7 @@ game_html = '''
         #flash { position: absolute; top: 15px; left: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 15%, #ff3c00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 10px #ff3c00); }
 
         /* 🏃 CAMOUFLAGE MILITARY SOLDIER THREAT MODULES */
-        .threat { position: absolute; width: 45px; height: 75px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; will-change: transform, top, left, opacity; transition: transform 0.4s ease-out, top 0.4s ease-out, opacity 0.4s ease-out; }
+        .threat { position: absolute; width: 45px; height: 83px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; will-change: transform, top, left, opacity; }
         .t-head { background: linear-gradient(135deg, #c48e58, #945d31); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #000; position: relative; }
         .t-head::before { content: ''; position: absolute; top: -3px; left: -1px; width: 26px; height: 12px; background: repeating-linear-gradient(45deg, #2b331a, #2b331f 4px, #161a0d 4px, #161a0d 8px); border-radius: 6px 6px 0 0; border: 1.5px solid #000; } 
         .t-eyes { position: absolute; top: 12px; left: 4px; width: 14px; height: 4px; display: flex; justify-content: space-between; }
@@ -89,11 +89,17 @@ game_html = '''
         .arm-r { right: -16px; transform: rotate(15deg); transform-origin: left center; }
         .t-weapon { position: absolute; top: -2px; width: 14px; height: 11px; background: #111; border-radius: 2px; border-bottom: 2px solid #000; }
         .arm-l .t-weapon { left: -12px; } .arm-r .t-weapon { right: -12px; }
-        .t-legs { display: flex; justify-content: space-around; width: 28px; height: 16px; margin-top: auto; }
+        
+        /* FIXED: Expanded leg vertical container scale vectors up from 16px to 24px */
+        .t-legs { display: flex; justify-content: space-around; width: 28px; height: 24px; margin-top: auto; }
         .t-leg { background: #1c210e; width: 9px; height: 100%; border-radius: 2px; border: 1px solid #000; animation: walkCycle 0.22s ease-in-out infinite alternate; }
         .t-leg:nth-child(2) { animation-delay: 0.11s; }
         @keyframes walkCycle { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 
+        /* FIXED: Force dead state to completely lock walking mechanics instantly upon hit confirmation */
+        .dead-threat .t-leg { animation: none !from-code-pipeline; transform: translateY(0) !important; }
+
+        .target-ring { position: absolute; border: 3px dashed #ff2222; border-radius: 50%; pointer-events: none; z-index: 10; transform-origin: center center; display: block; box-shadow: 0 0 10px #ff2222; }
         .blood-drop { position: absolute; width: 4px; height: 4px; background: #6b0004; border-radius: 50%; z-index: 12; pointer-events: none; animation: explodeBlood 0.35s ease-out forwards; }
         @keyframes explodeBlood { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--vx), var(--vy)) scale(0.3); opacity: 0; } }
         .blood-pool { position: absolute; width: 52px; height: 14px; background: radial-gradient(circle, #4a0002 20%, #240001 70%, transparent 100%); border-radius: 50%; z-index: 3; pointer-events: none; animation: spreadPool 1s ease-out forwards; }
@@ -102,12 +108,8 @@ game_html = '''
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
         #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.85); padding: 6px 12px; border-radius: 6px; border: 1px solid #444; letter-spacing: 1px; }
         #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.85); padding: 3px 8px; border-radius: 4px; }
-
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
-        #overScreen { background: rgba(0,0,0,0.95); }
-        #intermissionScreen { background: rgba(0,0,0,0.85); }
-        #winScreen { background: linear-gradient(135deg, rgba(10,20,35,0.95), rgba(25,40,65,0.95)); }
-        
+        #overScreen { background: rgba(0,0,0,0.95); } #intermissionScreen { background: rgba(0,0,0,0.85); } #winScreen { background: linear-gradient(135deg, rgba(10,20,35,0.95), rgba(25,40,65,0.95)); }
         .retry-btn { padding: 12px 28px; background: #b01a25; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(176,26,37,0.5); }
         .win-btn { padding: 12px 28px; background: #ffea00; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(255,234,0,0.5); }
         .intermission-title { color: #ffea00; font-size: 26px; font-weight: bold; text-shadow: 0 0 12px #ffea00; text-align: center; }
@@ -139,8 +141,6 @@ game_html = '''
             <div id="flash"></div>
             <div class="w-slide"></div>
             <div class="w-holo-sight"></div>
-            <div class="w-frame"></div>
-            <div class="w-guard"></div>
             <div class="w-grip-back"></div>
         </div>
 
@@ -168,116 +168,30 @@ game_html = '''
     let threatsList = []; let chapterKills = 0;
     let audioCtx = null, spawnTimerId = null, physicsTimerId = null;
 
-    const gameArea = document.getElementById("gameArea");
-    const sight = document.getElementById("sight");
-    const weapon = document.getElementById("weapon");
-    const flash = document.getElementById("flash");
-    const car = document.getElementById("car");
-    const scoreCounter = document.getElementById("scoreCounter");
-    const chapterTxt = document.getElementById("chapterTxt");
-    const targetTracker = document.getElementById("targetTracker");
-    const sceneryContainer = document.getElementById("sceneryContainer");
-    const overScreen = document.getElementById("overScreen");
-    const winScreen = document.getElementById("winScreen");
-    const intermissionScreen = document.getElementById("intermissionScreen");
-    const finalScore = document.getElementById("finalScore");
+    const gameArea = document.getElementById("gameArea"), sight = document.getElementById("sight"), weapon = document.getElementById("weapon"), flash = document.getElementById("flash"), car = document.getElementById("car"), scoreCounter = document.getElementById("scoreCounter"), chapterTxt = document.getElementById("chapterTxt"), targetTracker = document.getElementById("targetTracker"), sceneryContainer = document.getElementById("sceneryContainer"), overScreen = document.getElementById("overScreen"), winScreen = document.getElementById("winScreen"), intermissionScreen = document.getElementById("intermissionScreen"), finalScore = document.getElementById("finalScore");
 
-    function setupAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
+    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     function sound(type) {
-        setupAudio(); if (!audioCtx) return;
-        let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        
-        if (type === "zap") {
-            osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === "ding") {
-            osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-        } else if (type === "boom") {
-            osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.38);
-        } else if (type === "level") {
-            osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-            osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
-            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        } else if (type === "shout_aaa") {
-            osc.type = "sawtooth"; osc.frequency.setValueAtTime(260, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.26);
-            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.26);
-        }
+        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
+        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
+        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
+        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        else if (type === "shout_aaa") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(260, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.26); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.26); }
     }
 
-function aim(e) {
-    // 1. Instantly exit or freeze actions if the operation is already over
-    if (isOver || (typeof intermissionScreen !== 'undefined' && intermissionScreen.style.display === "flex")) return;
-    
-    // 2. 📱 MOBILE TOUCH DATA EXTRACTION: Pull coordinates safely from the touch array layer
-    let evt = e;
-    if (e.touches && e.touches.length > 0) {
-        evt = e.touches[0]; // Captures the exact primary finger point on the screen surface
-    } else if (e.changedTouches && e.targetTouches.length > 0) {
-        evt = e.targetTouches[0];
+    function aim(e) {
+        if (isOver || intermissionScreen.style.display === "flex") return;
+        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches[0]; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches[0]; }
+        let bounds = gameArea.getBoundingClientRect();
+        currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16)); currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
+        sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
+        let swayX = (currentX - 168) / 10; let swayY = (currentY - 218) / 12;
+        weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-    
-    // 3. Coordinate alignment math relative to your fixed 380px game screen box bounds
-    let bounds = gameArea.getBoundingClientRect();
-    currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
-    currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
-    
-    // 4. Update the visual position markers of your crosshair reticle sight
-    sight.style.left = currentX + "px"; 
-    sight.style.top = currentY + "px";
-    
-    // 5. Calculate fluid gun sway rotations mimicking retro tactical arcade feedback loops
-    let swayX = (currentX - 168) / 10;
-    let swayY = (currentY - 218) / 12;
-    weapon.style.transform = `translateX(-50%) scale(1.1) rotate(${swayX}deg) translateY(${swayY}px)`;
-}
-
-// --- 🕹️ REWRITTEN SECURE MOUNT LISTENERS TRACKING SURFACE POINTER DATA ---
-gameArea.addEventListener("mousemove", aim);
-
-// Blocks default mobile browser scrolling mechanics so dragging your finger doesn't bounce the web page
-gameArea.addEventListener("touchmove", (e) => { 
-    e.preventDefault(); 
-    aim(e); 
-}, { passive: false });
-
-// Desktop click trigger mapping
-gameArea.addEventListener("mousedown", (e) => { 
-    if(e.target.tagName !== "BUTTON") triggerFire(); 
-});
-
-// Mobile direct tap trigger mapping (safely handles single quick taps without locking out)
-gameArea.addEventListener("touchstart", (e) => { 
-    if(e.target.tagName !== "BUTTON") { 
-        e.preventDefault(); 
-        // Sync aim vectors to tap spot right before pulling the trigger
-        if(e.touches && e.touches.length > 0) {
-            aim(e);
-        }
-        triggerFire(); 
-    } 
-}, { passive: false });
-
-
-    gameArea.addEventListener("mousemove", aim);
-    gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+    gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
-    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); triggerFire(); } });
+    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
     const mapChapters = {
         1: { name: "CITY STREETS", bg: "linear-gradient(to bottom, #172230 0%, #2f3e4f 40%, #151a21 41%, #090c12)", road: "none", code: "city" },
         2: { name: "DARK FOREST", bg: "linear-gradient(to bottom, #050d04, #0f1c0e 40%, #131a12 41%, #020501)", road: "brightness(0.35) sepia(0.6) hue-rotate(65deg)", code: "tree" },
@@ -285,64 +199,29 @@ gameArea.addEventListener("touchstart", (e) => {
     };
 
     function updateLevelAtmosphere() {
-        let meta = mapChapters[activeChapter];
-        let maxNeeded = 5 + (activeChapter - 1) * 2;
-        chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`;
-        targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
-        gameArea.style.background = meta.bg;
-        
-        let roadwayEl = document.querySelector(".roadway");
-        let carEl = document.getElementById("car");
-
-        // FIXED: Explicitly signals carParked state to prevent spawner freezing in Chapter 3
-        if (meta.code === "port") {
-            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
-            carEl.style.display = "none"; 
-            carParked = true; distanceScale = 1.0; 
-        } else {
-            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
-            carEl.style.display = "block";
-            carParked = false; distanceScale = 0.2;
-        }
-        
+        let meta = mapChapters[activeChapter]; let maxNeeded = 5 + (activeChapter - 1) * 2;
+        chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`; targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`; gameArea.style.background = meta.bg;
+        let roadwayEl = document.querySelector(".roadway"), carEl = document.getElementById("car");
+        if (meta.code === "port") { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; carEl.style.display = "none"; carParked = true; } 
+        else { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; carEl.style.display = "block"; }
         sceneryContainer.innerHTML = "";
-        if (meta.code === "city") {
-            sceneryContainer.innerHTML = '<div class="city-facade-l"></div><div class="overhead-wires"></div><div class="city-facade-r"></div>';
-        } else if (meta.code === "tree") {
-            // FIXED: Multiple high-density trees spaced cleanly without background clipping
-            sceneryContainer.innerHTML = `
-                <div class="tree-3d" style="left:15px; bottom:160px; transform:scale(0.85);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="left:65px; bottom:180px; transform:scale(0.7);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="right:20px; bottom:150px; transform:scale(0.9);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="right:75px; bottom:175px; transform:scale(0.75);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>`;
-        } else if (meta.code === "port") {
-            // FIXED: Ground pier walls and stacks anchored inside the road container height bounds
-            sceneryContainer.innerHTML = `
-                <div class="dock-edge"></div><div class="port-crane-tower"></div><div class="wet-reflection"></div><div class="cargo-vessel-hull"></div>
-                <div class="cargo-container-stack" style="left:20px; bottom:115px; z-index:3;"><div class="container-ribs"></div></div>
-                <div class="cargo-container-stack" style="left:70px; bottom:130px; background:linear-gradient(135deg,#0a4447,#032021); z-index:3;"><div class="container-ribs"></div></div>
-                <div class="cargo-container-stack" style="right:35px; bottom:120px; background:linear-gradient(135deg,#5c4308,#241a02); z-index:3;"><div class="container-ribs"></div></div>`;
-        }
+        if (meta.code === "city") { sceneryContainer.innerHTML = '<div class="city-facade-l"></div><div class="overhead-wires"></div><div class="city-facade-r"></div>'; } 
+        else if (meta.code === "tree") { sceneryContainer.innerHTML = `<div class="tree-3d" style="left:15px; bottom:160px; transform:scale(0.85);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="left:65px; bottom:180px; transform:scale(0.7);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:20px; bottom:150px; transform:scale(0.9);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:75px; bottom:175px; transform:scale(0.75);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>`; } 
+        else if (meta.code === "port") { sceneryContainer.innerHTML = `<div class="dock-edge"></div><div class="port-crane-tower"></div><div class="wet-reflection"></div><div class="cargo-vessel-hull"></div><div class="cargo-container-stack" style="left:20px; bottom:115px; z-index:3;"><div class="container-ribs"></div></div><div class="cargo-container-stack" style="left:70px; bottom:130px; background:linear-gradient(135deg,#0a4447,#032021); z-index:3;"><div class="container-ribs"></div></div><div class="cargo-container-stack" style="right:35px; bottom:120px; background:linear-gradient(135deg,#5c4308,#241a02); z-index:3;"><div class="container-ribs"></div></div>`; }
     }
 
     function spawnBloodSpit(x, y) {
         for (let i = 0; i < 10; i++) {
-            let drop = document.createElement("div"); drop.className = "blood-drop";
-            drop.style.left = x + "px"; drop.style.top = y + "px";
-            let vx = (Math.random() * 50 - 25); let vy = (Math.random() * -35 - 5);
-            drop.style.setProperty('--vx', vx + 'px'); drop.style.setProperty('--vy', vy + 'px');
-            gameArea.appendChild(drop);
-            setTimeout(() => drop.remove(), 350);
+            let drop = document.createElement("div"); drop.className = "blood-drop"; drop.style.left = x + "px"; drop.style.top = y + "px";
+            let vx = (Math.random() * 50 - 25); let vy = (Math.random() * -35 - 5); drop.style.setProperty('--vx', vx + 'px'); drop.style.setProperty('--vy', vy + 'px');
+            gameArea.appendChild(drop); setTimeout(() => drop.remove(), 350);
         }
-        let pool = document.createElement("div"); pool.className = "blood-pool";
-        pool.style.left = (x - 26) + "px"; pool.style.top = (y + 26) + "px";
-        gameArea.appendChild(pool);
+        let pool = document.createElement("div"); pool.className = "blood-pool"; pool.style.left = (x - 26) + "px"; pool.style.top = (y + 26) + "px"; gameArea.appendChild(pool);
     }
 
     function triggerFire() {
         if (isOver || intermissionScreen.style.display === "flex") return;
-        sound("zap"); flash.style.display = "block";
-        setTimeout(() => { flash.style.display = "none"; }, 60);
+        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitCenterX = currentX + 16; let hitCenterY = currentY + 16;
 
         threatsList.forEach((t) => {
@@ -351,131 +230,78 @@ gameArea.addEventListener("touchstart", (e) => {
             let tX = tRect.left - areaRect.left; let tY = tRect.top - areaRect.top;
 
             if (hitCenterX >= tX && hitCenterX <= tX + tRect.width && hitCenterY >= tY && hitCenterY <= tY + tRect.height) {
-                t.isDying = true; sound("shout_aaa"); spawnBloodSpit(hitCenterX, hitCenterY);
+                t.isDying = true; 
+                // FIXED: Adds dead class anchor node to freeze walking animation steps immediately
+                t.el.classList.add("dead-threat");
+                sound("shout_aaa"); spawnBloodSpit(hitCenterX, hitCenterY);
                 score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); chapterKills += 1;
-                let maxNeeded = 5 + (activeChapter - 1) * 2;
-                targetTracker.innerText = "TARGETS CLEAR: " + chapterKills + "/" + maxNeeded;
+                let maxNeeded = 5 + (activeChapter - 1) * 2; targetTracker.innerText = "TARGETS CLEAR: " + chapterKills + "/" + maxNeeded;
 
-                t.ring.remove();
-                t.el.style.transform += " rotate(85deg)"; t.el.style.top = (parseFloat(t.el.style.top) + 26) + "px"; 
-
-                if (chapterKills >= maxNeeded) {
-                    clearInterval(spawnTimerId); clearInterval(physicsTimerId);
-                    if (activeChapter >= 3) { winScreen.style.display = "flex"; return; }
-                    sound("level"); intermissionScreen.style.display = "flex";
-                }
+                t.ring.remove(); t.el.style.transform += " rotate(85deg)"; t.el.style.top = (parseFloat(t.el.style.top) + 26) + "px"; 
+                if (chapterKills >= maxNeeded) { clearInterval(spawnTimerId); clearInterval(physicsTimerId); if (activeChapter >= 3) { winScreen.style.display = "flex"; return; } sound("level"); intermissionScreen.style.display = "flex"; }
             }
         });
     }
     function runEngineLoops() {
         physicsTimerId = setInterval(() => {
-            if (isOver) return;
-            let meta = mapChapters[activeChapter];
-
-            // Only run the forward driving zoom animation if it's a road level
+            if (isOver) return; let meta = mapChapters[activeChapter];
             if (meta.code !== "port") {
-                if (!carParked) {
-                    distanceScale += 0.015;
-                    if (distanceScale >= 1.0) { distanceScale = 1.0; carParked = true; car.classList.add("parked-open"); }
-                }
-                let currentTopY = 165 + (distanceScale * 45); 
-                car.style.transform = "scale(" + distanceScale + ")";
-                car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
+                if (!carParked) { distanceScale += 0.015; if (distanceScale >= 1.0) { distanceScale = 1.0; carParked = true; car.classList.add("parked-open"); } }
+                let currentTopY = 165 + (distanceScale * 45); car.style.transform = "scale(" + distanceScale + ")"; car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
             }
-
             let currentTopY = 165 + (distanceScale * 45);
 
             threatsList.forEach((t) => {
                 if (t.isDying) return; 
-                // FIXED: Direct placement math avoids vertical floating bugs in Chapter 3
-                let updatedX = (meta.code === "port") ? (60 + t.sideOffset) : (carPos + (t.sideOffset * distanceScale));
-                let threatY = (meta.code === "port") ? (140 + (t.baseTopY - 190)) : (currentTopY + (t.baseTopY - 195) * distanceScale);
-                
-                t.el.style.transform = "scale(" + distanceScale + ")";
-                t.el.style.left = updatedX + "px"; t.el.style.top = threatY + "px";
-                
-                t.ring.style.width = (90 * (1.3 - (t.age / 40))) + "px";
-                t.ring.style.height = (90 * (1.3 - (t.age / 40))) + "px";
-                let rSize = 90 * (1.3 - (t.age / 40));
-                t.ring.style.left = (updatedX + (20 * distanceScale) - (rSize / 2) + 15) + "px";
-                t.ring.style.top = (threatY + (15 * distanceScale) - (rSize / 2) + 30) + "px";
+                if (meta.code === "port") {
+                    t.localScale += 0.024; if (t.localScale > 1.35) t.localScale = 1.35;
+                    t.el.style.transform = "scale(" + t.localScale + ")"; t.el.style.left = (60 + t.sideOffset) + "px"; t.el.style.top = (130 + (t.baseTopY - 190) + (t.localScale * 45)) + "px";
+                    
+                    let rSize = 90 * (1.3 - (t.age / 40)); t.ring.style.width = Math.max(0, rSize) + "px"; t.ring.style.height = Math.max(0, rSize) + "px";
+                    t.ring.style.left = ((60 + t.sideOffset) + (20 * t.localScale) - (rSize / 2) + 15) + "px"; t.ring.style.top = ((130 + (t.baseTopY - 190) + (t.localScale * 45)) + (15 * t.localScale) - (rSize / 2) + 30) + "px";
+                } else {
+                    t.el.style.transform = "scale(" + distanceScale + ")"; t.el.style.left = (carPos + (t.sideOffset * distanceScale)) + "px"; t.el.style.top = (currentTopY + (t.baseTopY - 195) * distanceScale) + "px";
+                    
+                    let rSize = 90 * (1.3 - (t.age / 40)); t.ring.style.width = Math.max(0, rSize) + "px"; t.ring.style.height = Math.max(0, rSize) + "px";
+                    t.ring.style.left = ((carPos + (t.sideOffset * distanceScale)) + (20 * distanceScale) - (rSize / 2) + 15) + "px"; t.ring.style.top = ((currentTopY + (t.baseTopY - 195) * distanceScale) + (15 * distanceScale) - (rSize / 2) + 30) + "px";
+                }
                 t.age += 1;
             });
         }, 30);
 
         spawnTimerId = setInterval(() => {
-            let maxSimultaneous = 5 + (activeChapter - 1) * 2;
-            if (isOver || threatsList.length >= maxSimultaneous || !carParked) return;
-
-            let el = document.createElement("div"); el.className = "threat";
-            let roll = Math.random(); let sideOffset, topY, armClass;
-            
-            if (roll < 0.25) { sideOffset = -30; topY = 190; armClass = "arm-l"; }
-            else if (roll < 0.5) { sideOffset = 150; topY = 185; armClass = "arm-r"; }
-            else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; }
-            else { sideOffset = 130; topY = 210; armClass = "arm-r"; }
+            let maxSimultaneous = 5 + (activeChapter - 1) * 2; if (isOver || threatsList.length >= maxSimultaneous || !carParked) return;
+            let el = document.createElement("div"); el.className = "threat"; let roll = Math.random(); let sideOffset, topY, armClass;
+            if (roll < 0.25) { sideOffset = -30; topY = 190; armClass = "arm-l"; } else if (roll < 0.5) { sideOffset = 150; topY = 185; armClass = "arm-r"; } else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; } else { sideOffset = 130; topY = 210; armClass = "arm-r"; }
 
             el.innerHTML = '<div class="t-head"><div class="t-eyes"></div></div><div class="t-torso"><div class="t-arm ' + armClass + '"><div class="t-weapon"></div></div></div><div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>';
-                
+            let initialScale = (mapChapters[activeChapter].code === "port") ? 0.25 : distanceScale;
             let updatedX = (mapChapters[activeChapter].code === "port") ? (60 + sideOffset) : (carPos + (sideOffset * distanceScale));
-            let threatY = (mapChapters[activeChapter].code === "port") ? (140 + (topY - 190)) : ((165 + (distanceScale * 45)) + (topY - 195) * distanceScale);
+            let threatY = (mapChapters[activeChapter].code === "port") ? (130 + (topY - 190)) : ((165 + (distanceScale * 45)) + (topY - 195) * distanceScale);
             
-            el.style.left = updatedX + "px"; el.style.top = threatY + "px"; el.style.transform = "scale(" + distanceScale + ")";
-            gameArea.appendChild(el);
+            el.style.left = updatedX + "px"; el.style.top = threatY + "px"; el.style.transform = "scale(" + initialScale + ")";
+            gameArea.appendChild(el); let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
 
-            let ring = document.createElement("div"); ring.className = "target-ring";
-            gameArea.appendChild(ring);
+            let threatObj = { el: el, ring: ring, sideOffset: sideOffset, baseTopY: topY, age: 0, isDying: false, localScale: initialScale }; threatsList.push(threatObj); sound("ding");
 
-            let threatObj = { el: el, ring: ring, sideOffset: sideOffset, baseTopY: topY, age: 0, isDying: false };
-            threatsList.push(threatObj);
-            sound("ding");
-
-            setTimeout(() => {
-                if (!isOver && el.parentNode && !threatObj.isDying) {
-                    isOver = true; sound("boom");
-                    clearInterval(spawnTimerId); clearInterval(physicsTimerId);
-                    finalScore.innerText = "Final Operation Score: " + score;
-                    overScreen.style.display = "flex";
-                }
-            }, 1400);
+            setTimeout(() => { if (!isOver && el.parentNode && !threatObj.isDying) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(physicsTimerId); finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex"; } }, 1400);
         }, 1100);
     }
 
-    function clearDeadBodiesAndBlood() {
-        document.querySelectorAll(".threat, .target-ring, .blood-pool, .blood-drop").forEach(el => el.remove());
-        threatsList = [];
-    }
-
-    window.advanceToNextChapter = function() {
-        activeChapter += 1; chapterKills = 0;
-        intermissionScreen.style.display = "none";
-        clearDeadBodiesAndBlood();
-        resetArcadeEngine(false);
-    };
-
+    function clearDeadBodiesAndBlood() { document.querySelectorAll(".threat, .target-ring, .blood-pool, .blood-drop").forEach(el => el.remove()); threatsList = []; }
+    window.advanceToNextChapter = function() { activeChapter += 1; chapterKills = 0; intermissionScreen.style.display = "none"; clearDeadBodiesAndBlood(); resetArcadeEngine(false); };
     window.resetArcadeEngine = function(resetFullCampaign) {
-        clearInterval(spawnTimerId); clearInterval(physicsTimerId);
-        clearDeadBodiesAndBlood();
+        clearInterval(spawnTimerId); clearInterval(physicsTimerId); clearDeadBodiesAndBlood();
         if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; scoreCounter.innerText = "00200"; }
-        
-        updateLevelAtmosphere();
-        isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); 
-        car.classList.remove("parked-open"); 
-        carPos = Math.random() * 80 + 70;
-        
-        sight.style.left = "168px"; sight.style.top = "218px";
-        weapon.style.transform = "translateX(-50%) scale(1.1) rotate(0deg) translateY(0px)";
-        overScreen.style.display = "none"; winScreen.style.display = "none";
-        
-        runEngineLoops();
+        updateLevelAtmosphere(); isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); car.classList.remove("parked-open"); carPos = Math.random() * 80 + 70;
+        currentX = 168; currentY = 218; sight.style.left = "168px"; sight.style.top = "218px"; weapon.style.transform = "translateX(-50%) scale(1.1) rotate(0deg) translateY(0px)"; overScreen.style.display = "none"; winScreen.style.display = "none"; runEngineLoops();
     };
-
-    updateLevelAtmosphere();
-    runEngineLoops();
+    updateLevelAtmosphere(); runEngineLoops();
 </script>
 </body>
 </html>
 '''
-
-components.html(game_html, height=560)
+st.markdown('<div class="cab">', unsafe_allow_html=True)
+components.html(game_html, height=560, scrolling=False)
+st.markdown("</div>", unsafe_allow_html=True)
 
