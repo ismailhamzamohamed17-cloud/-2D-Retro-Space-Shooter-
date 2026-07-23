@@ -18,7 +18,7 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9);
         }
 
-        /* 🎬 FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
+        /* FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
@@ -94,6 +94,9 @@ game_html = '''
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorRequirements = { "A": 3, "B": 3, "C": 4 };
+    
+    // FIXED: Added an explicit state tracking lock to safely isolate camera movements from spawner ticks
+    let isMoving = false; 
 
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -113,8 +116,12 @@ game_html = '''
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
     function aim(e) {
+        // FIXED: Allows the crosshair reticle to scan freely even if camera path transitions are active
         if (isOver) return;
-        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
+        let evt = e; 
+        if (e.touches && e.touches.length > 0) { evt = e.touches[0]; } 
+        else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches[0]; }
+        
         let bounds = gameArea.getBoundingClientRect();
         currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -122,7 +129,9 @@ game_html = '''
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-    gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+    
+    gameArea.addEventListener("mousemove", aim);
+    gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
@@ -137,104 +146,76 @@ game_html = '''
     }
 
     const static3DObstacles = [
-        { x: -2.0, y: 0.5, z: 15, color: "#22c55e", label: "CONTAINER A" }, // Shuffled colors to mimic steel containers
-        { x: 2.0, y: 0.5, z: 30, color: "#ef4444", label: "CONTAINER B" },
-        { x: -1.8, y: 0.5, z: 45, color: "#3b82f6", label: "CONTAINER C" }
+        { x: -2.0, y: 0.5, z: 15, color: "#22c55e" }, 
+        { x: 2.0, y: 0.5, z: 31, color: "#ef4444" },
+        { x: -1.8, y: 0.5, z: 47, color: "#3b82f6" }
     ];
     function render3DSceneGrid() {
-        // Smooth camera movement interpolation
+        // Smoothly glide camera parameters toward active vector milestones
         cameraZ += (targetCameraZ - cameraZ) * 0.07;
         cameraX += (targetCameraX - cameraX) * 0.07;
 
-        // --- 🌅 REALISTIC TEXTURED BACKDROP BUILDER ---
+        // Reset movement lock states once camera values converge onto targets safely
+        if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) {
+            isMoving = false;
+        }
+
         if (currentSector === "C") {
-            // OUTSIDE PORT ENVIRONMENT: Blends deep sea oceans with an amber sky horizon
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
             skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(0.7, "#1e1b4b"); skyGrd.addColorStop(1, "#311042");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            
             let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
             seaGrd.addColorStop(0, "#090d16"); seaGrd.addColorStop(1, "#022c22");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
         } else {
-            // INSIDE WAREHOUSE ENVIRONMENT: Pure heavy steel warehouse void
             ctx.fillStyle = "#030712"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // 🛣️ PROJECTION GENERATOR: TEXTURED 3D WALLED CORRIDOR PANELS
-        for (let z = 85; z >= 0; z -= 1.5) { // Fine-grained depth step cuts for rich textures
-            let zPos = Math.floor(cameraZ) + z;
-            zPos = zPos - (zPos % 1.5);
-
-            let pNear = project3D(0, 0, zPos);
-            if (!pNear) continue;
-
+        for (let z = 85; z >= 0; z -= 1.5) {
+            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 1.5);
+            let pNear = project3D(0, 0, zPos); if (!pNear) continue;
             let fogOpacity = Math.min(1, z / 65);
-            let intensity = Math.floor((1 - fogOpacity) * 255);
 
-            // Concrete Floor Texturing Math
-            ctx.strokeStyle = "rgba(30, 41, 59, " + (0.4 * (1 - fogOpacity)) + ")";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.stroke();
+            ctx.strokeStyle = "rgba(30, 41, 59, " + (0.4 * (1 - fogOpacity)) + ")"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            // FIXED: Only render container roof panels if player is safely INSIDE sectors A and B
             if (currentSector !== "C") {
                 ctx.strokeStyle = "rgba(15, 23, 42, " + (0.3 * (1 - fogOpacity)) + ")";
-                ctx.beginPath();
-                ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-                ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
             }
 
-            // --- 📦 DYNAMIC RIBBED METALLIC CONTAINER CORRUGATION MATH ---
-            // Alternates stroke shading widths based on depth ratios to simulate vertical steel folds
             let isRidgeFold = Math.floor(zPos * 2) % 2 === 0;
             let containerShade = isRidgeFold ? "rgba(13, 148, 136, " : "rgba(17, 94, 89, ";
-            
-            ctx.strokeStyle = containerShade + (1 - fogOpacity) + ")";
-            ctx.lineWidth = Math.max(1.5, pNear.size * 0.15); // Scales ridge thickness matching depth orientation
-
-            // Draw left vertical wall corrugation rib
-            ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.stroke();
-            
-            // Draw right vertical wall corrugation rib
-            ctx.beginPath();
-            ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.stroke();
+            ctx.strokeStyle = containerShade + (1 - fogOpacity) + ")"; ctx.lineWidth = Math.max(1.5, pNear.size * 0.15);
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
         }
 
-        // 📦 DRAW STACKED BARRICADE STEEL FREIGHT TEXTURES
         static3DObstacles.forEach(b => {
-            let p = project3D(b.x, b.y, b.z);
-            if (!p || b.z < cameraZ) return;
-            
+            let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
-            
-            // Outer Main Box Shell
             ctx.fillStyle = b.color; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            
-            // Structural Container Shading Crossbars
-            ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = Math.max(1, p.size * 0.05);
-            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = Math.max(1, p.size * 0.05); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
             ctx.beginPath(); ctx.moveTo(p.x - w/2, p.y - h/2); ctx.lineTo(p.x + w/2, p.y + h/2); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(p.x + w/2, p.y - h/2); ctx.lineTo(p.x - w/2, p.y + h/2); ctx.stroke();
         });
 
-        // 🏃 DRAW SOLDIERS OVER EXPANDED DEPTH
         threatsList.forEach(t => {
             if (t.isDying) return;
-            t.age++;
-            if (t.age > 0 && t.age % 35 === 0) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
+            // Freeze target's local fire clock if camera is actively moving sectors
+            if (!isMoving) t.age++;
+            
+            if (t.age > 0 && t.age % 35 === 0 && !isMoving) {
+                t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70);
+            }
 
             let p = project3D(t.x, t.y, t.z); if (!p) return;
-            let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s / 2); t.currentRadius = s * 0.95;
+            let s = p.size * 0.4; 
+            
+            // FIXED: Standardized target axis projections matching cursor paths perfectly
+            t.currentScreenX = p.x; 
+            t.currentScreenY = p.y - (s * 0.5); 
+            t.currentRadius = s * 1.1; // Balanced hitbox depth thresholds
 
             ctx.fillStyle = "#14532d"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
             ctx.strokeStyle = "#000"; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
@@ -251,7 +232,11 @@ game_html = '''
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
+    // FIXED: Camera path movement decoupled from loops using isolated state blocks
     function triggerSectorPathMovement() {
+        if (isMoving) return;
+        isMoving = true; 
+
         if (currentSector === "A") {
             currentSector = "B"; sectorKills = 0; targetCameraZ = 16; targetCameraX = 1.2;
         } else if (currentSector === "B") {
@@ -268,7 +253,7 @@ game_html = '''
     }
 
     function triggerEnemyDamageStrike() {
-        if (isOver || intermissionScreen.style.display === "flex") return;
+        if (isOver || intermissionScreen.style.display === "flex" || isMoving) return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
@@ -276,7 +261,7 @@ game_html = '''
     }
 
     function triggerFire() {
-        if (isOver || intermissionScreen.style.display === "flex") return;
+        if (isOver || intermissionScreen.style.display === "flex" || isMoving) return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
 
         let hitTarget = null; let lowestDistance = Infinity;
@@ -287,7 +272,7 @@ game_html = '''
         });
 
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa"); spawnBloodSpit(currentX, currentY);
+            hitTarget.isDying = true; sound("shout_aaa");
             score += 100; scoreCounter.innerText = String(score).padStart(5, '0');
             sectorKills += 1;
             
@@ -296,21 +281,24 @@ game_html = '''
             hitTarget.ring.remove();
             threatsList = threatsList.filter(item => item !== hitTarget);
 
+            // FIXED: Instantly logs kills and triggers safe transitions without freezing spawner loops
             if (sectorKills >= needed) {
                 document.querySelectorAll(".target-ring").forEach(el => el.remove());
-                threatsList = []; setTimeout(triggerSectorPathMovement, 500);
+                threatsList = []; 
+                setTimeout(triggerSectorPathMovement, 400);
             }
         }
     }
 
     function spawn3DThreatUnit() {
-        let maxSimultaneous = 2; if (isOver || threatsList.length >= maxSimultaneous) return;
+        // FIXED: Blocks spawning loops completely while camera transitions are processing
+        if (isOver || threatsList.length >= 2 || isMoving) return;
 
         let spawnZ = 12;
         if (currentSector === "B") spawnZ = 28;
         if (currentSector === "C") spawnZ = 44;
 
-        let spawnX = cameraX + (Math.random() * 2.8) - 1.4;
+        let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
 
         threatsList.push({
@@ -323,7 +311,7 @@ game_html = '''
     window.resetArcadeEngine = function(fullReset) { location.reload(); };
 
     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-    spawnTimerId = setInterval(spawn3DThreatUnit, 1300);
+    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
 </script>
 </body>
 </html>
