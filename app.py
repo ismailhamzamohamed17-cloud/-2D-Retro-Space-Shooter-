@@ -149,52 +149,64 @@ game_html = '''
         cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
+        // --- 🌅 CINEMATIC DOCKYARD BACKDROP CORE ENGINE ---
         if (currentSector === "C") {
+            // Outdoor Harbor Sky
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
-            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
+            skyGrd.addColorStop(0, "#020205"); skyGrd.addColorStop(0.6, "#09091b"); skyGrd.addColorStop(1, "#181024");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
             
+            // Star field clusters
             ctx.fillStyle = "rgba(255,255,255,0.75)";
             for (let i = 1; i <= 25; i++) {
                 let sX = (i * 73) % 380; let sY = (i * 37) % 190;
                 let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle);
             }
             
+            // --- 🛳️ NEW FEATURE: 3D PARALLAX HORIZON CARGO VESSELS ---
+            // Projects real ship profiles that glide across the deep sea background
+            ctx.fillStyle = "#04060c";
+            let shipParallaxX = 140 - (cameraX * 25);
+            ctx.beginPath();
+            ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230);
+            ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240);
+            ctx.closePath(); ctx.fill();
+            ctx.fillRect(shipParallaxX + 15, 222, 12, 8); // Bridge tower block
+            
+            // Bioluminescent neon ocean wave currents
             let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
-            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
+            seaGrd.addColorStop(0, "#05070d"); seaGrd.addColorStop(0.5, "#011c16"); seaGrd.addColorStop(1, "#000f0f");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
             
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2;
-            for (let waveY = 250; waveY < 480; waveY += 35) {
-                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12;
-                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift);
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.14)"; ctx.lineWidth = 1.5;
+            for (let waveY = 246; waveY < 480; waveY += 32) {
+                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 10;
+                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 12 + waveShift, 260, waveY + 12 + waveShift, 380, waveY + waveShift);
                 ctx.stroke();
             }
         } else {
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 🏗️ UPGRADED VOLUMETRIC GEOMETRIC DEPTH RENDERER ---
+        // --- 🏗️ UPGRADED VOLUMETRIC TUNNEL GEOMETRY GENERATOR ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
             if (!pNear || !pFar) continue;
 
-            let fogOpacity = Math.min(1, z / 65);
-            let lightScale = 1 - fogOpacity;
+            let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
 
-            // Specular dark concrete warehouse floor track segments
+            // Concrete Floor Slabs with perspective split joints
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // Floor Separation Slabs (Adds concrete joint perspective depth lines)
             ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            if (currentSector === "C") continue; // Clear structural roof and side walls outdoors
+            if (currentSector === "C") continue; // Clear structural side walls outdoors
 
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
@@ -214,26 +226,30 @@ game_html = '''
             ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // --- 🏗️ NEW FEATURE: VOLUMETRIC METALLIC ROOF SYSTEM SUPPORT BEAMS ---
-            // Bridges left and right walls with support arches that compress down into the distance void
+            // Volumetric ceiling support rails down the tunnel
             let isBeamSegment = Math.floor(zPos) % 9 === 0;
             if (isBeamSegment) {
                 let beamColor = "rgba(" + Math.floor(15 * lightScale) + "," + Math.floor(23 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
-                ctx.fillStyle = beamColor;
-                ctx.fillRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
-                ctx.strokeStyle = "rgba(0, 0, 0, " + (0.7 * lightScale) + ")"; ctx.lineWidth = 1.5;
-                ctx.strokeRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
+                ctx.fillStyle = beamColor; ctx.fillRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
+                ctx.strokeStyle = "rgba(0, 0, 0, " + (0.7 * lightScale) + ")"; ctx.lineWidth = 1.5; ctx.strokeRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
             }
         }
 
+        // --- 🏗️ NEW FEATURE: 3D EMBEDDED CRATE BARRICADE DETAILS ---
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
+
             ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
             ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
-            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            
+            // Adds realistic structural container bracing frames
+            ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.lineWidth = Math.max(1, p.size * 0.04);
+            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.beginPath(); ctx.moveTo(p.x - w/2, p.y - h/2); ctx.lineTo(p.x + w/2, p.y + h/2); ctx.stroke();
         });
 
+        // Render infantry troops
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
