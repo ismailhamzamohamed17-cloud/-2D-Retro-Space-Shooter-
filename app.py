@@ -5,7 +5,7 @@ import random
 st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
 st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
-# Base HTML wrapper initialization
+# Base HTML layout setup
 game_html = '''
 <!DOCTYPE html>
 <html>
@@ -35,6 +35,7 @@ game_html = '''
         .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .win-btn { background: #eab308; color: #020617; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        @keyframes flashPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -43,6 +44,11 @@ game_html = '''
             <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
             <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
         </div>
+        
+        <div id="tutorialPopup" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #ff2266; font-family: monospace; font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.85); border: 2px solid #ff2266; padding: 10px 16px; border-radius: 8px; z-index: 35; text-align: center; box-shadow: 0 0 15px rgba(255, 34, 102, 0.4); animation: flashPulse 1s infinite alternate; pointer-events: none; display: none;">
+            CLICK RED CIRCLE TO SHOOT
+        </div>
+
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CH 1: 3D CONTAINER PORT</div>
         <div id="targetTracker">SECTOR A: 0/3</div>
@@ -105,7 +111,7 @@ game_html = '''
         if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
         else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
         else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
-        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, applicationStartTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
         else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
@@ -157,7 +163,7 @@ game_html = '''
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
-       function triggerSectorPathMovement() {
+    function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let idx = sectorsList.indexOf(currentSector);
         if (idx >= 0 && idx < sectorsList.length - 1) {
@@ -166,7 +172,6 @@ game_html = '''
             if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
             if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
             
-            // Bring the message back up for a split second when transitioning to a new sector floor
             document.getElementById("tutorialPopup").style.display = "block";
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
@@ -188,7 +193,6 @@ game_html = '''
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         
-        // ⚡ INSTANTLY HIDE THE TUTORIAL POPUP IN MILLISECONDS AS SOON AS SHOT IS FIRED
         document.getElementById("tutorialPopup").style.display = "none";
 
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
@@ -205,7 +209,6 @@ game_html = '''
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
-
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
@@ -273,13 +276,12 @@ game_html = '''
             }
         });
     }
-     function initializeActiveArcadeGameplay() {
+    function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
-        document.getElementById("tutorialPopup").style.display = "block"; // Display tutorial at start
+        document.getElementById("tutorialPopup").style.display = "block"; 
         scoreCounter.style.display = "block"; chapterTxt.style.display = "block"; targetTracker.style.display = "block"; healthCounter.style.display = "block"; sight.style.display = "block"; weapon.style.display = "block";
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
-
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
@@ -291,6 +293,7 @@ game_html = '''
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         
         document.getElementById("chapterOverlay").style.display = "flex";
+        document.getElementById("tutorialPopup").style.display = "none";
         document.getElementById("scoreCounter").style.display = "none"; document.getElementById("chapterTxt").style.display = "none"; document.getElementById("targetTracker").style.display = "none"; document.getElementById("healthCounter").style.display = "none"; document.getElementById("sight").style.display = "none"; document.getElementById("weapon").style.display = "none";
         setTimeout(initializeActiveArcadeGameplay, 3000);
     };
@@ -304,3 +307,4 @@ game_html = '''
 cb_id = random.randint(100000, 999999)
 st.markdown(f'<!-- Fixed Sound Tactical Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
+
