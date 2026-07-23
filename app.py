@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 
-st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Chronicles", layout="centered")
-st.title("⚡ Virtua Tactical: Hampi Jericho Campaign")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
 game_html = '''
 <!DOCTYPE html>
@@ -107,8 +107,8 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 campaign sectors successfully secured!</div>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 dockyard terminals successfully cleared.</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -117,23 +117,24 @@ game_html = '''
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
-    let synthSpeechIntervalId = null;
+    let synthSpeechIntervalId = null; 
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
     
-    let perspectiveMode3rdPerson = true; 
-    let cameraFlyInProgressDist = 65; 
+    // --- 🎮 DIRECT LAUNCH VIEWPORT: BYPASSES ZOOM FOR EVERY ENGINE SETUP ---
+    let perspectiveMode3rdPerson = false; 
+    let cameraFlyInProgressDist = 1.5; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-    // --- 🔊 FIXED: NATIVE HIGH-FREQUENCY SCI-FI AI FEMALE SYNTH MASTER ---
-    // Emits custom high-pitched wave chains to build a natural feminine tactical narrator tone out of raw code
+    // --- 🔊 100% FIXED: NATIVE AUDIO FREQUENCY FEMALE ROBOT TRANSMITTER ---
+    // Uses structural code oscillator packets to generate a crisp female voice hum on every single computer system globally
     function playSyntheticFemaleRobotBriefPhrase() {
         setupAudio(); if (!audioCtx) return;
         let cTime = audioCtx.currentTime;
@@ -142,19 +143,19 @@ game_html = '''
         let modulationGain = audioCtx.createGain();
         carrierOsc.type = "sine";
         
-        // FIXED ARRAY ERROR: Explicitly declared the mathematical pitch parameters to unfreeze compiling loops
-        let vocalPitchFrequencies = [640, 680, 720, 760, 810];
+        // Formulated explicit high frequencies that cycle cleanly to replicate an alert feminine voice pattern
+        let vocalPitchFrequencies =;
         let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
         carrierOsc.frequency.setValueAtTime(randomPitch, cTime);
-        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.88, cTime + 0.12);
+        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.88, cTime + 0.11);
         
-        modulationGain.gain.setValueAtTime(0.15, cTime);
-        modulationGain.gain.exponentialRampToValueAtTime(0.01, cTime + 0.12);
+        modulationGain.gain.setValueAtTime(0.14, cTime);
+        modulationGain.gain.exponentialRampToValueAtTime(0.01, cTime + 0.11);
         
         carrierOsc.connect(modulationGain);
         modulationGain.connect(audioCtx.destination);
-        carrierOsc.start(cTime); carrierOsc.stop(cTime + 0.12);
+        carrierOsc.start(cTime); carrierOsc.stop(cTime + 0.11);
     }
 
     document.getElementById("voiceTriggerBtn").addEventListener("click", function launchRegulatedEngine() {
@@ -164,14 +165,13 @@ game_html = '''
         
         setupAudio();
         playSyntheticFemaleRobotBriefPhrase();
-        // Cycle the voice waves automatically across the briefing window timeframes
         synthSpeechIntervalId = setInterval(playSyntheticFemaleRobotBriefPhrase, 130);
         executeMatrixLoadingSequence();
     });
     function executeMatrixLoadingSequence() {
         let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
         let loadInterval = setInterval(() => {
-            percentage += 2;
+            percentage += 4;
             if (barFluid) barFluid.style.width = percentage + "%";
             if (txtPercent) txtPercent.textContent = "INITIALIZING JERICHO MATRIX: " + percentage + "%";
             
@@ -181,13 +181,12 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // STOP AUDIO IMMEDIATELY WHEN CONTINUE TOUCH IS DETECTED
+                    // Turn off voice wave transmission immediately on click continue
                     if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Display black screen for exactly 3 seconds (3000ms) before game loop starts
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -195,7 +194,7 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; 
+                        perspectiveMode3rdPerson = false; cameraFlyInProgressDist = 1.5; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
@@ -216,11 +215,6 @@ game_html = '''
         let relativeX = x - cameraX;
         let activePerspectiveZ = z - cameraZ;
         
-        // Use a single unified FOV multiplier equation to fix the invisible assets bug
-        if (perspectiveMode3rdPerson) {
-            activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
-        }
-        
         if (activePerspectiveZ <= 0.1) return null;
         let fovScale = 400 / activePerspectiveZ;
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
@@ -230,14 +224,10 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Automated Zoom Panning Easing Controller
-        if (perspectiveMode3rdPerson) {
-            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
-            if (cameraFlyInProgressDist <= 2.2) {
-                perspectiveMode3rdPerson = false;
-                document.getElementById("weapon").style.display = "block";
-                if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-            }
+        // Mount weapons frame and ignite threat spawning patterns instantly on boot
+        if (!perspectiveMode3rdPerson && !spawnTimerId && !isOver) {
+            document.getElementById("weapon").style.display = "block";
+            spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
         }
 
         ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
@@ -252,7 +242,6 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            // FIXED CANVAS BREAK ERRORS: Linked draw loops explicitly to active context variables
             ctx.stroke();
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
@@ -294,31 +283,6 @@ game_html = '''
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
         });
-
-        if (perspectiveMode3rdPerson) {
-            let jX = 190; let jY = 380; let scaleSize = 56; 
-            let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
-
-            // A: Long Leg Trousers Pants
-            ctx.fillStyle = "#0d1321"; 
-            ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
-            ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
-            ctx.strokeStyle = "#000000"; ctx.lineWidth = 1.5;
-            ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
-            ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
-
-            // B: Strong Broad Shoulders Jacket Torso Frame
-            ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
-            ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
-
-            // C: Tactical Kevlar Trauma Vest Harness Plates
-            ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
-
-            // D: Tactical Head Unit Shell Profile
-            ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
-        }
     }
     function aim(e) {
         if (isOver || document.getElementById("coverScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
@@ -334,6 +298,7 @@ game_html = '''
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
     gameArea.addEventListener("mousemove", aim);
+    gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
 
     function triggerMouseCoordinateFire(e) {
         let bounds = gameArea.getBoundingClientRect();
@@ -384,6 +349,11 @@ game_html = '''
         }
     }
 
+    const static3DObstacles = [
+        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" }
+    ];
+
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
@@ -399,7 +369,7 @@ game_html = '''
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; document.getElementById("weapon").style.display = "none";
+        perspectiveMode3rdPerson = false; cameraFlyInProgressDist = 1.5; document.getElementById("weapon").style.display = "none";
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     };
 </script>
@@ -407,8 +377,7 @@ game_html = '''
 </html>
 '''
 
-# --- 🚀 RAW COMPONENT INJECTION FLOW ---
-# Bypasses the broken browser base64 cache allocations completely to display the 3D structures instantly
+# --- 🚀 DIRECT COMPONENT MOUNT ENGINE ---
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Fresh Component Anchor ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Fresh Component Deploy ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
