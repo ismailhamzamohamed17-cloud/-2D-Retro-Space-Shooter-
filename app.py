@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 
-st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Chronicles", layout="centered")
-st.title("⚡ Virtua Tactical: Hampi Jericho Campaign")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
 game_html = '''
 <!DOCTYPE html>
@@ -40,6 +40,15 @@ game_html = '''
         }
 
         canvas { position: absolute; top: 0; left: 0; width: 380px; height: 480px; z-index: 1; }
+        #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="chapterOverlay">
+            <div id="overlayChapterTitle" style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
+            <div id="overlayChapterSubtitle" style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
+        </div>
         #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: none; }
         .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
         .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
@@ -58,16 +67,10 @@ game_html = '''
         #overScreen, #winScreen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .win-btn { background: #eab308; color: #020617; }
-
-        #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
     <div id="gameArea">
-        <div id="chapterOverlay">
-            <div id="overlayChapterTitle" style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
-            <div id="overlayChapterSubtitle" style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
-        </div>
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CH 1: 3D CONTAINER PORT</div>
         <div id="targetTracker">SECTOR A: 0/3</div>
@@ -87,8 +90,8 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All campaign sectors cleared successfully!</div>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN COMPLETE 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS OFFICER JERICHO!<br>All terminals and flight decks successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -99,7 +102,6 @@ game_html = '''
     let spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
     let audioCtx = null;
 
-    // --- 📂 COMBINED CAMPAIGN SECTORS AND DATA REGISTRIES ---
     let currentChapter = 1; 
     let currentSector = "A"; let sectorKills = 0;
     
@@ -109,10 +111,7 @@ game_html = '''
     const ch1Requirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     const ch2Requirements = { "K":4, "L":4, "M":4, "N":4, "O":5, "P":5, "Q":5, "R":5, "S":5, "T":6 };
 
-    let isMoving = false;
-    let perspectiveMode3rdPerson = false; 
-    let cameraFlyInProgressDist = 1.5; 
-
+    let isMoving = false; let perspectiveMode3rdPerson = false; let cameraFlyInProgressDist = 1.5; 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -128,25 +127,20 @@ game_html = '''
     }
 
     function project3D(x, y, z) {
-        let relativeX = x - cameraX;
-        let activePerspectiveZ = z - cameraZ;
+        let relativeX = x - cameraX; let activePerspectiveZ = z - cameraZ;
         if (activePerspectiveZ <= 0.1) return null;
         let fovScale = 400 / activePerspectiveZ;
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
-
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
-        
-        if (!spawnTimerId && !isOver) {
-            spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-        }
+        if (!spawnTimerId && !isOver) { spawnTimerId = setInterval(spawn3DThreatUnit, 1350); }
 
-        // --- 📂 ENVIRONMENT DRAW GATES ---
         let isCh1Outdoor = (currentChapter === 1 && ["E","F","G","H","I","J"].includes(currentSector));
-        let isCh2Aircraft = (currentChapter === 2 && ["P","Q","R","S","T"].includes(currentSector));
+        let isCh2Aircraft = (currentChapter === 2 && ["P","Q","R","S"].includes(currentSector));
+        let isCh2Cockpit = (currentChapter === 2 && currentSector === "T");
 
         if (currentChapter === 1) {
             if (isCh1Outdoor) {
@@ -160,60 +154,76 @@ game_html = '''
             }
         } 
         else if (currentChapter === 2) {
-            if (isCh2Aircraft) {
-                // Airplane Inner Cabin Shell Baseline
-                ctx.fillStyle = "#0c0f16"; ctx.fillRect(0, 0, 380, 480);
+            if (isCh2Aircraft || isCh2Cockpit) {
+                ctx.fillStyle = "#090b10"; ctx.fillRect(0, 0, 380, 480);
             } else {
-                // Airport Apron Night Skyline Backdrop
                 let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010205"); skyGrd.addColorStop(0.7, "#03040e"); skyGrd.addColorStop(1, "#090914"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
                 ctx.fillStyle = "rgba(255,255,255,0.8)"; for (let i = 1; i <= 15; i++) { let sX = (i * 97) % 380; let sY = (i * 23) % 150; let pulse = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, pulse, pulse); }
                 ctx.fillStyle = "#04050a"; ctx.fillRect(40 - (cameraX * 15), 210, 80, 30); ctx.fillRect(260 - (cameraX * 15), 215, 90, 25);
                 let tarmacGrd = ctx.createLinearGradient(0, 240, 0, 480); tarmacGrd.addColorStop(0, "#080a12"); tarmacGrd.addColorStop(1, "#030406"); ctx.fillStyle = tarmacGrd; ctx.fillRect(0, 240, 380, 480);
             }
         }
-        // --- 🏗️ PERSPECTIVE 3D OBJECT SURFACE RENDERING LOOP ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
             
-            // Render specific base walking tiles depending on active stage layers
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             if (currentChapter === 2) {
-                floorColor = isCh2Aircraft ? "rgba(" + Math.floor(20 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(45 * lightScale) + ",1)" : "rgba(" + Math.floor(28 * lightScale) + "," + Math.floor(32 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
+                floorColor = (isCh2Aircraft || isCh2Cockpit) ? "rgba(" + Math.floor(24 * lightScale) + "," + Math.floor(28 * lightScale) + "," + Math.floor(40 * lightScale) + ",1)" : "rgba(" + Math.floor(28 * lightScale) + "," + Math.floor(32 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
             }
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
             
-            // Draw center taxiway guidelines or bright neon cabin aisle path markers
-            ctx.strokeStyle = isCh2Aircraft ? "rgba(6, 182, 212, 0.45)" : "rgba(20, 184, 166, 0.25)";
-            if (currentChapter === 2 && !isCh2Aircraft) ctx.strokeStyle = "rgba(234, 179, 8, 0.4)";
-            ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190, 240 + (1.6 * pNear.size)); ctx.lineTo(190, 240 + (1.6 * pFar.size)); ctx.stroke();
-            
+            // Outer side rail grids
+            ctx.strokeStyle = (isCh2Aircraft || isCh2Cockpit) ? "rgba(6, 182, 212, 0.2)" : "rgba(20, 184, 166, 0.25)";
+            if (currentChapter === 2 && !isCh2Aircraft && !isCh2Cockpit) ctx.strokeStyle = "rgba(234, 179, 8, 0.3)";
+            ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.stroke();
+            // --- 🛑 ANNOYING RETICLE DRAW LINE PERMANENTLY REMOVED HERE ---
             if (currentChapter === 1 && isCh1Outdoor) continue;
-            
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
-            if (isCh2Aircraft) {
-                // --- ✈️ ADVANCED REALISTIC AIRCRAFT GEOMETRY DESIGN ---
-                // Left Fuselage Structure + Elliptical Passenger Windows
-                ctx.fillStyle = "rgba(" + Math.floor(175*lightScale) + "," + Math.floor(180*lightScale) + "," + Math.floor(190*lightScale) + ",1)";
+
+            if (isCh2Cockpit) {
+                // --- ✈️ REALISTIC HIGH-FIDELITY COCKPIT FLIGHT DECK HUB ---
+                let w = pNear.size;
+                // Main Console Partition Walls
+                ctx.fillStyle = "rgba(" + Math.floor(55*lightScale) + "," + Math.floor(60*lightScale) + "," + Math.floor(70*lightScale) + ",1)";
+                ctx.fillRect(190 - (4.5 * w), 240 - (0.4 * w), 9.0 * w, 2.0 * w);
+                // Glowing Avionics Radar Screen
+                ctx.fillStyle = "#022c22"; ctx.fillRect(190 - (0.8 * w), 240 + (0.1 * w), 1.6 * w, 0.9 * w);
+                ctx.strokeStyle = "#10b981"; ctx.lineWidth = 1; ctx.strokeRect(190 - (0.8 * w), 240 + (0.1 * w), 1.6 * w, 0.9 * w);
+                // Twinkling Instrument Panel Buttons (Amber / Crimson / Emerald)
+                for (let bIdx = -3; bIdx <= 3; bIdx++) {
+                    if (bIdx === 0) continue;
+                    ctx.fillStyle = (Math.sin(cycleTick + bIdx) > 0) ? "#ef4444" : "#f59e0b";
+                    ctx.fillRect(190 + (bIdx * 0.5 * w) - 2, 240 - (0.1 * w), 4, 4);
+                }
+                // Pilot / Co-Pilot Steering Yokes
+                ctx.strokeStyle = "#1e293b"; ctx.lineWidth = Math.max(1.5, w * 0.05);
+                ctx.beginPath(); ctx.moveTo(190 - (2.2 * w), 240 + (1.0 * w)); ctx.lineTo(190 - (2.2 * w), 240 + (0.5 * w)); ctx.stroke();
+                ctx.beginPath(); ctx.arc(190 - (2.2 * w), 240 + (0.5 * w), 0.3 * w, Math.PI, 0); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(190 + (2.2 * w), 240 + (1.0 * w)); ctx.lineTo(190 + (2.2 * w), 240 + (0.5 * w)); ctx.stroke();
+                ctx.beginPath(); ctx.arc(190 + (2.2 * w), 240 + (0.5 * w), 0.3 * w, Math.PI, 0); ctx.stroke();
+            }
+            else if (isCh2Aircraft) {
+                // --- ✈️ HIGH-DETAIL INTERIOR AIRPLANE FUSELAGE CELLING ---
+                // Outer curving frame panels
+                ctx.fillStyle = "rgba(" + Math.floor(190*lightScale) + "," + Math.floor(195*lightScale) + "," + Math.floor(205*lightScale) + ",1)";
                 ctx.beginPath(); ctx.moveTo(190 - (2.2 * pNear.size), 240 + (1.6 * pNear.size)); ctx.quadraticCurveTo(190 - (4.4 * pNear.size), 240 - (0.4 * pNear.size), 190 - (2.6 * pNear.size), 240 - (2.4 * pNear.size));
                 ctx.lineTo(190 - (2.6 * pFar.size), 240 - (2.4 * pFar.size)); ctx.quadraticCurveTo(190 - (4.4 * pFar.size), 240 - (0.4 * pFar.size), 190 - (2.2 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-                
-                // Right Fuselage Structure + Elliptical Passenger Windows
                 ctx.beginPath(); ctx.moveTo(190 + (2.2 * pNear.size), 240 + (1.6 * pNear.size)); ctx.quadraticCurveTo(190 + (4.4 * pNear.size), 240 - (0.4 * pNear.size), 190 + (2.6 * pNear.size), 240 - (2.4 * pNear.size));
                 ctx.lineTo(190 + (2.6 * pFar.size), 240 - (2.4 * pFar.size)); ctx.quadraticCurveTo(190 + (4.4 * pFar.size), 240 - (0.4 * pFar.size), 190 + (2.2 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
                 
-                // Silver Aluminum Over-Head Luggage Storage Bins
-                ctx.fillStyle = "rgba(" + Math.floor(110*lightScale) + "," + Math.floor(115*lightScale) + "," + Math.floor(125*lightScale) + ",1)";
+                // Overhead Luggage Bins + Integrated Passenger Ventilation Panels
+                ctx.fillStyle = "rgba(" + Math.floor(135*lightScale) + "," + Math.floor(140*lightScale) + "," + Math.floor(150*lightScale) + ",1)";
                 ctx.fillRect(190 - (3.4 * pNear.size), 240 - (2.4 * pNear.size), 0.9 * pNear.size, 0.7 * pNear.size);
                 ctx.fillRect(190 + (2.5 * pNear.size), 240 - (2.4 * pNear.size), 0.9 * pNear.size, 0.7 * pNear.size);
-            } else {
-                // Standard Chapter 1 warehouse containers or Chapter 2 airport terminal blocks
-                if (currentChapter === 1) {
-                    ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
-                } else {
-                    ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(65*lightScale) : Math.floor(85*lightScale)) + "," + (isRidgeFold ? Math.floor(70*lightScale) : Math.floor(90*lightScale)) + "," + (isRidgeFold ? Math.floor(80*lightScale) : Math.floor(100*lightScale)) + ",1)";
-                }
+                ctx.strokeStyle = "rgba(0,0,0,0.15)"; ctx.strokeRect(190 - (3.4 * pNear.size), 240 - (2.4 * pNear.size), 0.9 * pNear.size, 0.7 * pNear.size);
+                ctx.strokeRect(190 + (2.5 * pNear.size), 240 - (2.4 * pNear.size), 0.9 * pNear.size, 0.7 * pNear.size);
+            } 
+            else {
+                ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(65*lightScale) : Math.floor(85*lightScale)) + "," + (isRidgeFold ? Math.floor(70*lightScale) : Math.floor(90*lightScale)) + "," + (isRidgeFold ? Math.floor(80*lightScale) : Math.floor(100*lightScale)) + ",1)";
+                if (currentChapter === 1) ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
                 ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.fill();
                 ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.fill();
             }
@@ -222,8 +232,8 @@ game_html = '''
         let activeObstacleRegistry = (currentChapter === 1) ? ch1Obstacles : ch2Obstacles;
         
         activeObstacleRegistry.forEach(b => {
-            if (isCh2Aircraft && !b.isCabinAsset) return;
-            if (!isCh2Aircraft && b.isCabinAsset) return;
+            if ((isCh2Aircraft || isCh2Cockpit) && !b.isCabinAsset) return;
+            if (!(isCh2Aircraft || isCh2Cockpit) && b.isCabinAsset) return;
             if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b });
         });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
@@ -233,16 +243,12 @@ game_html = '''
             if (item.type === "crate") {
                 let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return;
                 if (b.isCabinAsset) {
-                    // --- ✈️ IMMERSIVE NAVY BLUE COMMERICAL PASSENGER SEAT ROWS ---
+                    // --- ✈️ COMPRESSED BLUE PASSENGER SEAT MULTI-ROW CLUSTERS ---
                     let w = 1.3 * p.size; let h = 2.1 * p.size;
-                    // Lower Seat Cushion Core Base
-                    ctx.fillStyle = "#1e40af"; ctx.fillRect(p.x - w/2, p.y + (h * 0.1), w, h * 0.4);
-                    // Elevated High-Back Headrests
-                    ctx.fillStyle = "#1d4ed8"; ctx.fillRect(p.x - w/2 + (w * 0.08), p.y - h/2, w * 0.84, h * 0.6);
-                    // Armrests and Border Framework lines
-                    ctx.fillStyle = "#0f172a"; ctx.fillRect(p.x - w/2, p.y + (h * 0.05), w * 0.12, h * 0.35);
-                    ctx.fillRect(p.x + w/2 - (w * 0.12), p.y + (h * 0.05), w * 0.12, h * 0.35);
-                    ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 1; ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+                    ctx.fillStyle = "#1e40af"; ctx.fillRect(p.x - w/2, p.y + (h * 0.1), w, h * 0.4); // Seat base
+                    ctx.fillStyle = "#1d4ed8"; ctx.fillRect(p.x - w/2 + (w * 0.08), p.y - h/2, w * 0.84, h * 0.6); // Headrest backs
+                    ctx.fillStyle = "#0f172a"; ctx.fillRect(p.x - w/2, p.y + (h * 0.05), w * 0.12, h * 0.35); ctx.fillRect(p.x + w/2 - (w * 0.12), p.y + (h * 0.05), w * 0.12, h * 0.35); // Armrests
+                    ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
                 } else {
                     let w = 1.9 * p.size; let h = 2.2 * p.size;
                     ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h); ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
@@ -284,20 +290,19 @@ game_html = '''
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-    gameArea.mousemove = gameArea.addEventListener("mousemove", aim);
+    gameArea.addEventListener("mousemove", aim);
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
 
     function triggerMouseCoordinateFire(e) {
-        setupAudio(); 
-        let bounds = gameArea.getBoundingClientRect();
+        setupAudio(); let bounds = gameArea.getBoundingClientRect();
         currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
         triggerFire();
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
+
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
-        
         let activeSectorList = (currentChapter === 1) ? ch1Sectors : ch2Sectors;
         let activeRequirementMap = (currentChapter === 1) ? ch1Requirements : ch2Requirements;
         let idx = activeSectorList.indexOf(currentSector);
@@ -316,20 +321,18 @@ game_html = '''
                 else if (currentSector === "T") { document.getElementById("chapterTxt").innerText = "CH 2: COCKPIT CONTROL RECOVERY"; }
             }
         } else {
-            // --- 🎬 INTEGRATION LINK: SEAMLESS TRANSITION FROM CHAPTER 1 TO CHAPTER 2 ---
+            // --- 🎬 FIXED SECTOR RE-SETTER GATES ---
             if (currentChapter === 1) {
-                currentChapter = 2; currentSector = "K"; sectorKills = 0; cameraZ = 0; targetCameraZ = 0;
+                currentChapter = 2; 
+                currentSector = "K"; // Perfect sector reset layer back to K instantly
+                sectorKills = 0; cameraZ = 0; targetCameraZ = 0;
                 
-                // Redraw automated interlayer intermission cards safely
                 document.getElementById("overlayChapterTitle").innerText = "CHAPTER 2";
                 document.getElementById("overlayChapterSubtitle").innerText = "AIRPORT TERMINAL & AIRCRAFT RECOVERY";
-                
                 document.getElementById("chapterOverlay").style.display = "flex";
                 document.getElementById("chapterTxt").innerText = "CH 2: INTERNATIONAL RUNWAY APRON";
                 
-                // Freeze code frames for exactly 3 seconds (3000ms) before resuming airport loop parameters
-                setTimeout(initializeActiveArcadeGameplay, 3000);
-                return;
+                setTimeout(initializeActiveArcadeGameplay, 3000); return;
             } else {
                 clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
                 if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -339,7 +342,6 @@ game_html = '''
         let needed = activeRequirementMap[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         sound("level");
     }
-
     function triggerEnemyDamageStrike() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
@@ -347,6 +349,7 @@ game_html = '''
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
         if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
+
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
@@ -365,7 +368,6 @@ game_html = '''
         }
     }
 
-    // Completely separated obstacle registers to ensure data layers never cross-contaminate
     const ch1Obstacles = [
         { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59", isCabinAsset: false }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b", isCabinAsset: false },
         { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af", isCabinAsset: false }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01", isCabinAsset: false }
@@ -426,5 +428,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Full Integrated Campaign Frame ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Full Campaign Framework ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
