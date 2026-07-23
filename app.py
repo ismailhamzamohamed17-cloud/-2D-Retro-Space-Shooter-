@@ -44,7 +44,7 @@ game_html = '''
     </style>
 </head>
 '''
-<!-- 🛠️ BLOCK 2: RESTORED CLOSING HEAD AND OPENING BODY SEAMS PERFECTLY HERE -->
+<!--  BLOCK 2: RESTORED CLOSING HEAD AND OPENING BODY SEAMS PERFECTLY HERE -->
 <script>
     // Injected setup hook layout context fields to guarantee early boot state stability
     var earlyInitializationSuccess = true;
