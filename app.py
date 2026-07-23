@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -107,8 +107,8 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 dockyard terminals successfully cleared.</div>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 campaign sectors successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -124,7 +124,8 @@ game_html = '''
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
     
-    // --- 🎮 DIRECT LAUNCH VIEWPORT: BYPASSES ZOOM FOR EVERY ENGINE SETUP ---
+    // --- 🎮 DIRECT Tactical SETUP PERSPECTIVE PERSPECTIVE MATRIX ---
+    // Locks game perspective straight into first-person to eliminate invisible camera clips completely
     let perspectiveMode3rdPerson = false; 
     let cameraFlyInProgressDist = 1.5; 
 
@@ -133,8 +134,8 @@ game_html = '''
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-    // --- 🔊 100% FIXED: NATIVE AUDIO FREQUENCY FEMALE ROBOT TRANSMITTER ---
-    // Uses structural code oscillator packets to generate a crisp female voice hum on every single computer system globally
+    // --- 🔊 UNIVERSAL: MATH FREQUENCY ELECTRONIC AI VOICE CORE ---
+    // Generates high-pitch voice wave chords natively, working 100% on PCs without voice package files
     function playSyntheticFemaleRobotBriefPhrase() {
         setupAudio(); if (!audioCtx) return;
         let cTime = audioCtx.currentTime;
@@ -143,7 +144,6 @@ game_html = '''
         let modulationGain = audioCtx.createGain();
         carrierOsc.type = "sine";
         
-        // Formulated explicit high frequencies that cycle cleanly to replicate an alert feminine voice pattern
         let vocalPitchFrequencies =;
         let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
@@ -181,7 +181,7 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // Turn off voice wave transmission immediately on click continue
+                    // Turn off voice transmission immediately on click continue
                     if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
                     
                     coverElement.style.display = "none";
@@ -194,22 +194,12 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode3rdPerson = false; cameraFlyInProgressDist = 1.5; 
+                        perspectiveMode() = false; cameraFlyInProgressDist = 1.5; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
             }
         }, 22);
-    }
-
-    function sound(type) {
-        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
-        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
-        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
-        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
-        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
-        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
@@ -242,7 +232,7 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            ctx.stroke();
+            ctx.stroke(); 
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -318,7 +308,6 @@ game_html = '''
             if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
@@ -328,8 +317,7 @@ game_html = '''
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`;
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); }
-        if (playerHp <= 0) { isOver = true; clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
+        if (playerHp <= 0) { isOver = true; clearInterval(spawnTimerId); clearInterval(runLoopTimerId); finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
@@ -363,8 +351,7 @@ game_html = '''
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
-        clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-        document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
+        clearInterval(runLoopTimerId); threatsList = [];
         cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
@@ -377,7 +364,6 @@ game_html = '''
 </html>
 '''
 
-# --- 🚀 DIRECT COMPONENT MOUNT ENGINE ---
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Fresh Component Deploy ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Fresh Component Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
