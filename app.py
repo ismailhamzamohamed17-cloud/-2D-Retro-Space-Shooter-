@@ -40,7 +40,7 @@ game_html = '''
         }
 
         canvas { position: absolute; top: 0; left: 0; width: 380px; height: 480px; z-index: 1; }
-        #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1) rotate(0deg); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: block; }
+        #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: none; }
         .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
         .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
         .w-holo-sight::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #ff0055; border-radius: 50%; box-shadow: 0 0 12px 3px #ff0055; }
@@ -48,20 +48,28 @@ game_html = '''
         #flash { position: absolute; top: 12px; left: 26px; width: 48px; height: 48px; background: radial-gradient(circle, #ffffff 20%, #ff4500 55%, transparent 85%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 12px #ff4500); }
 
         .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; opacity: 0; transition: opacity 0.15s ease; }
-        #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: block; }
+        #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: none; }
 
-        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; display: block; }
-        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-family: sans-serif; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: block; }
-        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: block; }
-        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: block; }
+        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; display: none; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: none; }
+        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: none; }
+        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: none; }
 
         #overScreen, #winScreen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .win-btn { background: #eab308; color: #020617; }
+
+        /* 🎬 PITCH-BLACK AUTOMATED INTERMISSION CARD STYLES */
+        #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
     <div id="gameArea">
+        <!-- 🎬 CHAPTER ONE SUSPENSION LAYER PANEL -->
+        <div id="chapterOverlay">
+            <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
+            <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
+        </div>
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CH 1: 3D CONTAINER PORT</div>
         <div id="targetTracker">SECTOR A: 0/3</div>
@@ -128,6 +136,9 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
+        // Block actions completely if the automated intermission layer is actively showing
+        if (document.getElementById("chapterOverlay").style.display === "flex") return;
+
         if (!spawnTimerId && !isOver) {
             spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
         }
@@ -164,8 +175,6 @@ game_html = '''
         }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
-        
-        // --- 🎬 REPAIRED LINE: CLEANED THE ACCIDENTAL TYPO WORD OUT COMPLETELY ---
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
@@ -182,7 +191,13 @@ game_html = '''
                 let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
 
-                if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
+                // --- 🎯 FIXED CLAMP: CONTRACT WARNING RETICLES DOWN INTO SHARP POINTS TIGHTLY ---
+                if (isActivelyOut) { 
+                    t.ring.style.opacity = "1"; t.age++; 
+                } else { 
+                    t.ring.style.opacity = "0"; 
+                }
+                
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
                 ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
@@ -193,12 +208,16 @@ game_html = '''
                 ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
                 if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
-                t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
+                
+                t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; 
+                // Forces bounding track ring circles to close tightly directly over the center vector points
+                let dynamicCircleRadius = Math.max(14, Math.min(110, 95 * (1.3 - (t.age / 40)))); 
+                t.ring.style.width = dynamicCircleRadius + "px"; t.ring.style.height = dynamicCircleRadius + "px";
             }
         });
     }
     function aim(e) {
-        if (isOver || perspectiveMode3rdPerson) return;
+        if (isOver || document.getElementById("chapterOverlay").style.display === "flex") return;
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -240,7 +259,7 @@ game_html = '''
     }
 
     function triggerEnemyDamageStrike() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
@@ -248,7 +267,7 @@ game_html = '''
     }
 
     function triggerFire() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
@@ -270,7 +289,7 @@ game_html = '''
     ];
 
     function spawn3DThreatUnit() {
-        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
+        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || document.getElementById("chapterOverlay").style.display === "flex") return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
@@ -285,8 +304,39 @@ game_html = '''
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+        
+        // Handle intermission layer resets instantly on retry inputs
+        document.getElementById("chapterOverlay").style.display = "flex";
+        document.getElementById("scoreCounter").style.display = "none";
+        document.getElementById("chapterTxt").style.display = "none";
+        document.getElementById("targetTracker").style.display = "none";
+        document.getElementById("healthCounter").style.display = "none";
+        document.getElementById("sight").style.display = "none";
+        document.getElementById("weapon").style.display = "none";
+        
+        setTimeout(() => {
+            document.getElementById("chapterOverlay").style.display = "none";
+            document.getElementById("scoreCounter").style.display = "block";
+            document.getElementById("chapterTxt").style.display = "block";
+            document.getElementById("targetTracker").style.display = "block";
+            document.getElementById("healthCounter").style.display = "block";
+            document.getElementById("sight").style.display = "block";
+            document.getElementById("weapon").style.display = "block";
+            runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+        }, 3000);
     };
+
+    // --- 🎬 AUTOMATED LIFECYCLE INITIALIZER TIMER TRIGGER ---
+    // Runs a 3000ms (3 seconds) holding loop before un-hiding our core layout views
+    setTimeout(() => {
+        document.getElementById("chapterOverlay").style.display = "none";
+        document.getElementById("scoreCounter").style.display = "block";
+        document.getElementById("chapterTxt").style.display = "block";
+        document.getElementById("targetTracker").style.display = "block";
+        document.getElementById("healthCounter").style.display = "block";
+        document.getElementById("sight").style.display = "block";
+        document.getElementById("weapon").style.display = "block";
+    }, 3000);
 
     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
 </script>
