@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Tactical: 3D Special Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Extreme 3D Campaign")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
 game_html = '''
 <!DOCTYPE html>
@@ -46,25 +46,45 @@ game_html = '''
         .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #09090b, #18181b, #020202); border-radius: 3px; }
         #flash { position: absolute; top: 12px; left: 26px; width: 48px; height: 48px; background: radial-gradient(circle, #ffffff 20%, #ff4500 55%, transparent 85%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 12px #ff4500); }
 
-        .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; }
-        
-        /* FIXED: Reticle crosshair frame now scales smoothly via inline width/height scripts */
+        .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; opacity: 0; transition: opacity 0.15s ease; }
         #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: none; }
 
-        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; }
-        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; }
-        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; }
-        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; }
+        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; display: none; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: none; }
+        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: none; }
+        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: none; }
 
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
-        #overScreen { background: rgba(2,2,4,0.97); } #intermissionScreen { background: rgba(2,2,4,0.88); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
+        #overScreen { background: rgba(2,2,4,0.97); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
         .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
         .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
-        .intermission-title { color: #eab308; font-size: 26px; font-weight: bold; text-shadow: 0 0 14px #eab308; text-align: center; }
+        /* 🎬 CINEMATIC NARRATIVE COVER SCREEN & CHAPTER INTRON PANELS */
+        #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .story-scroller { max-width: 320px; color: #cbd5e1; font-size: 11px; line-height: 1.6; margin-bottom: 25px; max-height: 140px; overflow-y: hidden; text-align: justify; border: 1px solid #1e293b; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .load-bar-track { width: 220px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        .load-bar-fluid { width: 0%; height: 100%; background: #06b6d4; transition: width 0.04s linear; }
     </style>
 </head>
 <body>
     <div id="gameArea">
+        <!-- 🎬 JERICHO NARRATIVE PROLOGUE PANEL CARD -->
+        <div id="coverScreen">
+            <div style="color:#06b6d4; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 10px rgba(6,182,212,0.4);">HAMPI JERICHO</div>
+            <div style="color:#e2e8f0; font-size:12px; font-weight:600; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 THE UNDERGROUND CHECKPOINT 💥</div>
+            <div class="story-scroller">
+                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked Sector A's container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.
+            </div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
+            <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
+        </div>
+
+        <!-- 🎬 PITCH-BLACK CHAPTER ONE INTERMISSION PLATE -->
+        <div id="chapterOverlay">
+            <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
+            <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
+        </div>
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CH 1: 3D CONTAINER PORT</div>
         <div id="targetTracker">SECTOR A: 0/3</div>
@@ -101,11 +121,35 @@ game_html = '''
     let isMoving = false; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
+    let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    let cameraZ = 0, targetCameraZ = 0;
-    let cameraX = 0, targetCameraX = 0;
-    let cycleTick = 0;
-
+    // --- 🎬 AUTOMATED TIMEOUT COVER LOADER ENGINE ---
+    window.addEventListener("load", () => {
+        let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
+        let loadInterval = setInterval(() => {
+            percentage += 2;
+            if(barFluid) barFluid.style.width = percentage + "%";
+            if(txtPercent) txtPercent.innerText = `INITIALIZING MATRIX: ${percentage}%`;
+            
+            if(percentage >= 100) {
+                clearInterval(loadInterval);
+                document.getElementById("coverScreen").style.display = "none";
+                document.getElementById("chapterOverlay").style.display = "flex";
+                
+                // Chapter plate stays active for 1.8 seconds before gameplay unlocks
+                setTimeout(() => {
+                    document.getElementById("chapterOverlay").style.display = "none";
+                    document.getElementById("scoreCounter").style.display = "block";
+                    document.getElementById("chapterTxt").style.display = "block";
+                    document.getElementById("targetTracker").style.display = "block";
+                    document.getElementById("healthCounter").style.display = "block";
+                    
+                    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+                    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+                }, 1800);
+            }
+        }, 30);
+    });
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     
     function sound(type) {
@@ -117,49 +161,38 @@ game_html = '''
         else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
+
     function aim(e) {
         if (isOver) return;
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect();
         currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
-        // --- 🎯 FIXED: TRUE DISTANCE-SCALING VARIABLE RETICLE ---
-        // Dynamically scales crosshair widths based on active sector difficulty tracking lines
-        let baseReticleRadius = 32;
+        // --- 🎯 FIXED: VARIABLE EXPANDING TARGET CROSSHAIR ---
         let mappedThreatZ = 12;
         threatsList.forEach(t => { if(!t.isDying) mappedThreatZ = t.z - cameraZ; });
-        
         let dynamicallyAdjustedSize = Math.max(16, Math.min(60, (400 / mappedThreatZ) * 0.95));
-        sight.style.width = dynamicallyAdjustedSize + "px";
-        sight.style.height = dynamicallyAdjustedSize + "px";
+        sight.style.width = dynamicallyAdjustedSize + "px"; sight.style.height = dynamicallyAdjustedSize + "px";
         
         sight.style.display = "block"; sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
     gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
-    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
+    gameArea.addEventListener("mousedown", (e) => { if(b=e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
     function project3D(x, y, z) {
-        let relativeX = x - cameraX;
-        let relativeZ = z - cameraZ;
+        let relativeX = x - cameraX; let relativeZ = z - cameraZ;
         if (relativeZ <= 0.1) return null;
         let fovScale = 400 / relativeZ;
-        let px = 190 + (relativeX * fovScale);
-        let py = 240 - ((y - 1.6) * fovScale);
-        return { x: px, y: py, size: fovScale };
+        return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
 
     const static3DObstacles = [
-        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
-        { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" },
-        { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
-        { id: "c5", x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" },
-        { id: "c6", x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" },
-        { id: "c7", x: -2.0, y: 0.5, z: 111, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { id: "c8", x: 2.1, y: 0.5, z: 127, baseColor: "#2563eb", shadowColor: "#1e40af" }
+        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
+        { id: "c5", x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" }, { id: "c6", x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" }
     ];
     function render3DSceneGrid() {
         cycleTick += 0.05;
@@ -169,68 +202,39 @@ game_html = '''
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
-            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            
             ctx.fillStyle = "rgba(255,255,255,0.75)";
-            for (let i = 1; i <= 25; i++) {
-                let sX = (i * 73) % 380; let sY = (i * 37) % 190;
-                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle);
-            }
+            for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
             
-            ctx.fillStyle = "#04060c";
-            let shipParallaxX = 140 - (cameraX * 25);
-            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill();
-            ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
+            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25);
+            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
             
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
-            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
-            
             ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2;
-            for (let waveY = 250; waveY < 480; waveY += 35) {
-                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12;
-                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift);
-                ctx.stroke();
-            }
+            for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
         } else {
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
-            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
-            if (!pNear || !pFar) continue;
-
+            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
 
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
-            ctx.fillStyle = floorColor; ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
-            ctx.fill();
+            ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
             if (isOutdoorSector) continue;
-
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
-            let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
-            let wallG = isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale);
-            let wallB = isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale);
-            ctx.fillStyle = "rgba(" + wallR + "," + wallG + "," + wallB + ",1)";
-
-            ctx.beginPath();
-            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
-            ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
-            ctx.fill();
+            ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
         }
 
-        // --- 🗂️ FLAWLESS Hitbox Depth Sort Render Queue ---
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
@@ -238,72 +242,53 @@ game_html = '''
 
         depthDrawQueue.forEach(item => {
             if (item.type === "crate") {
-                let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return;
-                let w = 1.9 * p.size; let h = 2.2 * p.size;
-                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-                ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
+                let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return; let w = 1.9 * p.size; let h = 2.2 * p.size;
+                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h); ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
                 ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
             } 
             else if (item.type === "enemy") {
-                let t = item.data; if (!isMoving) t.age++;
-                if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
+                let t = item.data; if (!isMoving) t.loopTick++;
+                // --- 🎬 FIXED: GTA PEEK COVER EQUATIONS ---
+                let aiPeriodState = Math.floor(t.loopTick / 38) % 2; let isPeekingNow = (aiPeriodState === 1);
+                let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
+                let currentVisualX = isPeekingNow ? p.x : p.x - (s * 1.5);
+                t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
 
-                let p = project3D(t.x, t.y, t.z); if (!p) return;
-                let s = p.size * 0.4; 
-                
-                // FIXED: Direct algebraic assignment secures pixel centers from silent screen overlap bugs
-                t.currentScreenX = p.x; 
-                t.currentScreenY = p.y - (s * 0.5); 
-                t.currentRadius = s * 1.15; 
+                if (isPeekingNow) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
+                if (t.age > 0 && t.age % 35 === 0 && !isMoving && isPeekingNow) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
-                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
-                ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
-                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
-                ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-                ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
+                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
+                ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
+                ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
-                if (t.isFlashing) {
-                    let flashGrd = ctx.createRadialGradient(p.x + s * 0.9, p.y - s/4, 1, p.x + s * 0.9, p.y - s/4, s * 0.55);
+                if (t.isFlashing && isPeekingNow) {
+                    let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55);
                     flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent");
-                    ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
+                    ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
                 }
-                t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
+                t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px";
                 let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
         });
     }
-    // --- 🎬 FIXED: ADVANCED 4-AXIS MULTI-DIRECTIONAL RAIL CAM STAFE ENGINE ---
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
-
         let idx = sectorsList.indexOf(currentSector);
         if (idx >= 0 && idx < sectorsList.length - 1) {
-            currentSector = sectorsList[idx + 1]; sectorKills = 0;
-            targetCameraZ = (idx + 1) * 16;
-            
-            // FIXED: Randomly branches camera between Left strafe (-1.6), Right strafe (1.6), and forward center (0)
+            currentSector = sectorsList[idx + 1]; sectorKills = 0; targetCameraZ = (idx + 1) * 16;
             let rollingPathRoll = Math.random();
-            if (rollingPathRoll < 0.33) {
-                targetCameraX = -1.6; // Heavy tactical left lean turn
-            } else if (rollingPathRoll < 0.66) {
-                targetCameraX = 1.6; // Aggressive right side strafe pivot
-            } else {
-                targetCameraX = 0.0; // Clear forward charge vector
-            }
-            
-            if (["E","F","G","H","I","J"].includes(currentSector)) {
-                document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
-            }
+            if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
+            if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
-
-        let needed = sectorRequirements[currentSector];
-        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; sound("level");
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; sound("level");
     }
 
     function triggerEnemyDamageStrike() {
@@ -317,35 +302,25 @@ game_html = '''
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
-
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
             if (t.isDying) return;
             let d = Math.hypot(currentX - t.currentScreenX, currentY - t.currentScreenY);
-            // FIXED: Decoupled selection matrices ensure bullets penetrate overlapping canvas elements safely
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
-
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa");
-            score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
-            let needed = sectorRequirements[currentSector];
-            targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+            hitTarget.isDying = true; sound("shout_aaa"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
+            let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
-
-            if (sectorKills >= needed) {
-                document.querySelectorAll(".target-ring").forEach(el => el.remove());
-                threatsList = []; setTimeout(triggerSectorPathMovement, 400);
-            }
+            if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
 
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
-        let idx = sectorsList.indexOf(currentSector);
-        let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
+        let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
+        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*40), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
         sound("ding");
     }
 
@@ -358,8 +333,6 @@ game_html = '''
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
     };
-
-    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
 </script>
 </body>
 </html>
