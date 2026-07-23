@@ -5,6 +5,7 @@ import random
 st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
 st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
+# Base HTML layout initialization
 game_html = '''
 <!DOCTYPE html>
 <html>
@@ -40,8 +41,8 @@ game_html = '''
 <body>
     <div id="gameArea">
         <div id="chapterOverlay">
-            <div id="overlayChTitle" style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
-            <div id="overlayChSubtitle" style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
+            <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
+            <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
         </div>
         
         <div id="tutorialPopup" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #ff2266; font-family: monospace; font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.85); border: 2px solid #ff2266; padding: 10px 16px; border-radius: 8px; z-index: 35; text-align: center; box-shadow: 0 0 15px rgba(255, 34, 102, 0.4); animation: flashPulse 1s infinite alternate; pointer-events: none; display: none;">
@@ -66,9 +67,9 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div id="winHeader" style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div id="winSub" style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All terminals cleared successfully.</div>
-            <button class="win-btn" id="winBtnAction" onclick="window.resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All terminals cleared successfully.</div>
+            <button class="win-btn" onclick="window.resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
 <script>
@@ -77,12 +78,10 @@ game_html = '''
     let spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
     let audioCtx = null;
 
-    let currentChapter = 1; 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false;
-    let cockpitDoorOpened = false;
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
@@ -127,8 +126,6 @@ game_html = '''
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || document.getElementById("chapterOverlay").style.display === "flex") return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
-        if (currentChapter === 2 && idx >= 7 && !cockpitDoorOpened) return; 
-        
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
         sound("ding");
@@ -136,8 +133,11 @@ game_html = '''
     function aim(e) {
         if (isOver || document.getElementById("chapterOverlay").style.display === "flex") return;
         let targetPoint = e; 
-        if (e.touches && e.touches.length > 0) { targetPoint = e.touches; } 
-        else if (e.changedTouches && e.changedTouches.length > 0) { targetPoint = e.changedTouches; }
+        if (e.touches && e.touches.length > 0) { 
+            targetPoint = e.touches[0]; 
+        } else if (e.changedTouches && e.changedTouches.length > 0) { 
+            targetPoint = e.changedTouches[0]; 
+        }
         
         let bounds = gameArea.getBoundingClientRect(); 
         currentX = targetPoint.clientX - bounds.left; 
@@ -163,59 +163,26 @@ game_html = '''
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
-    function updateMapLevelLabels() {
-        let secIdx = sectorsList.indexOf(currentSector);
-        if (currentChapter === 1) {
-            chapterTxt.innerText = secIdx >= 4 ? "CH 1: OUTSIDE CARGO TERMINAL" : "CH 1: 3D CONTAINER PORT";
-        } else {
-            if (secIdx >= 7) { chapterTxt.innerText = "CH 2: AIRPLANE COCKPIT DECK"; }
-            else if (secIdx >= 4) { chapterTxt.innerText = "CH 2: COMMERCIAL CABIN FLIGHT"; }
-            else { chapterTxt.innerText = "CH 2: INTERNATIONAL RUNWAY AIRPORT"; }
-        }
-    }
-
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let idx = sectorsList.indexOf(currentSector);
-        
         if (idx >= 0 && idx < sectorsList.length - 1) {
             currentSector = sectorsList[idx + 1]; sectorKills = 0; targetCameraZ = (idx + 1) * 16;
             let rollingPathRoll = Math.random();
-            if (rollingPathRoll < 0.33) { targetCameraX = -1.3; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.3; } else { targetCameraX = 0.0; }
+            if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
+            if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
             
-            updateMapLevelLabels();
+            // Strictly block message popup from rendering inside downstream sectors
             document.getElementById("tutorialPopup").style.display = "none";
         } else {
-            handleChapterTransition();
-            return;
+            clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+            winScreen.style.display = "flex"; return;
         }
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         sound("level");
     }
 
-    function handleChapterTransition() {
-        if (currentChapter === 1) {
-            currentChapter = 2; currentSector = "A"; sectorKills = 0;
-            cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; threatsList = [];
-            isMoving = false; cockpitDoorOpened = false;
-            
-            document.querySelectorAll(".target-ring").forEach(el => el.remove());
-            if (spawnTimerId) clearInterval(spawnTimerId); spawnTimerId = null;
-            
-            document.getElementById("overlayChTitle").innerText = "CHAPTER 2";
-            document.getElementById("overlayChSubtitle").innerText = "AIRPORT RUNWAY & CABIN SECURING";
-            document.getElementById("chapterOverlay").style.display = "flex";
-            
-            scoreCounter.style.display = "none"; chapterTxt.style.display = "none"; targetTracker.style.display = "none"; healthCounter.style.display = "none"; sight.style.display = "none"; weapon.style.display = "none";
-            setTimeout(initializeActiveArcadeGameplay, 3000);
-        } else {
-            if (spawnTimerId) clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
-            document.getElementById("winHeader").innerText = "👑 CAMPAIGN SECURED 👑";
-            document.getElementById("winSub").innerHTML = "ALL SECTORS SECURED!<br>Jericho Ops cleared the cockpit terminal.";
-            document.getElementById("winBtnAction").innerText = "RESET SYSTEM 🔄";
-            winScreen.style.display = "flex";
-        }
-    }
     function triggerEnemyDamageStrike() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
@@ -226,116 +193,84 @@ game_html = '''
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
-        document.getElementById("tutorialPopup").style.display = "none";
-        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         
-        if (currentChapter === 2 && currentSector === "J" && !cockpitDoorOpened) {
-            if (Math.hypot(currentX - 190, currentY - 250) < 40) {
-                cockpitDoorOpened = true; sound("level"); sound("boom");
-                let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-                threatsList.push({ x: 0.0, y: 0.4, z: cameraZ + 10, age: 10, loopTick: 20, isDying: false, isFlashing: false, ring: ring, currentScreenX: 190, currentScreenY: 210, currentRadius: 35 });
-                return;
-            }
-        }
+        document.getElementById("tutorialPopup").style.display = "none";
 
+        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
             if (t.isDying) return;
             let d = Math.hypot(currentX - t.currentScreenX, currentY - t.currentScreenY);
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
-        
         if (hitTarget) {
             hitTarget.isDying = true; sound("boom"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-            if(t.ring) t.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
+            hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
-
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         if (!spawnTimerId && !isOver) { spawnTimerId = setInterval(spawn3DThreatUnit, 1350); }
 
+        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
         ctx.clearRect(0, 0, 380, 480);
-        let secIdx = sectorsList.indexOf(currentSector);
 
-        if (currentChapter === 1 || (currentChapter === 2 && secIdx < 4)) {
-            let isOutdoor = (currentChapter === 1 && secIdx >= 4) || currentChapter === 2;
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            let floorGrd = ctx.createLinearGradient(0, 240, 0, 480); floorGrd.addColorStop(0, "#04060c"); floorGrd.addColorStop(1, "#011116"); ctx.fillStyle = floorGrd; ctx.fillRect(0, 240, 380, 240);
-
-            for (let z = 84; z >= 0; z -= 3) {
-                let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
-                let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
-                let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
-                
-                let floorColor = "rgba(" + Math.floor((currentChapter==2?32:18) * lightScale) + "," + Math.floor((currentChapter==2?34:24) * lightScale) + "," + Math.floor((currentChapter==2?42:38) * lightScale) + ",1)";
-                ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-                
-                if (isOutdoor) continue;
-                let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
-                ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
-                ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            }
-        } else if (currentChapter === 2 && secIdx >= 4 && secIdx < 7) {
-            ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, 380, 480);
-            for (let z = 70; z >= 0; z -= 4) {
-                let zPos = Math.floor(cameraZ) + z; let p = project3D(0, 0, zPos); if (!p) continue;
-                let scale = 1 - (z / 70);
-                ctx.fillStyle = "rgba(" + Math.floor(30*scale) + "," + Math.floor(41*scale) + "," + Math.floor(59*scale) + ",1)";
-                ctx.fillRect(190 - (3.8 * p.size), 240, 1.2 * p.size, 0.8 * p.size); 
-                ctx.fillRect(190 + (2.6 * p.size), 240, 1.2 * p.size, 0.8 * p.size); 
-                
-                ctx.fillStyle = "rgba(" + Math.floor(212*scale) + "," + Math.floor(163*scale) + "," + Math.floor(115*scale) + ",1)";
-                ctx.beginPath(); ctx.arc(190 - (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(190 + (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
-            }
-        } else if (currentChapter === 2 && secIdx >= 7) {
-            ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, 380, 480);
-            ctx.fillStyle = "#0f172a"; ctx.fillRect(20, 260, 340, 220);
-            ctx.fillStyle = "#22c55e"; ctx.fillRect(60, 310, 50, 40); 
-            ctx.fillStyle = "#38bdf8"; ctx.fillRect(270, 310, 50, 40); 
-            
-            if (currentSector === "J" && !cockpitDoorOpened) {
-                ctx.fillStyle = "rgba(0,0,0,0.95)"; ctx.fillRect(0, 0, 380, 480);
-                ctx.fillStyle = "#dc2626"; ctx.font = "bold 13px monospace"; ctx.fillText("COCKPIT ACCESS DOOR SECURITY LOCKED", 50, 190);
-                ctx.fillStyle = "#1e293b"; ctx.fillRect(150, 220, 80, 60);
-                ctx.strokeStyle = "#ef4444"; ctx.strokeRect(150, 220, 80, 60);
-                ctx.fillStyle = "#ffffff"; ctx.font = "10px sans-serif"; ctx.fillText("TAP TO BREACH", 154, 255);
-            }
+        if (isOutdoorSector) {
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
+            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#011c20"); seaGrd.addColorStop(1, "#011116"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 480);
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
+        } else {
+            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
+        for (let z = 84; z >= 0; z -= 3) {
+            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
+            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
+            let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
+            let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
+            ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke(); 
+            if (isOutdoorSector) continue; 
+            let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
+            ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
+        }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
         depthDrawQueue.forEach(item => {
-            if (item.type === "crate" && (currentChapter === 1 || (currentChapter === 2 && sectorsList.indexOf(currentSector) < 4))) {
+            if (item.type === "crate") {
                 let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return; let w = 1.9 * p.size; let h = 2.2 * p.size;
-                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            } else if (item.type === "enemy") {
+                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h); ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
+                ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            } 
+            else if (item.type === "enemy") {
                 let t = item.data; if (!isMoving) t.loopTick++;
                 let smoothSinPeekFactor = (Math.sin(t.loopTick * 0.05) + 1) / 2; let isActivelyOut = (smoothSinPeekFactor > 0.45); 
                 let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
                 let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
-                
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
+
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                // 🎬 HIGH-DETAILED CHARACTER MODEL GRAPHICS RENDER MESHES RESTORED
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); // Body Vest
-                ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7); // Terrorist Mask Gear
-                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); // Skin Node Head
-                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); // Combat Helmet Cap
-                
-                if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); }
-                
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
+                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
+                ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
+                ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
+
+                if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; 
                 let dynamicCircleRadius = Math.max(14, Math.min(110, 95 * (1.3 - (t.age / 40)))); 
                 t.ring.style.width = dynamicCircleRadius + "px"; t.ring.style.height = dynamicCircleRadius + "px";
@@ -344,31 +279,26 @@ game_html = '''
     }
     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
-        if (currentSector === "A" && sectorKills === 0 && currentChapter === 1) { 
-            document.getElementById("tutorialPopup").style.display = "block"; 
+        // Display tutorial elements specifically inside Chapter Sector A launch frames
+        if (currentSector === "A" && sectorKills === 0) {
+            document.getElementById("tutorialPopup").style.display = "block";
         }
         scoreCounter.style.display = "block"; chapterTxt.style.display = "block"; targetTracker.style.display = "block"; healthCounter.style.display = "block"; sight.style.display = "block"; weapon.style.display = "block";
-        updateMapLevelLabels();
-        
-        if (runLoopTimerId) clearInterval(runLoopTimerId);
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
-        clearInterval(runLoopTimerId); runLoopTimerId = null; if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
         document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
-        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false; cockpitDoorOpened = false;
+        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
+        document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
+        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         
-        if (fullReset) { currentChapter = 1; }
-        document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none"; gameArea.className = "";
-        healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; 
-        
-        document.getElementById("overlayChTitle").innerText = currentChapter === 1 ? "CHAPTER 1" : "CHAPTER 2";
-        document.getElementById("overlayChSubtitle").innerText = currentChapter === 1 ? "PORT TERMINAL SANITIZATION" : "AIRPORT RUNWAY & CABIN SECURING";
         document.getElementById("chapterOverlay").style.display = "flex";
-        
-        scoreCounter.style.display = "none"; chapterTxt.style.display = "none"; targetTracker.style.display = "none"; healthCounter.style.display = "none"; sight.style.display = "none"; weapon.style.display = "none";
+        document.getElementById("tutorialPopup").style.display = "none";
+        document.getElementById("scoreCounter").style.display = "none"; document.getElementById("chapterTxt").style.display = "none"; document.getElementById("targetTracker").style.display = "none"; document.getElementById("healthCounter").style.display = "none"; document.getElementById("sight").style.display = "none"; document.getElementById("weapon").style.display = "none";
         setTimeout(initializeActiveArcadeGameplay, 3000);
     };
 
@@ -379,5 +309,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Full Care Mesh Restored Frame: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Fixed Sound Tactical Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
