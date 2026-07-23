@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="hampi jericho shooters", layout="centered")
-st.title("⚡hampi jericho shooters")
+st.set_page_config(page_title="Virtua Tactical: Special Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Elite Operations")
 
 game_html = '''
 <!DOCTYPE html>
@@ -18,16 +18,20 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9); perspective: 800px;
         }
 
-        /* 🎬 FILM GRAIN + VOLUMETRIC NOIR SHADING EFFECTS OVERLAY */
+        /* 🎬 FILM GRAIN + DYNAMIC PERIPHERAL HIT DAMAGE FLASH VIGNETTE */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.055'/%3E%3C/svg%3E");
             background-size: auto;
             box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.95), inset 0 0 140px rgba(0, 0, 0, 0.85);
+            transition: box-shadow 0.15s ease-out;
+        }
+
+        #gameArea.taking-damage::after {
+            box-shadow: inset 0 0 95px rgba(220, 20, 20, 0.9), inset 0 0 160px rgba(180, 0, 0, 0.8);
         }
 
         #sceneryContainer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; }
-        
         /* Chapter 1: European City street facade panel nodes */
         .city-facade-l { position: absolute; top: 15px; left: 0; width: 125px; height: 185px; background: linear-gradient(135deg, #1c1c1c, #0a0a0a); border-right: 3px solid #000; box-shadow: 12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
         .city-facade-r { position: absolute; top: 10px; right: 0; width: 115px; height: 190px; background: linear-gradient(225deg, #161616, #070707); border-left: 3px solid #000; box-shadow: -12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
@@ -45,31 +49,19 @@ game_html = '''
         .cargo-container-stack { position: absolute; width: 75px; height: 55px; background: linear-gradient(135deg, #47120c, #1f0402); border: 2px solid #000; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); z-index: 3; }
         .container-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 8px); }
         .wet-reflection { position: absolute; bottom: 40px; left: 20%; width: 120px; height: 20px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 80%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); z-index: 2; }
-                .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
-        .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 6px; height: 100%; background: repeating-linear-gradient(to bottom, #727a69 0px, #727a69 25px, transparent 25px, transparent 60px); transform: translateX(-50%); opacity: 0.25; }
 
-        /* 🚗 MILITARY ARMORED PERSONNEL CARRIER VEHICLE CHASSIS RULES */
-        #car {
-            position: absolute; top: 172px; left: 105px; width: 170px; height: 100px;
-            background: linear-gradient(to bottom, #2b331f 0%, #1c2413 45%, #0d1208 100%); border-radius: 6px;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.85); z-index: 4;
-            border: 2px solid #141c0b; will-change: transform, left, top; transform-origin: center bottom;
-        }
+        /* 🗺️ FIXED: UPGRADED DYNAMIC FLOOR GRID SYSTEM */
+        .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
+        .road-lines { position: absolute; top: 0; left: 50%; width: 6px; height: 100%; background: repeating-linear-gradient(to bottom, #727a69 0px, #727a69 25px, transparent 25px, transparent 60px); transform: translateX(-50%); opacity: 0.25; }
+        #car { position: absolute; top: 172px; left: 105px; width: 170px; height: 100px; background: linear-gradient(to bottom, #2b331f 0%, #1c2413 45%, #0d1208 100%); border-radius: 6px; box-shadow: 0 25px 45px rgba(0,0,0,0.85); z-index: 4; border: 2px solid #141c0b; will-change: transform, left, top; transform-origin: center bottom; }
         .window { position: absolute; top: 16px; left: 20px; width: 130px; height: 22px; background: linear-gradient(180deg, rgba(50,75,110,0.5) 0%, rgba(2,6,15,0.8) 100%); border: 2px solid #000; }
         .wheel { position: absolute; background: #080808; border-radius: 3px; border: 1.5px solid #1c1c1c; }
-        .w-front-l { bottom: 10px; left: -6px; width: 8px; height: 32px; }
-        .w-front-r { bottom: 10px; right: -6px; width: 8px; height: 32px; }
-        .w-rear-l { bottom: -10px; left: 20px; width: 38px; height: 16px; }
-        .w-rear-r { bottom: -10px; right: 20px; width: 38px; height: 16px; }
+        .w-front-l { bottom: 10px; left: -6px; width: 8px; height: 32px; } .w-front-r { bottom: 10px; right: -6px; width: 8px; height: 32px; } .w-rear-l { bottom: -10px; left: 20px; width: 38px; height: 16px; } .w-rear-r { bottom: -10px; right: 20px; width: 38px; height: 16px; }
         .suv-door { position: absolute; top: 45px; width: 20px; height: 35px; background: #1c2413; border: 1.5px solid #000; z-index: 5; transition: transform 0.4s ease; }
-        .door-l { left: -4px; transform-origin: right center; }
-        .door-r { right: -4px; transform-origin: left center; }
-        #car.parked-open .door-l { transform: rotateY(-85deg); }
-        #car.parked-open .door-r { transform: rotateY(85deg); }
-        .light-l { position: absolute; bottom: 20px; left: 10px; width: 16px; height: 12px; background: #d4c222; box-shadow: 0 0 15px #d4c222; }
-        .light-r { position: absolute; bottom: 20px; right: 10px; width: 16px; height: 12px; background: #d4c222; box-shadow: 0 0 15px #d4c222; }
+        .door-l { left: -4px; transform-origin: right center; } .door-r { right: -4px; transform-origin: left center; }
+        #car.parked-open .door-l { transform: rotateY(-85deg); } #car.parked-open .door-r { transform: rotateY(85deg); }
+        .light-l { position: absolute; bottom: 20px; left: 10px; width: 16px; height: 12px; background: #d4c222; box-shadow: 0 0 15px #d4c222; } .light-r { position: absolute; bottom: 20px; right: 10px; width: 16px; height: 12px; background: #d4c222; box-shadow: 0 0 15px #d4c222; }
 
-        /* 🔫 FRONT-CENTER TACTICAL PISTOL LAYER + HOLO SIGHT CORE */
         #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; }
         .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #111 0%, #2a2a2a 30%, #0d0d0d 50%, #2a2a2a 70%, #111 100%); border-radius: 6px 6px 2px 2px; border-top: 1px solid #444; box-shadow: 0 12px 25px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.1); }
         .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #1c1c1c; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.1), rgba(0,240,255,0.02)); box-shadow: inset 0 0 8px rgba(0,240,255,0.15); }
@@ -77,7 +69,6 @@ game_html = '''
         .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #0a0a0a, #1a1a1a, #050505); border-radius: 3px; }
         #flash { position: absolute; top: 15px; left: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 15%, #ff3c00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 10px #ff3c00); }
 
-        /* 🏃 CAMOUFLAGE MILITARY SOLDIER THREAT MODULES */
         .threat { position: absolute; width: 45px; height: 83px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; will-change: transform, top, left, opacity; }
         .t-head { background: linear-gradient(135deg, #c48e58, #945d31); border-radius: 50%; width: 24px; height: 24px; border: 1.5px solid #000; position: relative; }
         .t-head::before { content: ''; position: absolute; top: -3px; left: -1px; width: 26px; height: 12px; background: repeating-linear-gradient(45deg, #2b331a, #2b331f 4px, #161a0d 4px, #161a0d 8px); border-radius: 6px 6px 0 0; border: 1.5px solid #000; } 
@@ -87,17 +78,18 @@ game_html = '''
         .t-arm { position: absolute; top: 6px; width: 26px; height: 11px; background: #323b20; border: 1.5px solid #000; border-radius: 3px; }
         .arm-l { left: -16px; transform: rotate(-15deg); transform-origin: right center; }
         .arm-r { right: -16px; transform: rotate(15deg); transform-origin: left center; }
-        .t-weapon { position: absolute; top: -2px; width: 14px; height: 11px; background: #111; border-radius: 2px; border-bottom: 2px solid #000; }
-        .arm-l .t-weapon { left: -12px; } .arm-r .t-weapon { right: -12px; }
         
-        /* FIXED: Expanded leg vertical container scale vectors up from 16px to 24px */
+        /* FIXED: Expanded leg vertical container scale vectors up to 24px */
         .t-legs { display: flex; justify-content: space-around; width: 28px; height: 24px; margin-top: auto; }
         .t-leg { background: #1c210e; width: 9px; height: 100%; border-radius: 2px; border: 1px solid #000; animation: walkCycle 0.22s ease-in-out infinite alternate; }
         .t-leg:nth-child(2) { animation-delay: 0.11s; }
         @keyframes walkCycle { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+        .dead-threat .t-leg { animation: none; transform: translateY(0) !important; }
 
-        /* FIXED: Force dead state to completely lock walking mechanics instantly upon hit confirmation */
-        .dead-threat .t-leg { animation: none !from-code-pipeline; transform: translateY(0) !important; }
+        .t-weapon { position: absolute; top: -2px; width: 16px; height: 6px; background: #1a1a1a; border-radius: 2px; border-bottom: 2px solid #000; }
+        .arm-l .t-weapon { left: -14px; } .arm-r .t-weapon { right: -14px; }
+        .enemy-flash { position: absolute; width: 14px; height: 14px; background: radial-gradient(circle, #ffffff 20%, #ffbb00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 6; filter: drop-shadow(0 0 6px #ff8800); }
+        .arm-l .enemy-flash { left: -26px; top: -6px; } .arm-r .enemy-flash { right: -26px; top: -6px; }
 
         .target-ring { position: absolute; border: 3px dashed #ff2222; border-radius: 50%; pointer-events: none; z-index: 10; transform-origin: center center; display: block; box-shadow: 0 0 10px #ff2222; }
         .blood-drop { position: absolute; width: 4px; height: 4px; background: #6b0004; border-radius: 50%; z-index: 12; pointer-events: none; animation: explodeBlood 0.35s ease-out forwards; }
@@ -108,6 +100,10 @@ game_html = '''
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
         #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.85); padding: 6px 12px; border-radius: 6px; border: 1px solid #444; letter-spacing: 1px; }
         #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.85); padding: 3px 8px; border-radius: 4px; }
+        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3333; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 4px; border: 2px solid #ff2222; text-shadow: 0 0 4px #ff0000; }
+        #healthCounter.low-pulse { animation: lowHpFlash 0.4s ease-in-out infinite alternate; }
+        @keyframes lowHpFlash { 0% { background: rgba(0,0,0,0.9); border-color:#ff2222; } 100% { background: rgba(140,0,0,0.95); border-color:#fff; box-shadow:0 0 10px #ff0000; } }
+
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
         #overScreen { background: rgba(0,0,0,0.95); } #intermissionScreen { background: rgba(0,0,0,0.85); } #winScreen { background: linear-gradient(135deg, rgba(10,20,35,0.95), rgba(25,40,65,0.95)); }
         .retry-btn { padding: 12px 28px; background: #b01a25; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(176,26,37,0.5); }
@@ -120,32 +116,24 @@ game_html = '''
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CHAPTER 1: CITY STREETS</div>
         <div id="targetTracker">TARGETS CLEAR: 0/5</div>
+        <div id="healthCounter">HP: 100</div>
         
         <div id="sceneryContainer"></div>
-        <div class="roadway"></div>
+        <div class="roadway"><div class="road-lines"></div></div>
         
         <div id="car">
-            <div class="wheel w-front-l"></div>
-            <div class="wheel w-front-r"></div>
-            <div class="suv-door door-l"></div>
-            <div class="window"></div>
-            <div class="light-l"></div>
-            <div class="light-r"></div>
-            <div class="suv-door door-r"></div>
-            <div class="wheel w-rear-l"></div>
-            <div class="wheel w-rear-r"></div>
+            <div class="wheel w-front-l"></div> <div class="wheel w-front-r"></div>
+            <div class="suv-door door-l"></div> <div class="window"></div> <div class="light-l"></div> <div class="light-r"></div>
+            <div class="suv-door door-r"></div> <div class="wheel w-rear-l"></div> <div class="wheel w-rear-r"></div>
         </div>
 
         <div id="sight"></div>
         <div id="weapon">
-            <div id="flash"></div>
-            <div class="w-slide"></div>
-            <div class="w-holo-sight"></div>
-            <div class="w-grip-back"></div>
+            <div id="flash"></div> <div class="w-slide"></div> <div class="w-holo-sight"></div> <div class="w-grip-back"></div>
         </div>
 
         <div id="overScreen">
-            <div style="color:#b01a25; font-size:32px; font-weight:bold; text-shadow:0 0 10px #000; font-family:monospace; letter-spacing:1px;">GAME OVER</div>
+            <div style="color:#b01a25; font-size:32px; font-weight:bold; text-shadow:0 0 10px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
             <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Operation Score: 200</div>
             <button class="retry-btn" onclick="resetArcadeEngine(true)">RETRY MISSION 🔄</button>
         </div>
@@ -165,12 +153,13 @@ game_html = '''
 <script>
     let currentX = 168, currentY = 218, score = 200, isOver = false, activeChapter = 1;
     let carPos = 110, distanceScale = 0.2, carParked = false;
-    let threatsList = []; let chapterKills = 0;
-    let audioCtx = null, spawnTimerId = null, physicsTimerId = null;
+    let threatsList = []; let chapterKills = 0, playerHp = 100;
+    let audioCtx = null, spawnTimerId = null, physicsTimerId = null, heartbeatIntervalId = null;
 
-    const gameArea = document.getElementById("gameArea"), sight = document.getElementById("sight"), weapon = document.getElementById("weapon"), flash = document.getElementById("flash"), car = document.getElementById("car"), scoreCounter = document.getElementById("scoreCounter"), chapterTxt = document.getElementById("chapterTxt"), targetTracker = document.getElementById("targetTracker"), sceneryContainer = document.getElementById("sceneryContainer"), overScreen = document.getElementById("overScreen"), winScreen = document.getElementById("winScreen"), intermissionScreen = document.getElementById("intermissionScreen"), finalScore = document.getElementById("finalScore");
+    const gameArea = document.getElementById("gameArea"), sight = document.getElementById("sight"), weapon = document.getElementById("weapon"), flash = document.getElementById("flash"), car = document.getElementById("car"), scoreCounter = document.getElementById("scoreCounter"), chapterTxt = document.getElementById("chapterTxt"), targetTracker = document.getElementById("targetTracker"), healthCounter = document.getElementById("healthCounter"), sceneryContainer = document.getElementById("sceneryContainer"), overScreen = document.getElementById("overScreen"), winScreen = document.getElementById("winScreen"), intermissionScreen = document.getElementById("intermissionScreen"), finalScore = document.getElementById("finalScore");
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    
     function sound(type) {
         setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
         if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
@@ -178,11 +167,13 @@ game_html = '''
         else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
         else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
         else if (type === "shout_aaa") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(260, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.26); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.26); }
+        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
+        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
 
     function aim(e) {
         if (isOver || intermissionScreen.style.display === "flex") return;
-        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches[0]; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches[0]; }
+        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect();
         currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16)); currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
         sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
@@ -201,9 +192,24 @@ game_html = '''
     function updateLevelAtmosphere() {
         let meta = mapChapters[activeChapter]; let maxNeeded = 5 + (activeChapter - 1) * 2;
         chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`; targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`; gameArea.style.background = meta.bg;
+        
         let roadwayEl = document.querySelector(".roadway"), carEl = document.getElementById("car");
-        if (meta.code === "port") { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; carEl.style.display = "none"; carParked = true; } 
-        else { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; carEl.style.display = "block"; }
+        
+        // --- 🗺️ FIXED: REMOVED MAIN HIGHWAY STRIP ON CHAPTER 3 PORTS ---
+        if (meta.code === "port") {
+            roadwayEl.style.display = "none"; // Core road completely cleared from screen views
+            carEl.style.display = "none"; 
+            carParked = true; 
+        } else if (meta.code === "tree") {
+            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
+            document.querySelector(".road-lines").style.display = "none"; // Clear asphalt lines in dense woods
+            carEl.style.display = "block";
+        } else {
+            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
+            document.querySelector(".road-lines").style.display = "block";
+            carEl.style.display = "block";
+        }
+        
         sceneryContainer.innerHTML = "";
         if (meta.code === "city") { sceneryContainer.innerHTML = '<div class="city-facade-l"></div><div class="overhead-wires"></div><div class="city-facade-r"></div>'; } 
         else if (meta.code === "tree") { sceneryContainer.innerHTML = `<div class="tree-3d" style="left:15px; bottom:160px; transform:scale(0.85);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="left:65px; bottom:180px; transform:scale(0.7);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:20px; bottom:150px; transform:scale(0.9);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div><div class="tree-3d" style="right:75px; bottom:175px; transform:scale(0.75);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>`; } 
@@ -219,6 +225,22 @@ game_html = '''
         let pool = document.createElement("div"); pool.className = "blood-pool"; pool.style.left = (x - 26) + "px"; pool.style.top = (y + 26) + "px"; gameArea.appendChild(pool);
     }
 
+    function triggerEnemyDamageStrike() {
+        if (isOver || intermissionScreen.style.display === "flex") return;
+        playerHp -= 20; if (playerHp < 0) playerHp = 0;
+        healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
+        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 140);
+
+        if (playerHp <= 20 && !heartbeatIntervalId) {
+            healthCounter.classList.add("low-pulse");
+            heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
+        }
+        if (playerHp <= 0) {
+            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(physicsTimerId);
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+            finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex";
+        }
+    }
     function triggerFire() {
         if (isOver || intermissionScreen.style.display === "flex") return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
@@ -230,18 +252,22 @@ game_html = '''
             let tX = tRect.left - areaRect.left; let tY = tRect.top - areaRect.top;
 
             if (hitCenterX >= tX && hitCenterX <= tX + tRect.width && hitCenterY >= tY && hitCenterY <= tY + tRect.height) {
-                t.isDying = true; 
-                // FIXED: Adds dead class anchor node to freeze walking animation steps immediately
-                t.el.classList.add("dead-threat");
+                t.isDying = true; t.el.classList.add("dead-threat");
                 sound("shout_aaa"); spawnBloodSpit(hitCenterX, hitCenterY);
                 score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); chapterKills += 1;
                 let maxNeeded = 5 + (activeChapter - 1) * 2; targetTracker.innerText = "TARGETS CLEAR: " + chapterKills + "/" + maxNeeded;
 
                 t.ring.remove(); t.el.style.transform += " rotate(85deg)"; t.el.style.top = (parseFloat(t.el.style.top) + 26) + "px"; 
-                if (chapterKills >= maxNeeded) { clearInterval(spawnTimerId); clearInterval(physicsTimerId); if (activeChapter >= 3) { winScreen.style.display = "flex"; return; } sound("level"); intermissionScreen.style.display = "flex"; }
+                if (chapterKills >= maxNeeded) { 
+                    clearInterval(spawnTimerId); clearInterval(physicsTimerId); 
+                    if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+                    if (activeChapter >= 3) { winScreen.style.display = "flex"; return; } 
+                    sound("level"); intermissionScreen.style.display = "flex"; 
+                }
             }
         });
     }
+
     function runEngineLoops() {
         physicsTimerId = setInterval(() => {
             if (isOver) return; let meta = mapChapters[activeChapter];
@@ -253,15 +279,18 @@ game_html = '''
 
             threatsList.forEach((t) => {
                 if (t.isDying) return; 
+                if (t.age > 0 && t.age % 32 === 0) { 
+                    let eFlashEl = t.el.querySelector(".enemy-flash");
+                    if (eFlashEl) { eFlashEl.style.display = "block"; triggerEnemyDamageStrike(); setTimeout(() => { eFlashEl.style.display = "none"; }, 65); }
+                }
+
                 if (meta.code === "port") {
                     t.localScale += 0.024; if (t.localScale > 1.35) t.localScale = 1.35;
                     t.el.style.transform = "scale(" + t.localScale + ")"; t.el.style.left = (60 + t.sideOffset) + "px"; t.el.style.top = (130 + (t.baseTopY - 190) + (t.localScale * 45)) + "px";
-                    
                     let rSize = 90 * (1.3 - (t.age / 40)); t.ring.style.width = Math.max(0, rSize) + "px"; t.ring.style.height = Math.max(0, rSize) + "px";
                     t.ring.style.left = ((60 + t.sideOffset) + (20 * t.localScale) - (rSize / 2) + 15) + "px"; t.ring.style.top = ((130 + (t.baseTopY - 190) + (t.localScale * 45)) + (15 * t.localScale) - (rSize / 2) + 30) + "px";
                 } else {
                     t.el.style.transform = "scale(" + distanceScale + ")"; t.el.style.left = (carPos + (t.sideOffset * distanceScale)) + "px"; t.el.style.top = (currentTopY + (t.baseTopY - 195) * distanceScale) + "px";
-                    
                     let rSize = 90 * (1.3 - (t.age / 40)); t.ring.style.width = Math.max(0, rSize) + "px"; t.ring.style.height = Math.max(0, rSize) + "px";
                     t.ring.style.left = ((carPos + (t.sideOffset * distanceScale)) + (20 * distanceScale) - (rSize / 2) + 15) + "px"; t.ring.style.top = ((currentTopY + (t.baseTopY - 195) * distanceScale) + (15 * distanceScale) - (rSize / 2) + 30) + "px";
                 }
@@ -274,7 +303,7 @@ game_html = '''
             let el = document.createElement("div"); el.className = "threat"; let roll = Math.random(); let sideOffset, topY, armClass;
             if (roll < 0.25) { sideOffset = -30; topY = 190; armClass = "arm-l"; } else if (roll < 0.5) { sideOffset = 150; topY = 185; armClass = "arm-r"; } else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; } else { sideOffset = 130; topY = 210; armClass = "arm-r"; }
 
-            el.innerHTML = '<div class="t-head"><div class="t-eyes"></div></div><div class="t-torso"><div class="t-arm ' + armClass + '"><div class="t-weapon"></div></div></div><div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>';
+            el.innerHTML = '<div class="t-head"><div class="t-eyes"></div></div><div class="t-torso"><div class="t-arm ' + armClass + '"><div class="t-weapon"></div><div class="enemy-flash"></div></div></div><div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>';
             let initialScale = (mapChapters[activeChapter].code === "port") ? 0.25 : distanceScale;
             let updatedX = (mapChapters[activeChapter].code === "port") ? (60 + sideOffset) : (carPos + (sideOffset * distanceScale));
             let threatY = (mapChapters[activeChapter].code === "port") ? (130 + (topY - 190)) : ((165 + (distanceScale * 45)) + (topY - 195) * distanceScale);
@@ -283,16 +312,16 @@ game_html = '''
             gameArea.appendChild(el); let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
 
             let threatObj = { el: el, ring: ring, sideOffset: sideOffset, baseTopY: topY, age: 0, isDying: false, localScale: initialScale }; threatsList.push(threatObj); sound("ding");
-
-            setTimeout(() => { if (!isOver && el.parentNode && !threatObj.isDying) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(physicsTimerId); finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex"; } }, 1400);
         }, 1100);
     }
 
     function clearDeadBodiesAndBlood() { document.querySelectorAll(".threat, .target-ring, .blood-pool, .blood-drop").forEach(el => el.remove()); threatsList = []; }
     window.advanceToNextChapter = function() { activeChapter += 1; chapterKills = 0; intermissionScreen.style.display = "none"; clearDeadBodiesAndBlood(); resetArcadeEngine(false); };
     window.resetArcadeEngine = function(resetFullCampaign) {
-        clearInterval(spawnTimerId); clearInterval(physicsTimerId); clearDeadBodiesAndBlood();
-        if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; scoreCounter.innerText = "00200"; }
+        clearInterval(spawnTimerId); clearInterval(physicsTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        clearDeadBodiesAndBlood();
+        if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; playerHp = 100; scoreCounter.innerText = "00200"; healthCounter.classList.remove("low-pulse"); }
+        healthCounter.innerText = `HP: ${playerHp}`;
         updateLevelAtmosphere(); isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); car.classList.remove("parked-open"); carPos = Math.random() * 80 + 70;
         currentX = 168; currentY = 218; sight.style.left = "168px"; sight.style.top = "218px"; weapon.style.transform = "translateX(-50%) scale(1.1) rotate(0deg) translateY(0px)"; overScreen.style.display = "none"; winScreen.style.display = "none"; runEngineLoops();
     };
@@ -304,4 +333,3 @@ game_html = '''
 st.markdown('<div class="cab">', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
 st.markdown("</div>", unsafe_allow_html=True)
-
