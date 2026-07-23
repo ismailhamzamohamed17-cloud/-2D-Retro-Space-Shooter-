@@ -18,7 +18,7 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9);
         }
 
-        /* 🎬 FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
+        /* FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
@@ -46,6 +46,7 @@ game_html = '''
         .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #0a0a0a, #1a1a1a, #050505); border-radius: 3px; }
         #flash { position: absolute; top: 15px; left: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 15%, #ff3c00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 10px #ff3c00); }
 
+        /* FIXED: Added pointer-events: none so tracking rings never intercept bullet touch points */
         .target-ring { position: absolute; border: 3px dashed #ff2222; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 10px #ff2222; }
         #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00ffff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 8px #00ffff; display: none; }
 
@@ -68,7 +69,6 @@ game_html = '''
         <div id="targetTracker">SECTOR A: 0/3</div>
         <div id="healthCounter">HP: 100</div>
         
-        <!-- Native HTML5 Canvas handles full 3D matrix math instantly without CDNs -->
         <canvas id="gameCanvas" width="380" height="480"></canvas>
         
         <div id="sight"></div>
@@ -96,11 +96,9 @@ game_html = '''
     let currentSector = "A"; let sectorKills = 0;
     const sectorRequirements = { "A": 3, "B": 3, "C": 4 };
 
-    // --- 🪐 HTML5 CANVAS PROJECTION ANCHORS ---
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Camera perspective multipliers mapping depth position loops
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
 
@@ -117,7 +115,7 @@ game_html = '''
     }
     function aim(e) {
         if (isOver) return;
-        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches[0]; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches[0]; }
+        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect();
         currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -129,56 +127,44 @@ game_html = '''
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
-    // --- 📐 HIGH-UTILITY 3D RAY PERSPECTIVE CALCULATOR ---
-    // Transforms real X, Y, Z space coordinates into 2D display pixels instantly
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
         let relativeZ = z - cameraZ;
-        
-        if (relativeZ <= 0.1) return null; // Blocks clipping behind the lens
-        
-        let fovScale = 400 / relativeZ; // Simulates human vision focal depth ratios
+        if (relativeZ <= 0.1) return null;
+        let fovScale = 400 / relativeZ;
         let px = 190 + (relativeX * fovScale);
-        let py = 240 - ((y - 1.6) * fovScale); // Locked to standard 1.6m eye level view
-        
+        let py = 240 - ((y - 1.6) * fovScale);
         return { x: px, y: py, size: fovScale };
     }
 
-    // Static 3D database positions for layout crates and barricades inside the world corridor
     const static3DObstacles = [
         { x: -1.8, y: 0.5, z: 15, color: "#7c2d12" },
         { x: 1.8, y: 0.5, z: 30, color: "#1e3a8a" },
         { x: -1.5, y: 0.5, z: 45, color: "#065f46" }
     ];
     function render3DSceneGrid() {
-        ctx.fillStyle = "#0a0f1d"; ctx.fillRect(0, 0, 380, 480); // Deep navy space sky background
+        ctx.fillStyle = "#0a0f1d"; ctx.fillRect(0, 0, 380, 480);
 
-        // Smooth camera movement interpolation
         cameraZ += (targetCameraZ - cameraZ) * 0.07;
         cameraX += (targetCameraX - cameraX) * 0.07;
 
-        // 🛣️ DRAW VOLUMETRIC CORRIDOR TUNNEL PANELS USING DEPTH STEPS
         for (let z = 80; z >= 0; z -= 4) {
             let zPos = Math.floor(cameraZ) + z;
-            // Round coordinates to clear fractional line tears completely
             zPos = zPos - (zPos % 4); 
 
             let pNear = project3D(0, 0, zPos);
             let pFar = project3D(0, 0, zPos + 4);
             if (!pNear || !pFar) continue;
 
-            // Fog depth shader interpolation calculation
             let fogOpacity = Math.min(1, z / 60);
             ctx.strokeStyle = "rgba(30, 41, 59, " + (1 - fogOpacity) + ")";
             ctx.lineWidth = Math.max(1, pNear.size / 60);
 
-            // Draw Volumetric Floor boundary outlines
             ctx.beginPath();
             ctx.moveTo(190 - (4 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 + (4 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.stroke();
 
-            // Draw Volumetric Left & Right vertical wall segment ribs
             ctx.beginPath();
             ctx.moveTo(190 - (4 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 - (4 * pNear.size), 240 - (2.4 * pNear.size));
@@ -190,19 +176,14 @@ game_html = '''
             ctx.stroke();
         }
 
-        // 📦 DRAW BARRICADES WITH DEPTH SCALING
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z);
             if (!p || b.z < cameraZ) return;
-            
             let w = 1.8 * p.size; let h = 2.0 * p.size;
-            ctx.fillStyle = b.color;
-            ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.fillStyle = b.color; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
         });
 
-        // 🏃 DRAW TALL 3D SOLDIERS WITH ACTIVE AUTO-GUN MUZZLE FLASH SPARKS
         threatsList.forEach(t => {
             if (t.isDying) return;
             t.age++;
@@ -215,44 +196,34 @@ game_html = '''
             let p = project3D(t.x, t.y, t.z);
             if (!p) return;
 
-            let s = p.size * 0.4; // Updated proportions for long stance legs
-            t.currentScreenX = p.x; t.currentScreenY = p.y; t.currentRadius = s * 0.8;
+            let s = p.size * 0.4;
+            t.currentScreenX = p.x; 
+            // FIXED: Shifted structural hitbox center point down to match visual torso configurations perfectly
+            t.currentScreenY = p.y - (s / 2); 
+            t.currentRadius = s * 0.95; // Expanded hit radius to ensure first shots connect reliably
 
-            // Draw 3D Torso Base
             ctx.fillStyle = "#14532d"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
             ctx.strokeStyle = "#000"; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
-            
-            // Draw 3D Head Sphere Capsule
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-            
-            // Draw 24px Proportional Long Legs
-            ctx.fillStyle = "#1c210e";
-            ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8);
-            ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-
-            // Draw Weapon barrel extensions
+            ctx.fillStyle = "#1c210e"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
             ctx.fillStyle = "#111111"; ctx.fillRect(p.x + s/4, p.y - s/4, s * 0.7, s * 0.2);
 
-            // Draw Firing Muzzle flash lighting sparkles
             if (t.isFlashing) {
                 let flashGrd = ctx.createRadialGradient(p.x + s, p.y - s/6, 1, p.x + s, p.y - s/6, s * 0.5);
                 flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.4, "#ffaa00"); flashGrd.addColorStop(1, "transparent");
                 ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s, p.y - s/6, s * 0.5, 0, Math.PI*2); ctx.fill(); ctx.closePath();
             }
 
-            // Render closing target ring data bounds
-            t.ring.style.left = p.x + "px"; t.ring.style.top = p.y + "px";
-            let rSize = Math.max(0, 90 * (1.3 - (t.age / 40)));
+            t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
+            let rSize = Math.max(0, 95 * (1.3 - (t.age / 40)));
             t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
     function triggerSectorPathMovement() {
         if (currentSector === "A") {
-            currentSector = "B"; sectorKills = 0;
-            targetCameraZ = 16; targetCameraX = 1.5; // Flies forward 16 meters down the 3D hall!
+            currentSector = "B"; sectorKills = 0; targetCameraZ = 16; targetCameraX = 1.2;
         } else if (currentSector === "B") {
-            currentSector = "C"; sectorKills = 0;
-            targetCameraZ = 32; targetCameraX = -1.5; // Navigates around first corner box checkpoint!
+            currentSector = "C"; sectorKills = 0; targetCameraZ = 32; targetCameraX = -1.2;
         } else if (currentSector === "C") {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -267,15 +238,8 @@ game_html = '''
         if (isOver || intermissionScreen.style.display === "flex") return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-
-        if (playerHp <= 20 && !heartbeatIntervalId) {
-            gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
-        }
-        if (playerHp <= 0) {
-            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
-            finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex";
-        }
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
@@ -290,15 +254,13 @@ game_html = '''
         });
 
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa"); spawnBloodSpit(currentX, currentY);
+            hitTarget.isDying = true; sound("shout_aaa");
             score += 100; scoreCounter.innerText = String(score).padStart(5, '0');
             sectorKills += 1;
             
             let needed = sectorRequirements[currentSector];
             targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove();
-            
-            // Clean up old records out of array arrays cleanly
             threatsList = threatsList.filter(item => item !== hitTarget);
 
             if (sectorKills >= needed) {
@@ -311,21 +273,23 @@ game_html = '''
     function spawn3DThreatUnit() {
         let maxSimultaneous = 2; if (isOver || threatsList.length >= maxSimultaneous) return;
 
-        let spawnZ = cameraZ + 12; // Deploys enemies 12 meters in front of active view perspective
-        let spawnX = (Math.random() * 3.2) - 1.6;
+        // FIXED: Anchored spawner depth equations relative to the active camera sector zone milestones
+        let spawnZ = 12;
+        if (currentSector === "B") spawnZ = 28;
+        if (currentSector === "C") spawnZ = 44;
 
+        let spawnX = cameraX + (Math.random() * 2.8) - 1.4;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
 
         threatsList.push({
             x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring,
-            currentScreenX: 0, currentScreenY: 0, currentRadius: 20
+            currentScreenX: 0, currentScreenY: 0, currentRadius: 24
         });
         sound("ding");
     }
 
     window.resetArcadeEngine = function(fullReset) { location.reload(); };
 
-    // Boots execution framework loops
     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     spawnTimerId = setInterval(spawn3DThreatUnit, 1300);
 </script>
