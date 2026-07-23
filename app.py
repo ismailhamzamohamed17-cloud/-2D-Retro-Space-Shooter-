@@ -54,17 +54,11 @@ game_html = '''
         #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: none; }
         #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: none; }
 
-        #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
-        #overScreen { background: rgba(2,2,4,0.97); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
-        .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
-        .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
-
         .blink-prompt { font-size: 13px; font-weight: bold; color: #06b6d4; margin-top: 15px; letter-spacing: 2px; text-shadow: 0 0 8px rgba(6,182,212,0.6); animation: textFadeBlink 0.75s ease-in-out infinite alternate; display: none; }
         @keyframes textFadeBlink { 0% { opacity: 0.1; } 100% { opacity: 1; } }
         #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* FIXED: Expanded size vectors and font properties prevent narrative text clipping completely */
         .story-scroller { max-width: 340px; color: #e2e8f0; font-size: 13px; font-weight: 500; line-height: 1.55; margin-bottom: 25px; max-height: 220px; overflow-y: hidden; text-align: center; border: 1.5px solid #1e293b; padding: 16px; background: rgba(2, 6, 23, 0.75); border-radius: 12px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
         .load-bar-track { width: 240px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .load-bar-fluid { width: 0%; height: 100%; background: #06b6d4; transition: width 0.04s linear; }
@@ -72,7 +66,7 @@ game_html = '''
 </head>
 <body>
     <div id="gameArea">
-        <!-- 🎬 JERICHO HIGH-READABILITY PROLOGUE CARD -->
+        <!-- 🎬 JERICHO NARRATIVE PROLOGUE PANEL CARD -->
         <div id="coverScreen">
             <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
             <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
@@ -124,9 +118,8 @@ game_html = '''
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
     
-    // --- 🎬 FIXED: STATE CONTROL SEGMENT VITALS ---
     let perspectiveMode3rdPerson = true; 
-    let cinematicIntroductionTick = 0; 
+    let cameraFlyInProgressDist = 65; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
@@ -148,7 +141,7 @@ game_html = '''
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Black intermission overlay counts exactly 3000ms before tracking maps boot
+                    // Fixed: Hold the black intermission screen for exactly 3 seconds (3000ms)
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -156,9 +149,8 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode3rdPerson = true; cinematicIntroductionTick = 0;
+                        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-                        spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
                     }, 3000);
                 });
             }
@@ -209,13 +201,13 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // --- 🎬 FIXED: THIRD-PERSON PERSPECTIVE SEQUENCER TIMEOUTS ---
+        // Automated 3rd-to-1st Person Camera Focus Easing
         if (perspectiveMode3rdPerson) {
-            cinematicIntroductionTick++;
-            // After exactly 3 seconds (135 frame ticks at 45fps), seamlessly transition through Jericho's lens
-            if (cinematicIntroductionTick >= 135) {
+            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
+            if (cameraFlyInProgressDist <= 2.2) {
                 perspectiveMode3rdPerson = false;
                 document.getElementById("weapon").style.display = "block";
+                if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
             }
         }
 
@@ -244,10 +236,8 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
             ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
         }
-
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
-        // Only push enemies into queue if third person initialization panning has concluded
         if (!perspectiveMode3rdPerson) {
             threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         }
@@ -281,17 +271,34 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ NEW FEATURE: CINEMATIC THIRD-PERSON CHARCTER MODEL PAINTER ---
-        // Dynamically draws Hampi Jericho walking forward down the center aisle during intro sequences
+        // --- 🏗️ CINEMATIC 3D HUMAN PROPORTIONS FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
-            let jX = 190; let jY = 370; let jSize = 48;
-            ctx.fillStyle = "#09090b"; // Tactical black trench shoulders
-            ctx.fillRect(jX - jSize/2, jY, jSize, jSize * 1.2);
-            ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.strokeRect(jX - jSize/2, jY, jSize, jSize * 1.2);
-            ctx.fillStyle = "#1e3a8a"; // High-visibility trauma gear harness plates
-            ctx.fillRect(jX - jSize/3, jY + 10, jSize * 0.66, jSize * 0.8);
-            ctx.fillStyle = "#1c1917"; // Jericho's haircut profile from behind
-            ctx.beginPath(); ctx.arc(jX, jY - 14, jSize * 0.24, 0, Math.PI * 2); ctx.fill();
+            if (cameraFlyInProgressDist <= 0.1) return;
+            let characterFovScale = 400 / cameraFlyInProgressDist;
+            let jX = 190; let jY = 240 - (-1.4 * characterFovScale); 
+            let scaleSize = characterFovScale * 0.44; 
+            let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.28);
+
+            // A: Long Running Athletic Combat Trousers
+            ctx.fillStyle = "#0f172a"; 
+            ctx.fillRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
+            ctx.fillRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
+            ctx.strokeStyle = "#000000"; ctx.lineWidth = 1;
+            ctx.strokeRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
+            ctx.strokeRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
+
+            // B: Strong Broad Shoulder Military Torso Body Frame
+            ctx.fillStyle = "#1e293b"; 
+            ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
+            ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
+
+            // C: Tactical Kevlar Trauma Vest Harness Plates
+            ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.15), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7);
+
+            // D: Tactical Head Unit Shell Profile
+            ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.30, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
     }
     function triggerSectorPathMovement() {
@@ -336,7 +343,7 @@ game_html = '''
     }
 
     function spawn3DThreatUnit() {
-        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
+        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
@@ -344,14 +351,15 @@ game_html = '''
     }
 
     window.resetArcadeEngine = function(fullReset) {
-        clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
+        clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
         document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
         cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        perspectiveMode3rdPerson = true; cinematicIntroductionTick = 0; document.getElementById("weapon").style.display = "none";
-        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; document.getElementById("weapon").style.display = "none";
+        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     };
 </script>
 </body>
