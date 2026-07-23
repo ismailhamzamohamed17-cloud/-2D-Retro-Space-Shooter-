@@ -58,7 +58,10 @@ game_html = '''
         #overScreen { background: rgba(2,2,4,0.97); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
         .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
         .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
-        /* 🎬 CINEMATIC NARRATIVE COVER SCREEN & CHAPTER INTRO PANELS */
+
+        /* 🎬 BLINKING TEXT STYLES */
+        .blink-prompt { font-size: 13px; font-weight: bold; color: #06b6d4; margin-top: 15px; letter-spacing: 2px; text-shadow: 0 0 8px rgba(6,182,212,0.6); animation: textFadeBlink 0.75s ease-in-out infinite alternate; display: none; }
+        @keyframes textFadeBlink { 0% { opacity: 0.1; } 100% { opacity: 1; } }
         #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
@@ -78,6 +81,8 @@ game_html = '''
             </div>
             <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
+            <!-- Blink prompt placeholder -->
+            <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
 
         <!-- 🎬 PITCH-BLACK CHAPTER ONE INTERMISSION PLATE -->
@@ -118,37 +123,46 @@ game_html = '''
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
-    let isMoving = false; 
+    let isMoving = false; let loaderFinished = false;
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🎬 STABLE: IMMEDIATE INTERLINE LOADER VALVE ENGINE ---
+    // --- 🎬 FIXED: STATE MACHINE TRIGGER LOOP WITH PRESS CLICK HOOKS ---
     function executeSelfStartingLoader() {
         let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
         let loadInterval = setInterval(() => {
             percentage += 2;
             if (barFluid) barFluid.style.width = percentage + "%";
-            // FIXED: Using textContent to prevent stream script engine assigning lookups
             if (txtPercent) txtPercent.textContent = "INITIALIZING MATRIX: " + percentage + "%";
             
             if (percentage >= 100) {
                 clearInterval(loadInterval);
-                document.getElementById("coverScreen").style.display = "none";
-                document.getElementById("chapterOverlay").style.display = "flex";
+                loaderFinished = true;
+                // Reveal blinking text trigger below loading tracks
+                document.getElementById("tapPrompt").style.display = "block";
                 
-                setTimeout(() => {
-                    document.getElementById("chapterOverlay").style.display = "none";
-                    document.getElementById("scoreCounter").style.display = "block";
-                    document.getElementById("chapterTxt").style.display = "block";
-                    document.getElementById("targetTracker").style.display = "block";
-                    document.getElementById("healthCounter").style.display = "block";
+                // Add event listener to capture clicking interactions safely
+                const coverElement = document.getElementById("coverScreen");
+                coverElement.addEventListener("click", function triggerCinematicTransition() {
+                    coverElement.removeEventListener("click", triggerCinematicTransition);
+                    coverElement.style.display = "none";
+                    document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-                    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-                }, 1800);
+                    // FIXED: Chapter intermission text card now displays for exactly 3000ms before release
+                    setTimeout(() => {
+                        document.getElementById("chapterOverlay").style.display = "none";
+                        document.getElementById("scoreCounter").style.display = "block";
+                        document.getElementById("chapterTxt").style.display = "block";
+                        document.getElementById("targetTracker").style.display = "block";
+                        document.getElementById("healthCounter").style.display = "block";
+                        
+                        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+                        spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+                    }, 3000);
+                });
             }
-        }, 25);
+        }, 22);
     }
     setTimeout(executeSelfStartingLoader, 100);
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -177,8 +191,8 @@ game_html = '''
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
     gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
-    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
-    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
+    gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished) return; if(e.target.tagName !== "BUTTON") triggerFire(); });
+    gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
     function project3D(x, y, z) {
         let relativeX = x - cameraX; let relativeZ = z - cameraZ;
@@ -189,8 +203,7 @@ game_html = '''
 
     const static3DObstacles = [
         { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
-        { id: "c5", x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" }, { id: "c6", x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" }
+        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" }
     ];
     function render3DSceneGrid() {
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
@@ -234,22 +247,30 @@ game_html = '''
             } 
             else if (item.type === "enemy") {
                 let t = item.data; if (!isMoving) t.loopTick++;
-                let aiPeriodState = Math.floor(t.loopTick / 38) % 2; let isPeekingNow = (aiPeriodState === 1);
+                
+                // --- 🎬 FIXED: GTA SINE RAGDOLL PHYSICS EASING ---
+                // Replaced crisp step jumps with a smooth algebraic momentum wave mapping multiplier
+                let smoothSinPeekFactor = (Math.sin(t.loopTick * 0.05) + 1) / 2; // Returns a smooth decimal glide between 0.0 and 1.0
+                let isActivelyOut = (smoothSinPeekFactor > 0.45); 
+
                 let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
-                let currentVisualX = isPeekingNow ? p.x : p.x - (s * 1.5);
+                
+                // Linearly interpolate coordinates to slide out slowly from behind container bounds
+                let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
 
-                if (isPeekingNow) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
-                if (t.age > 0 && t.age % 35 === 0 && !isMoving && isPeekingNow) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
+                if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
+                if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
                 ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
                 ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
-                if (t.isFlashing && isPeekingNow) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
+                if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
         });
@@ -299,7 +320,7 @@ game_html = '''
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*40), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
+        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
         sound("ding");
     }
 
