@@ -5,7 +5,6 @@ import random
 st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
 st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
-# Opening wrapper container tag mounts
 game_html = '''
 <!DOCTYPE html>
 <html>
@@ -78,7 +77,6 @@ game_html = '''
     let spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
     let audioCtx = null;
 
-    // ✈️ TWO CHAPTER PROGRESSION MAP HOOKS
     let currentChapter = 1; 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -101,8 +99,7 @@ game_html = '''
     const finalScore = document.getElementById("finalScore");
     const flash = document.getElementById("flash");
 
-    // Dynamic obstacle definition arrays
-    let static3DObstacles = [
+    const static3DObstacles = [
         { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
         { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
         { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, 
@@ -126,6 +123,7 @@ game_html = '''
         let fovScale = 400 / activePerspectiveZ;
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
+
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || document.getElementById("chapterOverlay").style.display === "flex") return;
         
@@ -133,31 +131,17 @@ game_html = '''
         let spawnZ = cameraZ + 12 + (idx * 0.5); 
         let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         
-        // ✈️ CHAPTER 2 SPECIFIC COCKPIT ENCOUNTER RULES
-        if (currentChapter === 2 && ["H", "I", "J"].includes(currentSector) && !cockpitDoorOpened) {
-            return; // Stops spawning inside the cabin area once approaching cockpit security threshold
-        }
+        if (currentChapter === 2 && idx >= 7 && !cockpitDoorOpened) return; // Wait for door breach in cockpit
         
-        let ring = document.createElement("div"); 
-        ring.className = "target-ring"; 
-        gameArea.appendChild(ring);
-        
-        threatsList.push({ 
-            x: spawnX, y: 0.2, z: spawnZ, age: 0, 
-            loopTick: Math.floor(Math.random() * 60), 
-            isDying: false, isFlashing: false, ring: ring, 
-            currentScreenX: 0, currentScreenY: 0, currentRadius: 24 
-        });
+        let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
+        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
         sound("ding");
     }
     function aim(e) {
         if (isOver || document.getElementById("chapterOverlay").style.display === "flex") return;
         let targetPoint = e; 
-        if (e.touches && e.touches.length > 0) { 
-            targetPoint = e.touches[0]; 
-        } else if (e.changedTouches && e.changedTouches.length > 0) { 
-            targetPoint = e.changedTouches[0]; 
-        }
+        if (e.touches && e.touches.length > 0) { targetPoint = e.touches[0]; } 
+        else if (e.changedTouches && e.changedTouches.length > 0) { targetPoint = e.changedTouches[0]; }
         
         let bounds = gameArea.getBoundingClientRect(); 
         currentX = targetPoint.clientX - bounds.left; 
@@ -175,6 +159,7 @@ game_html = '''
 
     gameArea.addEventListener("mousemove", aim);
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+
     function triggerMouseCoordinateFire(e) {
         setupAudio(); let bounds = gameArea.getBoundingClientRect();
         currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
@@ -182,94 +167,78 @@ game_html = '''
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
+    function updateMapLevelLabels() {
+        let secIdx = sectorsList.indexOf(currentSector);
+        if (currentChapter === 1) {
+            chapterTxt.innerText = secIdx >= 4 ? "CH 1: OUTSIDE CARGO TERMINAL" : "CH 1: 3D CONTAINER PORT";
+        } else {
+            if (secIdx >= 7) { chapterTxt.innerText = "CH 2: AIRPLANE COCKPIT DECK"; }
+            else if (secIdx >= 4) { chapterTxt.innerText = "CH 2: COMMERCIAL CABIN FLIGHT"; }
+            else { chapterTxt.innerText = "CH 2: INTERNATIONAL RUNWAY AIRPORT"; }
+        }
+    }
+
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let idx = sectorsList.indexOf(currentSector);
         
         if (idx >= 0 && idx < sectorsList.length - 1) {
-            currentSector = sectorsList[idx + 1]; 
-            sectorKills = 0; 
-            targetCameraZ = (idx + 1) * 16;
-            
+            currentSector = sectorsList[idx + 1]; sectorKills = 0; targetCameraZ = (idx + 1) * 16;
             let rollingPathRoll = Math.random();
             if (rollingPathRoll < 0.33) { targetCameraX = -1.3; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.3; } else { targetCameraX = 0.0; }
             
-            // Re-evaluate map level names dynamically
             updateMapLevelLabels();
             document.getElementById("tutorialPopup").style.display = "none";
         } else {
-            // End of Chapter sector stack routing
             handleChapterTransition();
             return;
         }
-        let needed = sectorRequirements[currentSector]; 
-        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         sound("level");
     }
+
     function handleChapterTransition() {
         if (currentChapter === 1) {
-            // Upgrade and push operational theater into Chapter 2 Airport
             currentChapter = 2; currentSector = "A"; sectorKills = 0;
             cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; threatsList = [];
             isMoving = false; cockpitDoorOpened = false;
             
             document.querySelectorAll(".target-ring").forEach(el => el.remove());
-            clearInterval(spawnTimerId); spawnTimerId = null;
-            clearInterval(runLoopTimerId);
+            if (spawnTimerId) clearInterval(spawnTimerId); spawnTimerId = null;
             
             document.getElementById("overlayChTitle").innerText = "CHAPTER 2";
             document.getElementById("overlayChSubtitle").innerText = "AIRPORT RUNWAY & CABIN SECURING";
             document.getElementById("chapterOverlay").style.display = "flex";
             
-            hideHUD();
+            scoreCounter.style.display = "none"; chapterTxt.style.display = "none"; targetTracker.style.display = "none"; healthCounter.style.display = "none"; sight.style.display = "none"; weapon.style.display = "none";
             setTimeout(initializeActiveArcadeGameplay, 3000);
         } else {
-            // Game fully won end state loop trigger
-            clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-            
-            document.getElementById("winHeader").innerText = "🏆 CAMPAIGN SECURED 🏆";
-            document.getElementById("winSub").innerHTML = "ALL SECTORS SECURED!<br>Jericho Ops cleared the cockpit corridor.";
+            if (spawnTimerId) clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
+            document.getElementById("winHeader").innerText = "👑 CAMPAIGN SECURED 👑";
+            document.getElementById("winSub").innerHTML = "ALL SECTORS SECURED!<br>Jericho Ops cleared the cockpit terminal.";
             document.getElementById("winBtnAction").innerText = "RESET SYSTEM 🔄";
             winScreen.style.display = "flex";
         }
     }
-    function updateMapLevelLabels() {
-        if (currentChapter === 1) {
-            if (["E","F","G","H","I","J"].includes(currentSector)) { 
-                document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; 
-            } else {
-                document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
-            }
-        } else {
-            if (sectorsList.indexOf(currentSector) >= 7) {
-                document.getElementById("chapterTxt").innerText = "CH 2: AIRPLANE COCKPIT DECK";
-            } else if (sectorsList.indexOf(currentSector) >= 4) {
-                document.getElementById("chapterTxt").innerText = "CH 2: COMMERCIAL CABIN FLIGHT";
-            } else {
-                document.getElementById("chapterTxt").innerText = "CH 2: INTERNATIONAL RUNWAY AIRPORT";
-            }
-        }
+    function triggerEnemyDamageStrike() {
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
+        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
-    function hideHUD() {
-        scoreCounter.style.display = "none"; chapterTxt.style.display = "none"; 
-        targetTracker.style.display = "none"; healthCounter.style.display = "none"; 
-        sight.style.display = "none"; weapon.style.display = "none";
-    }
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         document.getElementById("tutorialPopup").style.display = "none";
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         
-        // ✈️ SPECIAL COCKPIT INTERACTION TARGET SECTOR J ACTION TRIGGER
+        // ✈️ COCKPIT DOOR BREACH CONTROLLER IN SECTOR J
         if (currentChapter === 2 && currentSector === "J" && !cockpitDoorOpened) {
-            if (Math.hypot(currentX - 190, currentY - 200) < 40) {
+            if (Math.hypot(currentX - 190, currentY - 250) < 40) {
                 cockpitDoorOpened = true; sound("level"); sound("boom");
-                
-                // Immediately force lock and spawn the boss opponent behind the cockpit door frame
                 let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-                threatsList.push({ x: 0.0, y: 0.4, z: cameraZ + 10, age: 10, loopTick: 20, isDying: false, isFlashing: false, ring: ring, currentScreenX: 190, currentScreenY: 200, currentRadius: 35 });
+                threatsList.push({ x: 0.0, y: 0.4, z: cameraZ + 10, age: 10, loopTick: 20, isDying: false, isFlashing: false, ring: ring, currentScreenX: 190, currentScreenY: 210, currentRadius: 35 });
                 return;
             }
         }
@@ -289,13 +258,6 @@ game_html = '''
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
-    function triggerEnemyDamageStrike() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
-        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
-        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
-    }
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
 
@@ -306,17 +268,14 @@ game_html = '''
         ctx.clearRect(0, 0, 380, 480);
         let secIdx = sectorsList.indexOf(currentSector);
 
-        // ✈️ ENVIRONMENT LAYER ROUTER
-        if (currentChapter === 1) {
-            renderChapterOneEnvironment();
-        } else {
-            if (secIdx >= 7) { renderCockpitEnvironment(); }
-            else if (secIdx >= 4) { renderAirplaneCabinEnvironment(); }
-            else { renderAirportRunwayEnvironment(); }
-        }
-        // Environment loops (Procedural walls/floors grids)
+        // Environment drawing systems
         if (currentChapter === 1 || (currentChapter === 2 && secIdx < 4)) {
-            let isOutdoor = (currentChapter === 1 && ["E","F","G","H","I","J"].includes(currentSector)) || currentChapter === 2;
+            let isOutdoor = (currentChapter === 1 && secIdx >= 4) || currentChapter === 2;
+            
+            // Render basic terrain/runway tarmac gradients
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            let floorGrd = ctx.createLinearGradient(0, 240, 0, 480); floorGrd.addColorStop(0, "#04060c"); floorGrd.addColorStop(1, "#011116"); ctx.fillStyle = floorGrd; ctx.fillRect(0, 240, 380, 240);
+
             for (let z = 84; z >= 0; z -= 3) {
                 let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
                 let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -325,82 +284,44 @@ game_html = '''
                 let floorColor = "rgba(" + Math.floor((currentChapter==2?32:18) * lightScale) + "," + Math.floor((currentChapter==2?34:24) * lightScale) + "," + Math.floor((currentChapter==2?42:38) * lightScale) + ",1)";
                 ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
                 
-                ctx.strokeStyle = currentChapter==2 ? "rgba(234, 179, 8, 0.2)" : "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
-                ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke(); 
-                
                 if (isOutdoor) continue;
                 let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
                 ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
                 ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
                 ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
             }
-        }
-    function renderAirplaneCabinEnvironment() {
-        // Draw cylindrical passenger plane inner fuselage ceiling and walls
-        let skyGrd = ctx.createLinearGradient(0, 0, 0, 480); skyGrd.addColorStop(0, "#0b0f19"); skyGrd.addColorStop(1, "#1e293b"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 480);
-        
-        for (let z = 70; z >= 0; z -= 4) {
-            let zPos = Math.floor(cameraZ) + z;
-            let p = project3D(0, 0, zPos); if (!p) continue;
-            let scale = 1 - (z / 70);
+        } else if (currentChapter === 2 && secIdx >= 4 && secIdx < 7) {
+            // ✈️ RENDER AIRPLANE CABIN FUSELAGE
+            ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, 380, 480);
+            for (let z = 70; z >= 0; z -= 4) {
+                let zPos = Math.floor(cameraZ) + z; let p = project3D(0, 0, zPos); if (!p) continue;
+                let scale = 1 - (z / 70);
+                ctx.fillStyle = "rgba(" + Math.floor(30*scale) + "," + Math.floor(41*scale) + "," + Math.floor(59*scale) + ",1)";
+                ctx.fillRect(190 - (3.8 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Left Seats
+                ctx.fillRect(190 + (2.6 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Right Seats
+                
+                // Cowering hostage graphics rendering layers
+                ctx.fillStyle = "rgba(" + Math.floor(212*scale) + "," + Math.floor(163*scale) + "," + Math.floor(115*scale) + ",1)";
+                ctx.beginPath(); ctx.arc(190 - (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(190 + (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
+            }
+        } else if (currentChapter === 2 && secIdx >= 7) {
+            // ✈️ RENDER FLIGHT INSTRUMENTATION COCKPIT
+            ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, 380, 480);
+            ctx.fillStyle = "#0f172a"; ctx.fillRect(20, 260, 340, 220);
+            ctx.fillStyle = "#22c55e"; ctx.fillRect(60, 310, 50, 40); // Green radar radar
+            ctx.fillStyle = "#38bdf8"; ctx.fillRect(270, 310, 50, 40); // Horizon tracking engine
             
-            // Render passenger rows on the left and right sides
-            ctx.fillStyle = "rgba(" + Math.floor(30*scale) + "," + Math.floor(41*scale) + "," + Math.floor(59*scale) + ",1)";
-            ctx.fillRect(190 - (3.8 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Left seats
-            ctx.fillRect(190 + (2.6 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Right seats
-            
-            // Procedural passengers (cowering civilian heads) inside rows
-            ctx.fillStyle = "rgba(" + Math.floor(212*scale) + "," + Math.floor(163*scale) + "," + Math.floor(115*scale) + ",1)";
-            ctx.beginPath(); ctx.arc(190 - (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(190 + (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
-            
-            // Overhead luggage tracks
-            ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.strokeRect(190 - (4.0 * p.size), 240 - (1.8*p.size), 1.4*p.size, 0.4*p.size);
-            ctx.strokeRect(190 + (2.6 * p.size), 240 - (1.8*p.size), 1.4*p.size, 0.4*p.size);
+            if (currentSector === "J" && !cockpitDoorOpened) {
+                ctx.fillStyle = "rgba(0,0,0,0.95)"; ctx.fillRect(0, 0, 380, 480);
+                ctx.fillStyle = "#dc2626"; ctx.font = "bold 13px monospace"; ctx.fillText("COCKPIT ACCESS DOOR SECURITY LOCKED", 50, 190);
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(150, 220, 80, 60);
+                ctx.strokeStyle = "#ef4444"; ctx.strokeRect(150, 220, 80, 60);
+                ctx.fillStyle = "#ffffff"; ctx.font = "10px sans-serif"; ctx.fillText("TAP TO BREACH", 154, 255);
+            }
         }
-    }
-    function renderCockpitEnvironment() {
-        // Render flight window frames and terminal radar panel grids
-        ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, 380, 480);
-        ctx.fillStyle = "#0f172a"; ctx.fillRect(20, 260, 340, 220); // Front instrumentation dashboard bank
-        
-        // Procedural display panel matrices
-        ctx.fillStyle = "#22c55e"; ctx.fillRect(60, 300, 50, 40); // Radar scan panel
-        ctx.fillStyle = "#38bdf8"; ctx.fillRect(270, 300, 50, 40); // Horizon tracking engine
-        
-        // Cockpit window borders
-        ctx.strokeStyle = "#475569"; ctx.lineWidth = 6;
-        ctx.strokeRect(30, 60, 150, 160); ctx.strokeRect(200, 60, 150, 160);
-        
-        // ✈️ LOCKOUT ENGAGEMENT FOR LAST BOSS SECTOR J
-        if (currentSector === "J" && !cockpitDoorOpened) {
-            ctx.fillStyle = "rgba(0,0,0,0.92)"; ctx.fillRect(0, 0, 380, 480);
-            ctx.fillStyle = "#dc2626"; ctx.font = "bold 14px monospace"; ctx.fillText("COCKPIT SECURITY ACCESS DOOR LOCK", 55, 170);
-            
-            // Clickable card switch interface
-            ctx.fillStyle = "#1e293b"; ctx.fillRect(150, 210, 80, 80);
-            ctx.strokeStyle = "#ef4444"; ctx.strokeRect(150, 210, 80, 80);
-            ctx.fillStyle = "#ffffff"; ctx.font = "10px sans-serif"; ctx.fillText("TAP TO BREACH", 154, 255);
-        }
-    }
-    function renderChapterOneEnvironment() {
-        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
-        if (isOutdoorSector) {
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
-            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#011c20"); seaGrd.addColorStop(1, "#011116"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 480);
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
-        } else {
-            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
-        }
-    }
 
-    function renderAirportRunwayEnvironment() {
-        let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(1, "#0f172a"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-        ctx.fillStyle = "#1e293b"; ctx.fillRect(0, 240, 380, 240); // Runway tarmac plate asphalt
-    }
-        // Core Enemy Depth drawing pipeline layers
+        // Draw entities queue frame processing
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
@@ -409,37 +330,34 @@ game_html = '''
         depthDrawQueue.forEach(item => {
             if (item.type === "crate" && (currentChapter === 1 || (currentChapter === 2 && sectorsList.indexOf(currentSector) < 4))) {
                 let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return; let w = 1.9 * p.size; let h = 2.2 * p.size;
-                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h); ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
-                ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
-            } 
-            else if (item.type === "enemy") {
+                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
+            } else if (item.type === "enemy") {
                 let t = item.data; if (!isMoving) t.loopTick++;
                 let smoothSinPeekFactor = (Math.sin(t.loopTick * 0.05) + 1) / 2; let isActivelyOut = (smoothSinPeekFactor > 0.45); 
                 let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
                 let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
+                
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
-
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
-                ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
-                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
-                
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; 
                 let dynamicCircleRadius = Math.max(14, Math.min(110, 95 * (1.3 - (t.age / 40)))); 
                 t.ring.style.width = dynamicCircleRadius + "px"; t.ring.style.height = dynamicCircleRadius + "px";
             }
         });
     }
-
     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
-        if (currentSector === "A" && sectorKills === 0 && currentChapter === 1) { document.getElementById("tutorialPopup").style.display = "block"; }
+        if (currentSector === "A" && sectorKills === 0 && currentChapter === 1) { 
+            document.getElementById("tutorialPopup").style.display = "block"; 
+        }
         scoreCounter.style.display = "block"; chapterTxt.style.display = "block"; targetTracker.style.display = "block"; healthCounter.style.display = "block"; sight.style.display = "block"; weapon.style.display = "block";
         updateMapLevelLabels();
-        if(!runLoopTimerId) runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+        
+        if (runLoopTimerId) clearInterval(runLoopTimerId);
+        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
 
     window.resetArcadeEngine = function(fullReset) {
@@ -456,7 +374,7 @@ game_html = '''
         document.getElementById("overlayChSubtitle").innerText = currentChapter === 1 ? "PORT TERMINAL SANITIZATION" : "AIRPORT RUNWAY & CABIN SECURING";
         document.getElementById("chapterOverlay").style.display = "flex";
         
-        hideHUD();
+        scoreCounter.style.display = "none"; chapterTxt.style.display = "none"; targetTracker.style.display = "none"; healthCounter.style.display = "none"; sight.style.display = "none"; weapon.style.display = "none";
         setTimeout(initializeActiveArcadeGameplay, 3000);
     };
 
@@ -467,5 +385,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Multistage Expansion Node: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Synchronized Core Framework Engine ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
