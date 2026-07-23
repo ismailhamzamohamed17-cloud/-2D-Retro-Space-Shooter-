@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 
-st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Chronicles", layout="centered")
-st.title("⚡ Virtua Tactical: Hampi Jericho Campaign")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
 game_html = '''
 <!DOCTYPE html>
@@ -67,19 +67,19 @@ game_html = '''
 </head>
 <body>
     <div id="gameArea">
-        <!-- 🎬 JERICHO NARRATIVE PROLOGUE PANEL CARD -->
+        <!-- 🎬 CLEAN BRIEFING VIEWPORT MATRIX -->
         <div id="coverScreen">
             <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
             <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
-            <div class="story-scroller">
-                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised [other topic]. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons [other topic]. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis [other topic].
+            <div class="story-scroller" id="briefContentText">
+                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.
             </div>
             <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
 
-        <!-- 🎬 PITCH-BLACK CHAPTER ONE INTERMISSION PLATE -->
+        <!-- 🎬 PITCH-BLACK INTERMISSION OVERLAY -->
         <div id="chapterOverlay">
             <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
             <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
@@ -125,7 +125,29 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
+    // --- 🔊 DYNAMIC TACTICAL FEMALE AI VOICE SYNTH MATRIX ---
+    function triggerNarratorVoiceEngine() {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel(); // Flush old buffers
+        
+        let briefContent = document.getElementById("briefContentText").textContent;
+        let speechMsg = new SpeechSynthesisUtterance(briefContent);
+        
+        // Locate a clear native English female synthesizer profile
+        let systemicVoices = window.speechSynthesis.getVoices();
+        let femaleVoiceProfile = systemicVoices.find(v => v.name.includes("Female") || v.name.includes("Zira") || v.name.includes("Google US English") || v.lang.startsWith("en"));
+        
+        if (femaleVoiceProfile) speechMsg.voice = femaleVoiceProfile;
+        speechMsg.rate = 1.02; speechMsg.pitch = 1.08; speechMsg.volume = 1.0;
+        window.speechSynthesis.speak(speechMsg);
+    }
+
     function executeSelfStartingLoader() {
+        triggerNarratorVoiceEngine(); // Start briefing speech audio stream
+        if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = triggerNarratorVoiceEngine;
+        }
+
         let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
         let loadInterval = setInterval(() => {
             percentage += 2;
@@ -138,11 +160,11 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    coverElement.removeEventListener("click", triggerCinematicTransition);
+                    if (window.speechSynthesis) window.speechSynthesis.cancel(); // Mute speech on tap
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Fixed: Hold the black intermission screen for exactly 3 seconds (3000ms)
+                    // Locked to exactly 3 seconds (3000ms)
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -155,7 +177,7 @@ game_html = '''
                     }, 3000);
                 });
             }
-        }, 22);
+        }, 32); // Slightly slowed load pace to fit vocal flow lines
     }
     setTimeout(executeSelfStartingLoader, 100);
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -186,57 +208,6 @@ game_html = '''
     gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
     gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
-
-    const static3DObstacles = [
-        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" }
-    ];
-    function project3D(x, y, z) {
-        let relativeX = x - cameraX; let relativeZ = z - cameraZ;
-        if (relativeZ <= 0.1) return null;
-        let fovScale = 400 / relativeZ;
-        return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
-    }
-
-    function render3DSceneGrid() {
-        cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
-        if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
-        
-        // Automated Cinematic Focus Fly-In
-        if (perspectiveMode3rdPerson) {
-            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
-            if (cameraFlyInProgressDist <= 2.2) {
-                perspectiveMode3rdPerson = false;
-                document.getElementById("weapon").style.display = "block";
-                if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-            }
-        }
-
-        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
-
-        if (isOutdoorSector) {
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
-            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
-        } else {
-            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
-        }
-
-        for (let z = 84; z >= 0; z -= 3) {
-            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
-            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
-            let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
-            let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
-            ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
-            if (isOutdoorSector) continue;
-            let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
-            ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
-            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-        }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         if (!perspectiveMode3rdPerson) {
@@ -272,37 +243,34 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ FIXED REAL-TIME 3D PROPORTIONS FOR HAMPI JERICHO ---
-        // Overwrites the old static flat blocking square box with a multi-tiered tactical model shape
+        // --- 🏗️ CINEMATIC 3D HUMAN PROPORTIONS FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
-            if (cameraFlyInProgressDist <= 0.1) return;
-            
-            let characterFovScale = 400 / cameraFlyInProgressDist;
             let jX = 190; 
-            let jY = 240 - (-1.4 * characterFovScale); 
-            let scaleSize = characterFovScale * 0.44; 
-            let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.28);
+            // Lock model scale relative to the static camera zoom ratio
+            let jY = 380; 
+            let scaleSize = 56; 
+            let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
             // A: Long Athletic Trousers
-            ctx.fillStyle = "#0f172a"; 
-            ctx.fillRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
-            ctx.fillRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
-            ctx.strokeStyle = "#000000"; ctx.lineWidth = 1;
-            ctx.strokeRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
-            ctx.strokeRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
+            ctx.fillStyle = "#0d1321"; 
+            ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
+            ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
+            ctx.strokeStyle = "#000000"; ctx.lineWidth = 1.5;
+            ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
+            ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
             // B: Strong Broad Shoulder Torso (Combat Armor Frame)
             ctx.fillStyle = "#1e293b"; 
             ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Trauma Harness Overlapping Plates
+            // C: Tactical Kevlar Trauma Vest Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.15), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Kevlar Camouflage Helmet Unit
-            ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.30, Math.PI, 0); ctx.fill(); ctx.stroke();
+            // D: Tactical Head Unit Shell Profile
+            ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
     }
     function triggerSectorPathMovement() {
@@ -370,8 +338,7 @@ game_html = '''
 </html>
 '''
 
-# --- 🚀 CACHE BUSTER INTEGRATION ---
-# Appends a unique code parameter to break deep browser asset caches automatically on reload
+# Force asset refresh via unique token injections
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Cache Key ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Cache Token Buster ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
