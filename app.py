@@ -220,18 +220,59 @@ game_html = '''
         }
     }
 
-    function aim(e) {
-        if (isOver || intermissionScreen.style.display === "flex") return;
-        let evt = e.touches ? e.touches : e;
-        let bounds = gameArea.getBoundingClientRect();
-        currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
-        currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
-        sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
-        
-        let swayX = (currentX - 168) / 10;
-        let swayY = (currentY - 218) / 12;
-        weapon.style.transform = `translateX(-50%) scale(1.1) rotate(${swayX}deg) translateY(${swayY}px)`;
+function aim(e) {
+    // 1. Instantly exit or freeze actions if the operation is already over
+    if (isOver || (typeof intermissionScreen !== 'undefined' && intermissionScreen.style.display === "flex")) return;
+    
+    // 2. 📱 MOBILE TOUCH DATA EXTRACTION: Pull coordinates safely from the touch array layer
+    let evt = e;
+    if (e.touches && e.touches.length > 0) {
+        evt = e.touches[0]; // Captures the exact primary finger point on the screen surface
+    } else if (e.changedTouches && e.targetTouches.length > 0) {
+        evt = e.targetTouches[0];
     }
+    
+    // 3. Coordinate alignment math relative to your fixed 380px game screen box bounds
+    let bounds = gameArea.getBoundingClientRect();
+    currentX = Math.max(-10, Math.min(350, evt.clientX - bounds.left - 16));
+    currentY = Math.max(-10, Math.min(450, evt.clientY - bounds.top - 16));
+    
+    // 4. Update the visual position markers of your crosshair reticle sight
+    sight.style.left = currentX + "px"; 
+    sight.style.top = currentY + "px";
+    
+    // 5. Calculate fluid gun sway rotations mimicking retro tactical arcade feedback loops
+    let swayX = (currentX - 168) / 10;
+    let swayY = (currentY - 218) / 12;
+    weapon.style.transform = `translateX(-50%) scale(1.1) rotate(${swayX}deg) translateY(${swayY}px)`;
+}
+
+// --- 🕹️ REWRITTEN SECURE MOUNT LISTENERS TRACKING SURFACE POINTER DATA ---
+gameArea.addEventListener("mousemove", aim);
+
+// Blocks default mobile browser scrolling mechanics so dragging your finger doesn't bounce the web page
+gameArea.addEventListener("touchmove", (e) => { 
+    e.preventDefault(); 
+    aim(e); 
+}, { passive: false });
+
+// Desktop click trigger mapping
+gameArea.addEventListener("mousedown", (e) => { 
+    if(e.target.tagName !== "BUTTON") triggerFire(); 
+});
+
+// Mobile direct tap trigger mapping (safely handles single quick taps without locking out)
+gameArea.addEventListener("touchstart", (e) => { 
+    if(e.target.tagName !== "BUTTON") { 
+        e.preventDefault(); 
+        // Sync aim vectors to tap spot right before pulling the trigger
+        if(e.touches && e.touches.length > 0) {
+            aim(e);
+        }
+        triggerFire(); 
+    } 
+}, { passive: false });
+
 
     gameArea.addEventListener("mousemove", aim);
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
