@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Tactical: 3D Special Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Extreme 3D Operations")
+st.set_page_config(page_title="Virtua Tactical: Extreme 3D Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Cinematic 3D Operations")
 
 game_html = '''
 <!DOCTYPE html>
@@ -14,11 +14,11 @@ game_html = '''
         
         #gameArea { 
             position: relative; width: 380px; height: 480px; 
-            background: #020617; border: 4px solid #1e293b; overflow: hidden; margin: auto; border-radius: 16px; touch-action: none;
+            background: #010206; border: 4px solid #1e293b; overflow: hidden; margin: auto; border-radius: 16px; touch-action: none;
             box-shadow: 0 24px 60px rgba(0,0,0,0.95);
         }
 
-        /* 🎬 ADVANCED FILM GRAIN + CRITICAL PULSE DAMAGE LENS VIGNETTE */
+        /* 🎬 FILM GRAIN + CRITICAL PULSE DAMAGE LENS VIGNETTE */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.065'/%3E%3C/svg%3E");
@@ -83,8 +83,8 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 OPERATIONS MASTER VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT EXECUTION OFFICER!<br>All hostile threat matrix coordinates completely sanitized.</div>
-            <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY OPERATION 🎮</button>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All operations zones cleared successfully!</div>
+            <button class="win-btn" onclick="resetArcadeEngine(true)">RESTART CAMPAIGN 🎮</button>
         </div>
     </div>
 
@@ -102,7 +102,7 @@ game_html = '''
 
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
-    let cycleTick = 0; // Tracks clock times for star and wave oscillations
+    let cycleTick = 0;
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     
@@ -149,58 +149,53 @@ game_html = '''
         cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
-        // --- 🌅 REALISTIC ENVIRONMENT BACKDROP ENGINE ---
         if (currentSector === "C") {
-            // OUTSIDE PORT: Blends a star-studded night sky with rhythmic ocean waves
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
-            skyGrd.addColorStop(0, "#020205"); skyGrd.addColorStop(0.6, "#09091b"); skyGrd.addColorStop(1, "#181024");
+            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
             
-            // Draw procedurally scattered star clusters
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.fillStyle = "rgba(255,255,255,0.75)";
             for (let i = 1; i <= 25; i++) {
                 let sX = (i * 73) % 380; let sY = (i * 37) % 190;
-                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5;
-                ctx.fillRect(sX, sY, twinkle, twinkle);
+                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle);
             }
             
-            // Bioluminescent Wave Shaders
             let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
-            seaGrd.addColorStop(0, "#05070f"); seaGrd.addColorStop(0.5, "#022c22"); seaGrd.addColorStop(1, "#011e17");
+            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
             
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.12)"; ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2;
             for (let waveY = 250; waveY < 480; waveY += 35) {
-                ctx.beginPath();
-                let waveShift = Math.sin(cycleTick + waveY) * 12;
+                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12;
                 ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift);
                 ctx.stroke();
             }
         } else {
-            // INSIDE WAREHOUSE: Intense dark tactical shipping facility void
-            ctx.fillStyle = "#01030a"; ctx.fillRect(0, 0, 380, 480);
+            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 📐 ADVANCED REALSITIC POLYGON CONTAINER WALL MATRIX ---
-        for (let z = 84; z >= 0; z -= 1.5) {
-            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 1.5);
-            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 1.5);
+        // --- 🏗️ UPGRADED VOLUMETRIC GEOMETRIC DEPTH RENDERER ---
+        for (let z = 84; z >= 0; z -= 3) {
+            let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
+            let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
             if (!pNear || !pFar) continue;
 
-            // Volumetric lighting multiplier (Simulates darkness drop-offs near the horizon)
             let fogOpacity = Math.min(1, z / 65);
             let lightScale = 1 - fogOpacity;
 
-            // Specular dark concrete warehouse floor paths
+            // Specular dark concrete warehouse floor track segments
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            if (currentSector === "C") continue; // Strip container walls cleanly outside
+            // Floor Separation Slabs (Adds concrete joint perspective depth lines)
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            // Alternating shadow frequencies drawing heavy corrugated sheet textures
+            if (currentSector === "C") continue; // Clear structural roof and side walls outdoors
+
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
             let wallG = isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale);
@@ -218,23 +213,27 @@ game_html = '''
             ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
+
+            // --- 🏗️ NEW FEATURE: VOLUMETRIC METALLIC ROOF SYSTEM SUPPORT BEAMS ---
+            // Bridges left and right walls with support arches that compress down into the distance void
+            let isBeamSegment = Math.floor(zPos) % 9 === 0;
+            if (isBeamSegment) {
+                let beamColor = "rgba(" + Math.floor(15 * lightScale) + "," + Math.floor(23 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
+                ctx.fillStyle = beamColor;
+                ctx.fillRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
+                ctx.strokeStyle = "rgba(0, 0, 0, " + (0.7 * lightScale) + ")"; ctx.lineWidth = 1.5;
+                ctx.strokeRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
+            }
         }
 
-        // 📦 DRAW BARRICADES WITH REALISTIC SPECULAR HIGHLIGHTS
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
-            let bOpacity = Math.max(0, 1 - ((b.z - cameraZ) / 65));
-
             ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            
-            // Render depth shading layers inside the core crate structure
             ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
-            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04);
-            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
         });
 
-        // 🏃 DRAW ENEMIES WITH MILITARY HELMETS, PROTECTION GEAR & FLASHLIGHTS
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
@@ -242,21 +241,12 @@ game_html = '''
             let p = project3D(t.x, t.y, t.z); if (!p) return;
             let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
 
-            // Camouflage Torso Vest Body Suit
             ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
             ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
-            
-            // Tactical Chest Rig Plates
             ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
-            
-            // Head + Camouflage Military Helmet Shell Caps
-            ctx.fillStyle = "#d4b38a"; ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke(); // Helmet brim
-            
-            // 24px Proportional Long Legs
+            ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#18181b"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-            
-            // Premium Low-Profile Carbine Submachine Gun Barrel
             ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
             if (t.isFlashing) {
