@@ -108,7 +108,7 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All 10 campaign sectors successfully secured!</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 campaign sectors successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -129,7 +129,7 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 STABLE: HIGH-FIDELITY FEMALE SPEECH CHANNEL PROFILE ---
+    // --- 🔊 STABLE: NATURAL-UTTERANCE FEMALE AI VOICE OVERLAY ---
     function executeNaturalFemaleVoiceBrief() {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel(); 
@@ -138,7 +138,6 @@ game_html = '''
         let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
         let systemVoiceRegistry = window.speechSynthesis.getVoices();
         
-        // Lock speech layers cleanly into browser native female voice strings
         let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
             v.name.toLowerCase().includes("female") || 
             v.name.toLowerCase().includes("zira") || 
@@ -174,13 +173,11 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // Stop voice audio when continuing
                     if (window.speechSynthesis) window.speechSynthesis.cancel();
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Display black chapter overlay screen for exactly 3 seconds (3000ms) before canvas run
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -223,7 +220,7 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Automated Zoom Panning Easing Controller
+        // Smooth Cinematic Third Person Panning Fly-In Zoom
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -252,7 +249,7 @@ game_html = '''
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
             ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            // FIXED TYPO: Appended canvas context prefix cleanly to avoid empty canvas breaks
+            // FIXED CANVAS CONTEXT BUG: Bound prefix context token to draw successfully
             ctx.stroke();
             if (isOutdoorSector) continue;
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
@@ -295,12 +292,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ DETAILED MULTI-TIERED 3D DESIGN FOR HAMPI JERICHO ---
+        // --- 🏗️ CINEMATIC 3D HUMAN PROPORTIONS FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // A: Running Leg Vectors
+            // A: Long Running Athletic Combat Trousers
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -308,15 +305,16 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulders Jacket Torso Shell
-            ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
+            // B: Strong Broad Shoulder Torso (Combat Armor Frame)
+            ctx.fillStyle = "#1e293b"; 
+            ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Kevlar Trauma Vest Overlapping Harness Plates
+            // C: Tactical Kevlar Trauma Vest Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.18), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Camouflage Helmet Cap Unit
+            // D: Tactical Head Unit Shell Profile
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -385,6 +383,7 @@ game_html = '''
         }
     }
 
+    // --- 🎮 FIXED RESPONSIVE RESPAWNER ENGINE ---
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
@@ -410,5 +409,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Cache Token Key Anchor ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Refresh Key Anchor ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
