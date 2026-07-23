@@ -126,12 +126,8 @@ game_html = '''
 
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || document.getElementById("chapterOverlay").style.display === "flex") return;
-        
-        let idx = sectorsList.indexOf(currentSector); 
-        let spawnZ = cameraZ + 12 + (idx * 0.5); 
-        let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
-        
-        if (currentChapter === 2 && idx >= 7 && !cockpitDoorOpened) return; // Wait for door breach in cockpit
+        let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
+        if (currentChapter === 2 && idx >= 7 && !cockpitDoorOpened) return; 
         
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
@@ -140,8 +136,8 @@ game_html = '''
     function aim(e) {
         if (isOver || document.getElementById("chapterOverlay").style.display === "flex") return;
         let targetPoint = e; 
-        if (e.touches && e.touches.length > 0) { targetPoint = e.touches[0]; } 
-        else if (e.changedTouches && e.changedTouches.length > 0) { targetPoint = e.changedTouches[0]; }
+        if (e.touches && e.touches.length > 0) { targetPoint = e.touches; } 
+        else if (e.changedTouches && e.changedTouches.length > 0) { targetPoint = e.changedTouches; }
         
         let bounds = gameArea.getBoundingClientRect(); 
         currentX = targetPoint.clientX - bounds.left; 
@@ -233,7 +229,6 @@ game_html = '''
         document.getElementById("tutorialPopup").style.display = "none";
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         
-        // ✈️ COCKPIT DOOR BREACH CONTROLLER IN SECTOR J
         if (currentChapter === 2 && currentSector === "J" && !cockpitDoorOpened) {
             if (Math.hypot(currentX - 190, currentY - 250) < 40) {
                 cockpitDoorOpened = true; sound("level"); sound("boom");
@@ -253,8 +248,7 @@ game_html = '''
         if (hitTarget) {
             hitTarget.isDying = true; sound("boom"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-            if(hitTarget.ring) hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
-            
+            if(t.ring) t.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
@@ -268,11 +262,8 @@ game_html = '''
         ctx.clearRect(0, 0, 380, 480);
         let secIdx = sectorsList.indexOf(currentSector);
 
-        // Environment drawing systems
         if (currentChapter === 1 || (currentChapter === 2 && secIdx < 4)) {
             let isOutdoor = (currentChapter === 1 && secIdx >= 4) || currentChapter === 2;
-            
-            // Render basic terrain/runway tarmac gradients
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
             let floorGrd = ctx.createLinearGradient(0, 240, 0, 480); floorGrd.addColorStop(0, "#04060c"); floorGrd.addColorStop(1, "#011116"); ctx.fillStyle = floorGrd; ctx.fillRect(0, 240, 380, 240);
 
@@ -291,26 +282,23 @@ game_html = '''
                 ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
             }
         } else if (currentChapter === 2 && secIdx >= 4 && secIdx < 7) {
-            // ✈️ RENDER AIRPLANE CABIN FUSELAGE
             ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, 380, 480);
             for (let z = 70; z >= 0; z -= 4) {
                 let zPos = Math.floor(cameraZ) + z; let p = project3D(0, 0, zPos); if (!p) continue;
                 let scale = 1 - (z / 70);
                 ctx.fillStyle = "rgba(" + Math.floor(30*scale) + "," + Math.floor(41*scale) + "," + Math.floor(59*scale) + ",1)";
-                ctx.fillRect(190 - (3.8 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Left Seats
-                ctx.fillRect(190 + (2.6 * p.size), 240, 1.2 * p.size, 0.8 * p.size); // Right Seats
+                ctx.fillRect(190 - (3.8 * p.size), 240, 1.2 * p.size, 0.8 * p.size); 
+                ctx.fillRect(190 + (2.6 * p.size), 240, 1.2 * p.size, 0.8 * p.size); 
                 
-                // Cowering hostage graphics rendering layers
                 ctx.fillStyle = "rgba(" + Math.floor(212*scale) + "," + Math.floor(163*scale) + "," + Math.floor(115*scale) + ",1)";
                 ctx.beginPath(); ctx.arc(190 - (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
                 ctx.beginPath(); ctx.arc(190 + (3.2 * p.size), 240 + (0.2*p.size), p.size * 0.12, 0, Math.PI*2); ctx.fill();
             }
         } else if (currentChapter === 2 && secIdx >= 7) {
-            // ✈️ RENDER FLIGHT INSTRUMENTATION COCKPIT
             ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, 380, 480);
             ctx.fillStyle = "#0f172a"; ctx.fillRect(20, 260, 340, 220);
-            ctx.fillStyle = "#22c55e"; ctx.fillRect(60, 310, 50, 40); // Green radar radar
-            ctx.fillStyle = "#38bdf8"; ctx.fillRect(270, 310, 50, 40); // Horizon tracking engine
+            ctx.fillStyle = "#22c55e"; ctx.fillRect(60, 310, 50, 40); 
+            ctx.fillStyle = "#38bdf8"; ctx.fillRect(270, 310, 50, 40); 
             
             if (currentSector === "J" && !cockpitDoorOpened) {
                 ctx.fillStyle = "rgba(0,0,0,0.95)"; ctx.fillRect(0, 0, 380, 480);
@@ -321,7 +309,6 @@ game_html = '''
             }
         }
 
-        // Draw entities queue frame processing
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
@@ -341,7 +328,14 @@ game_html = '''
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                // 🎬 HIGH-DETAILED CHARACTER MODEL GRAPHICS RENDER MESHES RESTORED
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); // Body Vest
+                ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7); // Terrorist Mask Gear
+                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); // Skin Node Head
+                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); // Combat Helmet Cap
+                
+                if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); }
+                
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; 
                 let dynamicCircleRadius = Math.max(14, Math.min(110, 95 * (1.3 - (t.age / 40)))); 
                 t.ring.style.width = dynamicCircleRadius + "px"; t.ring.style.height = dynamicCircleRadius + "px";
@@ -385,5 +379,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Synchronized Core Framework Engine ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Full Care Mesh Restored Frame: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
