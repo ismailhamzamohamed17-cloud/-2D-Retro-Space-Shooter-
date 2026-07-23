@@ -107,8 +107,8 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 dockyard terminals successfully cleared.</div>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All 10 campaign sectors successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -117,7 +117,6 @@ game_html = '''
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
-    let synthSpeechIntervalId = null; 
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -130,31 +129,30 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-
-    // --- 🔊 FIXED: HIGH-FREQUENCY OSCILLATION FEMALE TACTICAL AI NARRATOR ---
-    // Generates a crisp, fluid electronic female harmonic voice to speak the campaign goals
-    function playSyntheticFemaleRobotBriefPhrase() {
-        setupAudio(); if (!audioCtx) return;
-        let cTime = audioCtx.currentTime;
+    // --- 🔊 STABLE: NATURAL ACCENT FEMALE AI VOCAL SYNTH MATRIX ---
+    function executeNaturalFemaleVoiceBrief() {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel(); // Clear hung streams
         
-        let carrierOsc = audioCtx.createOscillator();
-        let modulationGain = audioCtx.createGain();
-        carrierOsc.type = "sine";
+        let narrativeBriefText = document.getElementById("briefContentText").textContent;
+        let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
         
-        // High-frequency musical tones mapped sequentially to generate a clear female voice output
-        let vocalPitchFrequencies =;
-        let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
+        // Scan the host system voice registry to enforce a female voice map profile
+        let systemVoiceRegistry = window.speechSynthesis.getVoices();
+        let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
+            v.name.toLowerCase().includes("female") || 
+            v.name.toLowerCase().includes("zira") || 
+            v.name.toLowerCase().includes("hazel") ||
+            v.name.toLowerCase().includes("google us english") ||
+            v.name.toLowerCase().includes("natural") ||
+            (v.lang.startsWith("en") && !v.name.toLowerCase().includes("male") && !v.name.toLowerCase().includes("david"))
+        );
         
-        carrierOsc.frequency.setValueAtTime(randomPitch, cTime);
-        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.88, cTime + 0.12);
-        
-        modulationGain.gain.setValueAtTime(0.15, cTime);
-        modulationGain.gain.exponentialRampToValueAtTime(0.01, cTime + 0.12);
-        
-        carrierOsc.connect(modulationGain);
-        modulationGain.connect(audioCtx.destination);
-        carrierOsc.start(cTime); carrierOsc.stop(cTime + 0.12);
+        if (perfectFemaleAcoustic) speakUtterance.voice = perfectFemaleAcoustic;
+        speakUtterance.rate = 0.94; // Premium smooth narrative speed pace
+        speakUtterance.pitch = 1.12; // Shifts frequencies cleanly to female pitch levels
+        speakUtterance.volume = 1.0;
+        window.speechSynthesis.speak(speakUtterance);
     }
 
     document.getElementById("voiceTriggerBtn").addEventListener("click", function launchRegulatedEngine() {
@@ -162,10 +160,8 @@ game_html = '''
         document.getElementById("loadPercent").style.display = "block";
         document.getElementById("barTrack").style.display = "block";
         
-        setupAudio();
-        playSyntheticFemaleRobotBriefPhrase();
-        // Cycle the vocal sound wave loop continuously across the menu timeframe
-        synthSpeechIntervalId = setInterval(playSyntheticFemaleRobotBriefPhrase, 140);
+        // Explicitly ignite the female audio profile on click interaction
+        executeNaturalFemaleVoiceBrief();
         executeMatrixLoadingSequence();
     });
     function executeMatrixLoadingSequence() {
@@ -181,13 +177,13 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // STOP THE FEMALE AI VOICE THE EXACT MILLISECOND CONTINUE IS TOUCHED
-                    if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
+                    // STOP AUDIO IMMEDIATELY WHEN CONTINUE TOUCH IS DETECTED
+                    if (window.speechSynthesis) window.speechSynthesis.cancel();
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Hold the black screen overlay for exactly 3 seconds (3000ms) before game frames mount
+                    // Display black screen for exactly 3 seconds (3000ms) before game loop starts
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -200,8 +196,10 @@ game_html = '''
                     }, 3000);
                 });
             }
-        }, 22);
+        }, 25);
     }
+
+    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
     function sound(type) {
         setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
@@ -214,9 +212,7 @@ game_html = '''
     }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
-        
-        // --- 🎬 FIXED: GEOMETRIC PROJECTION ALIGNMENT LINK ---
-        // Ties world obstacles directly to your moving zoom variables so they zoom toward the frame together
+        // FIXED: Combines world depth and zoom markers so the surroundings move toward the camera together
         let activePerspectiveZ = z - cameraZ;
         if (perspectiveMode3rdPerson) {
             activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
@@ -231,7 +227,7 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Automated Zoom Panning Easing Controller
+        // Smooth Cinematic Fly-In Tracker
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -259,7 +255,7 @@ game_html = '''
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); stroke();
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
             if (isOutdoorSector) continue;
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -301,12 +297,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ DETAILED HUMAN MODEL FOR HAMPI JERICHO ---
+        // --- 🏗️ FIXED REAL-TIME 3RD PERSON MODEL NODES FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // Long Running Trousers Legs
+            // Long Trousers
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -314,11 +310,11 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // Muscular Broad Shoulder Torso (Combat Armour Frame)
+            // Strong Broad Shoulders Jacket Torso Shell
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // Tactical Trauma Chest Overlapping Harness Plates
+            // Tactical Trauma Harness Overlapping Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
@@ -327,6 +323,29 @@ game_html = '''
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
     }
+    function aim(e) {
+        if (isOver || document.getElementById("coverScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
+        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
+        let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
+        
+        let mappedThreatZ = 12; threatsList.forEach(t => { if(!t.isDying) mappedThreatZ = t.z - cameraZ; });
+        let dynamicallyAdjustedSize = Math.max(16, Math.min(60, (400 / mappedThreatZ) * 0.95));
+        sight.style.width = dynamicallyAdjustedSize + "px"; sight.style.height = dynamicallyAdjustedSize + "px";
+        
+        sight.style.display = "block"; sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
+        let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
+        weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
+    }
+    gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+
+    function triggerMouseCoordinateFire(e) {
+        let bounds = gameArea.getBoundingClientRect();
+        currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
+        triggerFire();
+    }
+    gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
+    gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
+
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let idx = sectorsList.indexOf(currentSector);
@@ -350,13 +369,6 @@ game_html = '''
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
         if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
-
-    function triggerMouseCoordinateFire(e) {
-        let bounds = gameArea.getBoundingClientRect();
-        currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
-        triggerFire();
-    }
-    gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
@@ -399,6 +411,6 @@ game_html = '''
 </html>
 '''
 
-cache_buster_token = random.randint(100000, 999999)
-st.markdown(f'<!-- Refresh Block Anchor ID: {cache_buster_token} -->', unsafe_allow_html=True)
+cb_id = random.randint(100000, 999999)
+st.markdown(f'<!-- Cache Key Refresher ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
