@@ -5,7 +5,7 @@ import random
 st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
 st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
 
-# Base HTML layout setup
+# Base HTML layout initialization
 game_html = '''
 <!DOCTYPE html>
 <html>
@@ -172,7 +172,8 @@ game_html = '''
             if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
             if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
             
-            document.getElementById("tutorialPopup").style.display = "block";
+            // Strictly block message popup from rendering inside downstream sectors
+            document.getElementById("tutorialPopup").style.display = "none";
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -278,7 +279,10 @@ game_html = '''
     }
     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
-        document.getElementById("tutorialPopup").style.display = "block"; 
+        // Display tutorial elements specifically inside Chapter Sector A launch frames
+        if (currentSector === "A" && sectorKills === 0) {
+            document.getElementById("tutorialPopup").style.display = "block";
+        }
         scoreCounter.style.display = "block"; chapterTxt.style.display = "block"; targetTracker.style.display = "block"; healthCounter.style.display = "block"; sight.style.display = "block"; weapon.style.display = "block";
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
@@ -307,4 +311,3 @@ game_html = '''
 cb_id = random.randint(100000, 999999)
 st.markdown(f'<!-- Fixed Sound Tactical Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
-
