@@ -77,7 +77,7 @@ game_html = '''
 
         <div id="overScreen">
             <div style="color:#ef4444; font-size:32px; font-weight:bold; text-shadow:0 0 12px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
-            <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
+            <div id="finalScore; color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
             <button class="retry-btn" onclick="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
         </div>
 
@@ -98,8 +98,7 @@ game_html = '''
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; 
 
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
 
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
@@ -141,14 +140,14 @@ game_html = '''
     }
 
     const static3DObstacles = [
-        { x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
-        { x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" },
-        { x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
-        { x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" },
-        { x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" },
-        { x: -2.0, y: 0.5, z: 111, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { x: 2.1, y: 0.5, z: 127, baseColor: "#2563eb", shadowColor: "#1e40af" }
+        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
+        { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" },
+        { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
+        { id: "c5", x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" },
+        { id: "c6", x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" },
+        { id: "c7", x: -2.0, y: 0.5, z: 111, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { id: "c8", x: 2.1, y: 0.5, z: 127, baseColor: "#2563eb", shadowColor: "#1e40af" }
     ];
     function render3DSceneGrid() {
         cycleTick += 0.05;
@@ -187,6 +186,7 @@ game_html = '''
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
+        // Draw structural facility tunnel framing
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
@@ -229,36 +229,49 @@ game_html = '''
             }
         }
 
-        static3DObstacles.forEach(b => {
-            let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
-            let w = 1.9 * p.size; let h = 2.2 * p.size;
-            ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
-            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
-        });
+        // --- 🗂️ FIXED: MASTER 3D DETACHED PAINTERS DEPTH SORT ENGINE ---
+        // Dynamically packs crates and targets into a single render queue, sorting from FURTHEST to CLOSEST
+        let depthDrawQueue = [];
+        
+        static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
+        threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
 
-        threatsList.forEach(t => {
-            if (t.isDying) return; if (!isMoving) t.age++;
-            if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
+        // Sort descending: highest z (furthest away) is drawn FIRST, lowest z (closest) is drawn LAST
+        depthDrawQueue.sort((a, b) => b.z - a.z);
 
-            let p = project3D(t.x, t.y, t.z); if (!p) return;
-            let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
+        // Execute render queue order sequentially so close solids mask out background graphics completely
+        depthDrawQueue.forEach(item => {
+            if (item.type === "crate") {
+                let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return;
+                let w = 1.9 * p.size; let h = 2.2 * p.size;
+                ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
+                ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
+                ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            } 
+            else if (item.type === "enemy") {
+                let t = item.data;
+                t.currentTick++;
+                if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-            ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
-            ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
-            ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = "#18181b"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-            ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
+                let p = project3D(t.x, t.y, t.z); if (!p) return;
+                let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
 
-            if (t.isFlashing) {
-                let flashGrd = ctx.createRadialGradient(p.x + s * 0.9, p.y - s/4, 1, p.x + s * 0.9, p.y - s/4, s * 0.55);
-                flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent");
-                ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
+                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
+                ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#18181b"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
+                ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
+
+                if (t.isFlashing) {
+                    let flashGrd = ctx.createRadialGradient(p.x + s * 0.9, p.y - s/4, 1, p.x + s * 0.9, p.y - s/4, s * 0.55);
+                    flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent");
+                    ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
+                }
+                t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
+                let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
-            t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
-            let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
     function triggerSectorPathMovement() {
@@ -278,6 +291,7 @@ game_html = '''
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
+
         let needed = sectorRequirements[currentSector];
         targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; sound("level");
     }
