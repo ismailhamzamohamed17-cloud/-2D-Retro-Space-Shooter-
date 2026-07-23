@@ -60,20 +60,28 @@ game_html = '''
         #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        .story-scroller { max-width: 340px; color: #e2e8f0; font-size: 13px; font-weight: 500; line-height: 1.55; margin-bottom: 25px; max-height: 220px; overflow-y: hidden; text-align: center; border: 1.5px solid #1e293b; padding: 16px; background: rgba(2, 6, 23, 0.75); border-radius: 12px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
+        .story-scroller { max-width: 340px; color: #e2e8f0; font-size: 13px; font-weight: 500; line-height: 1.55; margin-bottom: 20px; max-height: 220px; overflow-y: hidden; text-align: center; border: 1.5px solid #1e293b; padding: 16px; background: rgba(2, 6, 23, 0.75); border-radius: 12px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
         .load-bar-track { width: 240px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .load-bar-fluid { width: 0%; height: 100%; background: #06b6d4; transition: width 0.04s linear; }
+
+        /* 🎬 PREMIUM GLOWING AUDIO DEPLOY BUTTON */
+        .audio-start-btn { padding: 12px 32px; background: #06b6d4; color: #020617; font-size: 14px; font-weight: bold; letter-spacing: 2px; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 0 15px rgba(6,182,212,0.6); transition: transform 0.1s ease; }
+        .audio-start-btn:active { transform: scale(0.96); }
     </style>
 </head>
 <body>
     <div id="gameArea">
-        <!-- JERICHO NARRATIVE PROLOGUE PANEL CARD -->
+        <!-- BRIEFING PANEL LAYOUT CARD -->
         <div id="coverScreen">
             <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
             <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
+            
+            <!-- 🎬 AUDIO BOOT CONTROL TRIGGER BUTTON -->
+            <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
+
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
-            <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
+            <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
 
@@ -123,27 +131,47 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 FIXED: UNLOCKED PERMISSION FEMALE AI SPEECH UTTERANCE ---
-    function triggerNarratorVoiceEngine() {
+    // --- 🔊 FIXED: NATURAL STRATIFIED FEMALE AUDIO SYNTH CORE ---
+    function executeNaturalFemaleVoiceBrief() {
         if (!window.speechSynthesis) return;
-        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.cancel(); // Clear any hung loops
         
-        let briefContent = document.getElementById("briefContentText").textContent;
-        let speechMsg = new SpeechSynthesisUtterance(briefContent);
-        let systemicVoices = window.speechSynthesis.getVoices();
+        let narrativeBriefText = document.getElementById("briefContentText").textContent;
+        let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
         
-        let femaleVoiceProfile = systemicVoices.find(v => v.name.includes("Female") || v.name.includes("Zira") || v.name.includes("Google US English") || v.lang.startsWith("en"));
-        if (femaleVoiceProfile) speechMsg.voice = femaleVoiceProfile;
-        speechMsg.rate = 1.0; speechMsg.pitch = 1.05; speechMsg.volume = 1.0;
-        window.speechSynthesis.speak(speechMsg);
+        // Isolate verified native feminine accent properties from core OS lists
+        let systemVoiceRegistry = window.speechSynthesis.getVoices();
+        let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
+            v.name.toLowerCase().includes("female") || 
+            v.name.toLowerCase().includes("zira") || 
+            v.name.toLowerCase().includes("hazel") ||
+            v.name.toLowerCase().includes("google us english") ||
+            (v.lang.startsWith("en") && !v.name.toLowerCase().includes("male") && !v.name.toLowerCase().includes("david"))
+        );
+        
+        if (perfectFemaleAcoustic) speakUtterance.voice = perfectFemaleAcoustic;
+        speakUtterance.rate = 0.95; // Balanced human flow pacing layout
+        speakUtterance.pitch = 1.10; // Clean crisp female profile tone curves
+        speakUtterance.volume = 1.0;
+        window.speechSynthesis.speak(speakUtterance);
     }
 
-    function executeSelfStartingLoader() {
-        let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
+    // Bind permissions trigger to user interaction buttons
+    document.getElementById("voiceTriggerBtn").addEventListener("click", function launchRegulatedEngine() {
+        document.getElementById("voiceTriggerBtn").style.display = "none";
+        document.getElementById("loadPercent").style.display = "block";
+        document.getElementById("barTrack").style.display = "block";
         
-        // FIXED: Bar fluid fills instantly and safely by unlinking voice blocks from initial mount steps
+        executeNaturalFemaleVoiceBrief(); // Fires speech safely without causing browser lockout freezes
+        executeMatrixLoadingSequence();
+    });
+    function executeMatrixLoadingSequence() {
+        let percentage = 0; 
+        let barFluid = document.getElementById("loadBar"); 
+        let txtPercent = document.getElementById("loadPercent");
+        
         let loadInterval = setInterval(() => {
-            percentage += 4; // Faster initial boot fill rate
+            percentage += 2;
             if (barFluid) barFluid.style.width = percentage + "%";
             if (txtPercent) txtPercent.textContent = "INITIALIZING MATRIX: " + percentage + "%";
             
@@ -153,14 +181,14 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // FIXED: User touch event unlocks browser playback, triggering narration voice strings instantly!
-                    triggerNarratorVoiceEngine();
+                    // FIXED: Natural female text speech immediately drops when continue is touched
+                    if (window.speechSynthesis) window.speechSynthesis.cancel();
+                    
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Black overlay text card holds for exactly 3 seconds (3000ms) before fading down
+                    // Fixed Intermission Black Card: Suspends frame for exactly 3 seconds (3000ms)
                     setTimeout(() => {
-                        if (window.speechSynthesis) window.speechSynthesis.cancel(); // Close speech lines on entry
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
                         document.getElementById("chapterTxt").style.display = "block";
@@ -172,10 +200,9 @@ game_html = '''
                     }, 3000);
                 });
             }
-        }, 30);
+        }, 32);
     }
-    // Fire up initialization sequence instantly on asset display
-    setTimeout(executeSelfStartingLoader, 50);
+
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     
     function sound(type) {
@@ -206,7 +233,7 @@ game_html = '''
     gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
-        // FIXED: Locks character and building elements to the tracking value to avoid static backdrop clips
+        // FIXED: Dynamically scales background geometry based on active third person camera zoom depths
         let activePerspectiveZ = z - cameraZ;
         if (perspectiveMode3rdPerson) {
             activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
@@ -221,7 +248,7 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Automated Zoom Panning Easing Controller
+        // Smooth Cinematic Third Person Panning Fly-In Zoom
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -243,6 +270,7 @@ game_html = '''
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
+        // --- 🏗️ FIXED: CONTAINER WALL DRAW TRACKERS ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -291,12 +319,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ FIXED DYNAMIC JERICHO 3D RENDERING NODES ---
+        // --- 🏗️ HIGH-REALISM 3D HUMAN PERSPECTIVE FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // Long Athletic Combat Trousers
+            // A: Long Running Trousers
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -304,15 +332,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // Strong Broad Shoulder Jacket Torso Shell
+            // B: Muscular Broad Shoulder Torso (Kevlar Flak Vest Jacket Shell)
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // Tactical Trauma Harness Overlapping Plates
+            // C: Trauma Core Chest Harness Slabs
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // Kevlar Camouflage Helmet Cap
+            // D: Tactical Military Helmet Unit
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -382,6 +410,7 @@ game_html = '''
 </html>
 '''
 
-cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Cache Key: {cb_id} -->', unsafe_allow_html=True)
+# Force asset update checks via dynamic parameter bindings
+cache_buster_token = random.randint(100000, 999999)
+st.markdown(f'<!-- Refresh Block Anchor ID: {cache_buster_token} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
