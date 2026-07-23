@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -108,7 +108,7 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All 10 campaign sectors successfully secured!</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 campaign sectors successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -124,11 +124,12 @@ game_html = '''
     let isMoving = false; let loaderFinished = false;
     
     let perspectiveMode3rdPerson = true; 
-    let cameraFlyInProgressDist = 65; // Acts as our global field-of-view scale during intro
+    let cameraFlyInProgressDist = 65; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
+    // --- 🔊 CRASH-PROOF: NATURAL UTTERANCE FEMALE AI VOICE CHANNELS ---
     function executeNaturalFemaleVoiceBrief() {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel(); 
@@ -137,6 +138,7 @@ game_html = '''
         let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
         let systemVoiceRegistry = window.speechSynthesis.getVoices();
         
+        // Scan the browser to enforce an explicit female voice mapping layout
         let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
             v.name.toLowerCase().includes("female") || 
             v.name.toLowerCase().includes("zira") || 
@@ -172,11 +174,13 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
+                    // Turn off text synthesis instantly on continue touch gesture
                     if (window.speechSynthesis) window.speechSynthesis.cancel();
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
+                    // Suspend the frame black overlay for exactly 3 seconds (3000ms) before canvas initialization
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -184,9 +188,7 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode3rdPerson = true; 
-                        cameraFlyInProgressDist = 65; // Set our zoom camera high out on the horizon field
-                        
+                        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
@@ -195,26 +197,18 @@ game_html = '''
     }
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-
-    function sound(type) {
-        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
-        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
-        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
-        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
-        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, application.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
-        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
-    }
-    // --- 🎬 FIXED: PROJECTION ALIGNMENT HUB ---
+    // --- 🎬 UNIFIED FIXED 3D CAMERA ENGINE ---
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
-        let relativeZ = z - cameraZ;
+        let activePerspectiveZ = z - cameraZ;
         
-        if (relativeZ <= 0.1) return null;
+        // FIXED PERSPECTIVE ALIGNMENT LINK: Ties world depth layers forward together to handle camera pans smoothly
+        if (perspectiveMode3rdPerson) {
+            activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
+        }
         
-        // Use a clean unified FOV multiplier calculation based directly on active state layers
-        let fovScale = (perspectiveMode3rdPerson) ? (1200 / cameraFlyInProgressDist) : (400 / relativeZ);
-        
+        if (activePerspectiveZ <= 0.1) return null;
+        let fovScale = 400 / activePerspectiveZ;
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
 
@@ -222,10 +216,10 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Smoothly bring the global fly-in camera value down to center eye target parameters
+        // Smooth Cinematic Third Person Panning Zoom
         if (perspectiveMode3rdPerson) {
-            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 3.0) * 0.045; 
-            if (cameraFlyInProgressDist <= 3.2) {
+            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
+            if (cameraFlyInProgressDist <= 2.2) {
                 perspectiveMode3rdPerson = false;
                 document.getElementById("weapon").style.display = "block";
                 if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
@@ -235,6 +229,7 @@ game_html = '''
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
         ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
 
+        // --- 🏗️ FIXED CANVAS DRAW BOUNDS: ALL CALLS EXPLICITLY BOUND TO CONTEXT ARRAYS ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -245,7 +240,7 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            ctx.stroke();
+            ctx.stroke(); // BOUND CORRECTLY TO ACTIVE LAYER VARIABLE CONTEXT
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -254,9 +249,9 @@ game_html = '''
         }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
-        
-        // FIXED: Allow hostiles to load cleanly throughout the loop configurations smoothly
-        threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+        if (!perspectiveMode3rdPerson) {
+            threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+        }
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
         depthDrawQueue.forEach(item => {
@@ -287,15 +282,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ FIXED REAL-TIME 3D HUMAN CHARACTER ENGINE ---
-        // Dynamically adapts position parameters to lock smoothly into your screen center vectors
+        // --- 🏗️ DETAILED MULTI-TIERED 3D DESIGN FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
-            let jX = 190; let jY = 360; 
-            // Scale body model size directly based on our current camera lens tracker
-            let scaleSize = (180 / cameraFlyInProgressDist) * 8.5; 
+            let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // A: Long Leg Trousers Pants
+            // A: Long Leg Trousers Pants Pants
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -303,15 +295,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulders Torso Jacket Frame
+            // B: Strong Broad Shoulders Jacket Torso Frame Shell
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Kevlar Trauma Chest Rig Harness Plates
+            // C: Tactical Kevlar Trauma Vest Overlapping Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Tactical Helmet Unit Shell Profile
+            // D: Camouflage Helmet Cap Unit
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -352,20 +344,20 @@ game_html = '''
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
-        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; sound("level");
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
     }
 
     function triggerEnemyDamageStrike() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`;
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
-        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); }
+        if (playerHp <= 0) { isOver = true; clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
-        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
+        flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
             if (t.isDying) return;
@@ -373,7 +365,7 @@ game_html = '''
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
+            hitTarget.isDying = true; score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
@@ -385,7 +377,6 @@ game_html = '''
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
-        sound("ding");
     }
 
     window.resetArcadeEngine = function(fullReset) {
