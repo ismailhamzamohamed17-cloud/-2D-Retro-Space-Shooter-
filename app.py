@@ -43,8 +43,9 @@ game_html = '''
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
+'''
 <style>
-    /* --- 🎯 DISPLAY VISIBILITY FIXED PERMANENTLY TO PREVENT IFRAME DROPOUT CRASHES --- */
+    /* --- 🎯 DISPLAY VISIBILITY INTENTIONALLY HARDCODED TO PREVENT IFRAME DROPOUT CRASHES --- */
     #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: block; }
     .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
     .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
@@ -61,11 +62,10 @@ game_html = '''
     #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: block; }
 
     #overScreen, #winScreen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; }
-    .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; z-index: 45; }
+    .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; z-index: 45; -webkit-tap-highlight-color: transparent; }
     .win-btn { background: #eab308; color: #020617; }
     
-    /* --- 📋 REAL-TIME ADAPTIVE DEVICE INSTRUCTION PROMPT PLATES --- */
-    #deviceInstructionsPrompt { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); color: #38bdf8; font-family: monospace; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 20px; border: 1px solid #0284c7; z-index: 35; text-align: center; pointer-events: none; text-transform: uppercase; letter-spacing: 0.5px; animation: textGlowPulseLoop 2s infinite alternate; }
+    #deviceInstructionsPrompt { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); color: #38bdf8; font-family: monospace; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.9); padding: 6px 14px; border-radius: 20px; border: 1px solid #0284c7; z-index: 35; text-align: center; pointer-events: none; text-transform: uppercase; letter-spacing: 0.5px; animation: textGlowPulseLoop 2s infinite alternate; width: 80%; max-width: 300px; box-sizing: border-box; }
     @keyframes textGlowPulseLoop { 0% { opacity: 0.8; box-shadow: 0 0 4px rgba(2,132,199,0.3); } 100% { opacity: 1; box-shadow: 0 0 10px rgba(2,132,199,0.6); } }
 </style>
 <body style="background:#010409;">
@@ -80,8 +80,7 @@ game_html = '''
         <div id="targetTracker">SECTOR A: 0/3</div>
         <div id="healthCounter">HP: 100</div>
         
-        <!-- 📋 LIVE CONTAINER INTERFACE PLATE NODE -->
-        <div id="deviceInstructionsPrompt">INITIALIZING DEVICE DETECTORS...</div>
+        <div id="deviceInstructionsPrompt">DETECTING HARDWARE PROFILES...</div>
         
         <canvas id="gameCanvas" width="380" height="480"></canvas>
         
@@ -90,17 +89,16 @@ game_html = '''
             <div id="flash"></div> <div class="w-slide"></div> <div class="w-holo-sight"></div> <div class="w-grip-back"></div>
         </div>
 
-        <!-- --- 📱 FIXED MOBILES RESET: BINDING TO TONT-START EVENT DRIVERS SO PHONES CAN RESET WITHOUT GLITCHING --- -->
         <div id="overScreen">
             <div style="color:#ef4444; font-size:32px; font-weight:bold; text-shadow:0 0 12px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
             <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
-            <button class="retry-btn" onclick="resetArcadeEngine(true)" ontouchstart="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
+            <button class="retry-btn" onpointerdown="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
         </div>
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
             <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS OFFICER JERICHO!<br>All terminals and flight decks successfully secured!</div>
-            <button class="win-btn" onclick="resetArcadeEngine(true)" ontouchstart="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
+            <button class="win-btn" onpointerdown="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
 <script>
@@ -133,13 +131,13 @@ game_html = '''
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
 
-    // --- 📋 DETECT ADAPTIVE DEVICE INTERFACES & FORCE COMPILER TEXT SETS ---
     function configureAdaptiveDevicePrompts() {
         let promptBox = document.getElementById("deviceInstructionsPrompt");
         let queryMobileMatch = (window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0);
         
+        promptBox.style.display = "block";
         if (queryMobileMatch) {
-            promptBox.innerText = "👉 Use finger and tap on phone to shoot! 📱";
+            promptBox.innerText = "👉 Tap on phone screen to shoot! 📱";
         } else {
             promptBox.innerText = "🖱️ Use mouse on PC to aim and shoot! 🖥️";
         }
@@ -256,6 +254,7 @@ game_html = '''
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
+                // --- 🎬 RESTORED REALISTIC FACE & ARMS VECTOR CORES ---
                 ctx.fillStyle = (currentChapter === 1) ? "#1e291b" : "#2d1f3d"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
@@ -268,22 +267,31 @@ game_html = '''
             }
         });
     }
-
+    // --- 📱 MODERN UNIFIED POINTER ROUTER: ENTIRELY RESOLVES EMBEDDED PHONE TAP FREEZING ---
     function executeAdaptiveInputSweep(e) {
-        setupAudio(); if (e.cancelable) e.preventDefault();
-        let src = e.touches ? e.touches : e;
-        if (e.type === "touchend" || e.type === "touchcancel") { if (e.changedTouches && e.changedTouches.length > 0) src = e.changedTouches; }
-        let bounds = gameArea.getBoundingClientRect(); currentX = src.clientX - bounds.left; currentY = src.clientY - bounds.top;
-        if (currentX < 0) currentX = 0; if (currentX > 380) currentX = 380; if (currentY < 0) currentY = 0; if (currentY > 480) currentY = 480;
+        setupAudio();
+        
+        let bounds = gameArea.getBoundingClientRect();
+        currentX = e.clientX - bounds.left;
+        currentY = e.clientY - bounds.top;
+        
+        if (currentX < 0) currentX = 0; if (currentX > 380) currentX = 380;
+        if (currentY < 0) currentY = 0; if (currentY > 480) currentY = 480;
+
         sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
+        
+        if (e.type === "pointerdown" && e.target.tagName !== "BUTTON") {
+            // 📋 AUTOMATED WIPEOUT PASS: Prompts fade out the exact millisecond any initial shot lands
+            document.getElementById("deviceInstructionsPrompt").style.display = "none";
+            triggerFire();
+        }
     }
-    gameArea.addEventListener("mousemove", executeAdaptiveInputSweep);
-    gameArea.addEventListener("touchmove", executeAdaptiveInputSweep, { passive: false });
-    gameArea.addEventListener("touchend", executeAdaptiveInputSweep, { passive: false });
-    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } });
-    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } }, { passive: false });
+    
+    // Wire up listeners directly onto target pointer matrix channels
+    gameArea.addEventListener("pointerdown", executeAdaptiveInputSweep);
+    gameArea.addEventListener("pointermove", executeAdaptiveInputSweep);
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let activeSectorList = (currentChapter === 1) ? ch1Sectors : ch2Sectors;
@@ -393,5 +401,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Mobile Fixed Deployment Anchor ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Complete Unified Engine ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
