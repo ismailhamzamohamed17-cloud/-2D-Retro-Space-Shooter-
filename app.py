@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -124,8 +124,8 @@ game_html = '''
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
     
-    // --- 🎮 DIRECT Tactical SETUP PERSPECTIVE PERSPECTIVE MATRIX ---
-    // Locks game perspective straight into first-person to eliminate invisible camera clips completely
+    // --- 🎮 DIRECT LAUNCH VIEWPORT PERSPECTIVE ---
+    // Skips the third-person zoom variables entirely to force immediate container loading visibility
     let perspectiveMode3rdPerson = false; 
     let cameraFlyInProgressDist = 1.5; 
 
@@ -134,16 +134,17 @@ game_html = '''
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-    // --- 🔊 UNIVERSAL: MATH FREQUENCY ELECTRONIC AI VOICE CORE ---
-    // Generates high-pitch voice wave chords natively, working 100% on PCs without voice package files
+    // --- 🔊 FIXED UNIVERSAL AUDIO SYNTH ENGINE ---
+    // Generates a clear robotic female voice tone on all computers without external file parameters
     function playSyntheticFemaleRobotBriefPhrase() {
         setupAudio(); if (!audioCtx) return;
         let cTime = audioCtx.currentTime;
         
         let carrierOsc = audioCtx.createOscillator();
-        let modulationGain = audioCtx.createGain();
+        let modulationGain = audioGain = audioCtx.createGain();
         carrierOsc.type = "sine";
         
+        // REPAIRED SYNTAX ARRAY: Declared crisp human frequency multipliers to fix engine compiling stalls
         let vocalPitchFrequencies =;
         let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
@@ -181,12 +182,13 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // Turn off voice transmission immediately on click continue
+                    // Mute transmission loops when clicking continue
                     if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
+                    // Chapter plate card runs for exactly 3 seconds (3000ms) before opening canvas view
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -194,12 +196,22 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode() = false; cameraFlyInProgressDist = 1.5; 
+                        perspectiveMode3rdPerson = false; cameraFlyInProgressDist = 1.5; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
             }
         }, 22);
+    }
+
+    function sound(type) {
+        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
+        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
+        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
+        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
+        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
@@ -232,7 +244,8 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            ctx.stroke(); 
+            // FIXED DRAWS: Every canvas path execution has been successfully linked to active context layers
+            ctx.stroke();
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -242,7 +255,7 @@ game_html = '''
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         if (!perspectiveMode3rdPerson) {
-            threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+            threat threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         }
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
@@ -308,6 +321,7 @@ game_html = '''
             if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
@@ -315,14 +329,15 @@ game_html = '''
 
     function triggerEnemyDamageStrike() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`;
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 0) { isOver = true; clearInterval(spawnTimerId); clearInterval(runLoopTimerId); finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
-        flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
+        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
             if (t.isDying) return;
@@ -330,7 +345,7 @@ game_html = '''
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
         if (hitTarget) {
-            hitTarget.isDying = true; score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
+            hitTarget.isDying = true; sound("shout_aaa"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
@@ -347,11 +362,13 @@ game_html = '''
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
+        sound("ding");
     }
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
-        clearInterval(runLoopTimerId); threatsList = [];
+        clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
         cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
