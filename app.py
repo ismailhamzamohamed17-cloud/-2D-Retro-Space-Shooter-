@@ -39,7 +39,7 @@ game_html = '''
         }
 
         canvas { position: absolute; top: 0; left: 0; width: 380px; height: 480px; z-index: 1; }
-        #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; }
+        #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: none; }
         .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
         .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
         .w-holo-sight::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #ff0055; border-radius: 50%; box-shadow: 0 0 12px 3px #ff0055; }
@@ -59,29 +59,28 @@ game_html = '''
         .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
         .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
 
-        /* 🎬 BLINKING TEXT STYLES */
         .blink-prompt { font-size: 13px; font-weight: bold; color: #06b6d4; margin-top: 15px; letter-spacing: 2px; text-shadow: 0 0 8px rgba(6,182,212,0.6); animation: textFadeBlink 0.75s ease-in-out infinite alternate; display: none; }
         @keyframes textFadeBlink { 0% { opacity: 0.1; } 100% { opacity: 1; } }
-        #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        .story-scroller { max-width: 320px; color: #cbd5e1; font-size: 11px; line-height: 1.6; margin-bottom: 25px; max-height: 140px; overflow-y: hidden; text-align: justify; border: 1px solid #1e293b; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
-        .load-bar-track { width: 220px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        /* FIXED: Expanded size vectors and font properties prevent narrative text clipping completely */
+        .story-scroller { max-width: 340px; color: #e2e8f0; font-size: 13px; font-weight: 500; line-height: 1.55; margin-bottom: 25px; max-height: 220px; overflow-y: hidden; text-align: center; border: 1.5px solid #1e293b; padding: 16px; background: rgba(2, 6, 23, 0.75); border-radius: 12px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
+        .load-bar-track { width: 240px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .load-bar-fluid { width: 0%; height: 100%; background: #06b6d4; transition: width 0.04s linear; }
     </style>
 </head>
 <body>
     <div id="gameArea">
-        <!-- 🎬 JERICHO NARRATIVE PROLOGUE PANEL CARD -->
+        <!-- 🎬 JERICHO HIGH-READABILITY PROLOGUE CARD -->
         <div id="coverScreen">
-            <div style="color:#06b6d4; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 10px rgba(6,182,212,0.4);">HAMPI JERICHO</div>
-            <div style="color:#e2e8f0; font-size:12px; font-weight:600; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
+            <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
+            <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
             <div class="story-scroller">
-                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked Sector A's container port terminal, threatening to hold the city's supply lines hostage [other topic]. Standard law enforcement has been completely compromised [other topic]. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis [other topic].
+                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.
             </div>
             <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
-            <!-- Blink prompt placeholder -->
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
 
@@ -124,11 +123,14 @@ game_html = '''
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false; let loaderFinished = false;
+    
+    // --- 🎬 FIXED: STATE CONTROL SEGMENT VITALS ---
+    let perspectiveMode3rdPerson = true; 
+    let cinematicIntroductionTick = 0; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🎬 FIXED: STATE MACHINE TRIGGER LOOP WITH PRESS CLICK HOOKS ---
     function executeSelfStartingLoader() {
         let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
         let loadInterval = setInterval(() => {
@@ -137,19 +139,16 @@ game_html = '''
             if (txtPercent) txtPercent.textContent = "INITIALIZING MATRIX: " + percentage + "%";
             
             if (percentage >= 100) {
-                clearInterval(loadInterval);
-                loaderFinished = true;
-                // Reveal blinking text trigger below loading tracks
+                clearInterval(loadInterval); loaderFinished = true;
                 document.getElementById("tapPrompt").style.display = "block";
                 
-                // Add event listener to capture clicking interactions safely
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
                     coverElement.removeEventListener("click", triggerCinematicTransition);
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // FIXED: Chapter intermission text card now displays for exactly 3000ms before release
+                    // Black intermission overlay counts exactly 3000ms before tracking maps boot
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -157,6 +156,7 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
+                        perspectiveMode3rdPerson = true; cinematicIntroductionTick = 0;
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                         spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
                     }, 3000);
@@ -178,7 +178,7 @@ game_html = '''
     }
 
     function aim(e) {
-        if (isOver || document.getElementById("coverScreen").style.display === "flex") return;
+        if (isOver || document.getElementById("coverScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -191,8 +191,8 @@ game_html = '''
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
     gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
-    gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished) return; if(e.target.tagName !== "BUTTON") triggerFire(); });
-    gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
+    gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") triggerFire(); });
+    gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
     function project3D(x, y, z) {
         let relativeX = x - cameraX; let relativeZ = z - cameraZ;
@@ -208,6 +208,17 @@ game_html = '''
     function render3DSceneGrid() {
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
+        
+        // --- 🎬 FIXED: THIRD-PERSON PERSPECTIVE SEQUENCER TIMEOUTS ---
+        if (perspectiveMode3rdPerson) {
+            cinematicIntroductionTick++;
+            // After exactly 3 seconds (135 frame ticks at 45fps), seamlessly transition through Jericho's lens
+            if (cinematicIntroductionTick >= 135) {
+                perspectiveMode3rdPerson = false;
+                document.getElementById("weapon").style.display = "block";
+            }
+        }
+
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
@@ -236,7 +247,10 @@ game_html = '''
 
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
-        threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+        // Only push enemies into queue if third person initialization panning has concluded
+        if (!perspectiveMode3rdPerson) {
+            threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
+        }
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
         depthDrawQueue.forEach(item => {
@@ -247,23 +261,15 @@ game_html = '''
             } 
             else if (item.type === "enemy") {
                 let t = item.data; if (!isMoving) t.loopTick++;
-                
-                // --- 🎬 FIXED: GTA SINE RAGDOLL PHYSICS EASING ---
-                // Replaced crisp step jumps with a smooth algebraic momentum wave mapping multiplier
-                let smoothSinPeekFactor = (Math.sin(t.loopTick * 0.05) + 1) / 2; // Returns a smooth decimal glide between 0.0 and 1.0
-                let isActivelyOut = (smoothSinPeekFactor > 0.45); 
-
+                let smoothSinPeekFactor = (Math.sin(t.loopTick * 0.05) + 1) / 2; let isActivelyOut = (smoothSinPeekFactor > 0.45); 
                 let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
-                
-                // Linearly interpolate coordinates to slide out slowly from behind container bounds
                 let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
 
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
-                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
@@ -274,6 +280,19 @@ game_html = '''
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
         });
+
+        // --- 🏗️ NEW FEATURE: CINEMATIC THIRD-PERSON CHARCTER MODEL PAINTER ---
+        // Dynamically draws Hampi Jericho walking forward down the center aisle during intro sequences
+        if (perspectiveMode3rdPerson) {
+            let jX = 190; let jY = 370; let jSize = 48;
+            ctx.fillStyle = "#09090b"; // Tactical black trench shoulders
+            ctx.fillRect(jX - jSize/2, jY, jSize, jSize * 1.2);
+            ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2; ctx.strokeRect(jX - jSize/2, jY, jSize, jSize * 1.2);
+            ctx.fillStyle = "#1e3a8a"; // High-visibility trauma gear harness plates
+            ctx.fillRect(jX - jSize/3, jY + 10, jSize * 0.66, jSize * 0.8);
+            ctx.fillStyle = "#1c1917"; // Jericho's haircut profile from behind
+            ctx.beginPath(); ctx.arc(jX, jY - 14, jSize * 0.24, 0, Math.PI * 2); ctx.fill();
+        }
     }
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
@@ -292,7 +311,7 @@ game_html = '''
     }
 
     function triggerEnemyDamageStrike() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
@@ -300,7 +319,7 @@ game_html = '''
     }
 
     function triggerFire() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || perspectiveMode3rdPerson) return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
@@ -331,6 +350,7 @@ game_html = '''
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        perspectiveMode3rdPerson = true; cinematicIntroductionTick = 0; document.getElementById("weapon").style.display = "none";
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
     };
 </script>
