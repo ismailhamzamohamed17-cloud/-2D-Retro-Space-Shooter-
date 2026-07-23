@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Tactical: Special Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Elite Operations")
+st.set_page_config(page_title="Shooter by Hamza", layout="centered")
+st.title("⚡ Shooter by Hamza")
 
 game_html = '''
 <!DOCTYPE html>
