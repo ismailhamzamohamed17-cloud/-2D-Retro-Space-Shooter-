@@ -51,7 +51,7 @@ game_html = '''
         #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: block; }
 
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; display: block; }
-        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-family: sans-serif; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: block; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: block; }
         #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: block; }
         #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: block; }
 
@@ -82,7 +82,7 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All terminals cleared.</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All terminals cleared successfully.</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -103,7 +103,7 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 FIXED UNLOCKED WEB AUDIO MECHANICS CONFIGURATION ---
+    // --- 🔊 UNLOCKED SOUND CHANNELS: ACCEPTS direct WEB PERMISSIONS ON FIRST TAP INSTANTLY ---
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
     function sound(type) {
@@ -132,47 +132,22 @@ game_html = '''
             spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
         }
 
-        // --- 🎬 FIXED: DYNAMIC OUTDOOR LANDSCAPE GRAPHICS MATRIX ---
-        // Checks if player cleared Sectors A-D and initializes the complete ocean/sky assets seamlessly
+        // --- 🎬 FIXED: DYNAMIC OUTDOOR LANDSCAPE GRAPHICS SYSTEM ---
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
-            // A: Deep Navy Twinkling Sky Gradient Canopy
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); 
-            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); 
-            ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            
-            // B: Twinkling Star Clusters
-            ctx.fillStyle = "rgba(255,255,255,0.75)"; 
-            for (let i = 1; i <= 25; i++) { 
-                let sX = (i * 73) % 380; let sY = (i * 37) % 190; 
-                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; 
-                ctx.fillRect(sX, sY, twinkle, twinkle); 
-            }
-            
-            // C: Parallax Cargo Ship Silhouette Line
-            ctx.fillStyle = "#04060c"; 
-            let shipParallaxX = 140 - (cameraX * 25); 
-            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); 
-            ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
-            
-            // D: Deep Water Sea Grid Mirror
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); 
-            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#011c20"); seaGrd.addColorStop(1, "#011116"); 
-            ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 480);
-            
-            // E: Animated Water Waves Reflection Curves
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; 
-            for (let waveY = 250; waveY < 480; waveY += 35) { 
-                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); 
-                ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); 
-            }
+            // Navy Blue Twinkling Canopy sky
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
+            // Cargo Carrier Ship Shifter Node
+            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
+            // Reflective Deep Water Waterline
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#011c20"); seaGrd.addColorStop(1, "#011116"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 480);
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
         } else {
-            // Solid dark backdrop layout template for indoor tunnel stages exclusively
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 🏗️ RENDER ONLY CORRIDORS FOR SECTORS A-D ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -185,7 +160,7 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
             ctx.stroke(); 
             
-            if (isOutdoorSector) continue; // Skip rendering container wall boundaries when outside
+            if (isOutdoorSector) continue; // Remove corrugated wall plates automatically when out on the harbor deck lanes
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
@@ -193,6 +168,8 @@ game_html = '''
         }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
+        
+        // --- 🎬 FIXED LOOKUP: REMOVED DUPLICATED "THREAT" WORD TO UNLOCK FIREARM SHOOTING INTERFACES ---
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
@@ -241,8 +218,7 @@ game_html = '''
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
 
     function triggerMouseCoordinateFire(e) {
-        // FIXED AUDIO ACCESS UNLOCK: Triggers contextual audio layers smoothly on the user's direct click interaction
-        setupAudio();
+        setupAudio(); // Instantly unblocks audio layers upon screen interaction securely
         let bounds = gameArea.getBoundingClientRect();
         currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
         triggerFire();
@@ -257,11 +233,7 @@ game_html = '''
             currentSector = sectorsList[idx + 1]; sectorKills = 0; targetCameraZ = (idx + 1) * 16;
             let rollingPathRoll = Math.random();
             if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
-            
-            // Updates HUD indicators based on environment stages cleanly
-            if (["E","F","G","H","I","J"].includes(currentSector)) { 
-                document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; 
-            }
+            if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -289,7 +261,7 @@ game_html = '''
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
         if (hitTarget) {
-            hitTarget.isDying = true; score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
+            hitTarget.isDying = true; sound("boom"); score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
@@ -327,5 +299,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Streamlined Tactical Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Fixed Sound Tactical Injector Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
