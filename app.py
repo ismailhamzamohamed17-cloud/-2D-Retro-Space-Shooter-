@@ -59,13 +59,13 @@ game_html = '''
         .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .win-btn { background: #eab308; color: #020617; }
 
-        /* 🎬 PITCH-BLACK AUTOMATED INTERMISSION CARD STYLES */
+        /* 🎬 PITCH-BLACK INTERMISSION OVERLAY SCREEN */
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
     <div id="gameArea">
-        <!-- 🎬 CHAPTER ONE SUSPENSION LAYER PANEL -->
+        <!-- 🎬 INTERMISSION SCREEN -->
         <div id="chapterOverlay">
             <div style="color:white; font-family:monospace; font-size:18px; font-weight:bold; letter-spacing:3px;">CHAPTER 1</div>
             <div style="color:#64748b; font-family:sans-serif; font-size:11px; margin-top:5px; letter-spacing:1px;">PORT TERMINAL SANITIZATION</div>
@@ -133,12 +133,13 @@ game_html = '''
     }
 
     function render3DSceneGrid() {
+        // --- 🎬 FIXED: STOP CALCULATIONS IF INTERMISSION SCREEN IS ACTIVE ---
+        if (document.getElementById("chapterOverlay").style.display === "flex") return;
+
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Block actions completely if the automated intermission layer is actively showing
-        if (document.getElementById("chapterOverlay").style.display === "flex") return;
-
+        // Ignite threat spawner loop only after the intermission vanishes safely
         if (!spawnTimerId && !isOver) {
             spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
         }
@@ -191,13 +192,7 @@ game_html = '''
                 let currentVisualX = p.x - (s * 1.5) + (s * 1.5 * smoothSinPeekFactor);
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
 
-                // --- 🎯 FIXED CLAMP: CONTRACT WARNING RETICLES DOWN INTO SHARP POINTS TIGHTLY ---
-                if (isActivelyOut) { 
-                    t.ring.style.opacity = "1"; t.age++; 
-                } else { 
-                    t.ring.style.opacity = "0"; 
-                }
-                
+                if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
                 ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
@@ -210,7 +205,6 @@ game_html = '''
                 if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
                 
                 t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; 
-                // Forces bounding track ring circles to close tightly directly over the center vector points
                 let dynamicCircleRadius = Math.max(14, Math.min(110, 95 * (1.3 - (t.age / 40)))); 
                 t.ring.style.width = dynamicCircleRadius + "px"; t.ring.style.height = dynamicCircleRadius + "px";
             }
@@ -296,6 +290,20 @@ game_html = '''
         sound("ding");
     }
 
+    // --- 🎬 FIXED CAMPAIGN SYNCHRONIZER ACTIONS ---
+    function initializeActiveArcadeGameplay() {
+        document.getElementById("chapterOverlay").style.display = "none";
+        document.getElementById("scoreCounter").style.display = "block";
+        document.getElementById("chapterTxt").style.display = "block";
+        document.getElementById("targetTracker").style.display = "block";
+        document.getElementById("healthCounter").style.display = "block";
+        document.getElementById("sight").style.display = "block";
+        document.getElementById("weapon").style.display = "block";
+        
+        // Timers start running EXACTLY here, meaning no background enemy movement occurs beforehand
+        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+    }
+
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
         clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -305,7 +313,6 @@ game_html = '''
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         
-        // Handle intermission layer resets instantly on retry inputs
         document.getElementById("chapterOverlay").style.display = "flex";
         document.getElementById("scoreCounter").style.display = "none";
         document.getElementById("chapterTxt").style.display = "none";
@@ -314,31 +321,11 @@ game_html = '''
         document.getElementById("sight").style.display = "none";
         document.getElementById("weapon").style.display = "none";
         
-        setTimeout(() => {
-            document.getElementById("chapterOverlay").style.display = "none";
-            document.getElementById("scoreCounter").style.display = "block";
-            document.getElementById("chapterTxt").style.display = "block";
-            document.getElementById("targetTracker").style.display = "block";
-            document.getElementById("healthCounter").style.display = "block";
-            document.getElementById("sight").style.display = "block";
-            document.getElementById("weapon").style.display = "block";
-            runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-        }, 3000);
+        setTimeout(initializeActiveArcadeGameplay, 3000);
     };
 
-    // --- 🎬 AUTOMATED LIFECYCLE INITIALIZER TIMER TRIGGER ---
-    // Runs a 3000ms (3 seconds) holding loop before un-hiding our core layout views
-    setTimeout(() => {
-        document.getElementById("chapterOverlay").style.display = "none";
-        document.getElementById("scoreCounter").style.display = "block";
-        document.getElementById("chapterTxt").style.display = "block";
-        document.getElementById("targetTracker").style.display = "block";
-        document.getElementById("healthCounter").style.display = "block";
-        document.getElementById("sight").style.display = "block";
-        document.getElementById("weapon").style.display = "block";
-    }, 3000);
-
-    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+    // Trigger the clean 3-second delay initialization loop right at application start
+    setTimeout(initializeActiveArcadeGameplay, 3000);
 </script>
 </body>
 </html>
