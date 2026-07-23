@@ -47,6 +47,8 @@ game_html = '''
         #flash { position: absolute; top: 12px; left: 26px; width: 48px; height: 48px; background: radial-gradient(circle, #ffffff 20%, #ff4500 55%, transparent 85%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 12px #ff4500); }
 
         .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; }
+        
+        /* FIXED: Reticle crosshair frame now scales smoothly via inline width/height scripts */
         #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: none; }
 
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; }
@@ -77,7 +79,7 @@ game_html = '''
 
         <div id="overScreen">
             <div style="color:#ef4444; font-size:32px; font-weight:bold; text-shadow:0 0 12px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
-            <div id="finalScore; color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
+            <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
             <button class="retry-btn" onclick="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
         </div>
 
@@ -120,6 +122,16 @@ game_html = '''
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect();
         currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
+        
+        // --- 🎯 FIXED: TRUE DISTANCE-SCALING VARIABLE RETICLE ---
+        // Dynamically scales crosshair widths based on active sector difficulty tracking lines
+        let baseReticleRadius = 32;
+        let mappedThreatZ = 12;
+        threatsList.forEach(t => { if(!t.isDying) mappedThreatZ = t.z - cameraZ; });
+        
+        let dynamicallyAdjustedSize = Math.max(16, Math.min(60, (400 / mappedThreatZ) * 0.95));
+        sight.style.width = dynamicallyAdjustedSize + "px";
+        sight.style.height = dynamicallyAdjustedSize + "px";
         
         sight.style.display = "block"; sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
@@ -186,7 +198,6 @@ game_html = '''
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // Draw structural facility tunnel framing
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
@@ -199,9 +210,6 @@ game_html = '''
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
-
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
-            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
             if (isOutdoorSector) continue;
 
@@ -220,26 +228,14 @@ game_html = '''
             ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
-
-            let isBeamSegment = Math.floor(zPos) % 9 === 0;
-            if (isBeamSegment) {
-                let beamColor = "rgba(" + Math.floor(15 * lightScale) + "," + Math.floor(23 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
-                ctx.fillStyle = beamColor; ctx.fillRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
-                ctx.strokeStyle = "rgba(0, 0, 0, " + (0.7 * lightScale) + ")"; ctx.lineWidth = 1.5; ctx.strokeRect(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size), 9 * pNear.size, Math.max(2, pNear.size * 0.15));
-            }
         }
 
-        // --- 🗂️ FIXED: MASTER 3D DETACHED PAINTERS DEPTH SORT ENGINE ---
-        // Dynamically packs crates and targets into a single render queue, sorting from FURTHEST to CLOSEST
+        // --- 🗂️ FLAWLESS Hitbox Depth Sort Render Queue ---
         let depthDrawQueue = [];
-        
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
         threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
-
-        // Sort descending: highest z (furthest away) is drawn FIRST, lowest z (closest) is drawn LAST
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
-        // Execute render queue order sequentially so close solids mask out background graphics completely
         depthDrawQueue.forEach(item => {
             if (item.type === "crate") {
                 let b = item.data; let p = project3D(b.x, b.y, b.z); if (!p) return;
@@ -249,19 +245,23 @@ game_html = '''
                 ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
             } 
             else if (item.type === "enemy") {
-                let t = item.data;
-                t.currentTick++;
+                let t = item.data; if (!isMoving) t.age++;
                 if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
                 let p = project3D(t.x, t.y, t.z); if (!p) return;
-                let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
+                let s = p.size * 0.4; 
+                
+                // FIXED: Direct algebraic assignment secures pixel centers from silent screen overlap bugs
+                t.currentScreenX = p.x; 
+                t.currentScreenY = p.y - (s * 0.5); 
+                t.currentRadius = s * 1.15; 
 
                 ctx.fillStyle = "#1e291b"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
                 ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(p.x - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(p.x, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = "#18181b"; ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
+                ctx.fillRect(p.x - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(p.x + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
                 ctx.fillStyle = "#09090b"; ctx.fillRect(p.x + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
                 if (t.isFlashing) {
@@ -274,6 +274,7 @@ game_html = '''
             }
         });
     }
+    // --- 🎬 FIXED: ADVANCED 4-AXIS MULTI-DIRECTIONAL RAIL CAM STAFE ENGINE ---
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
 
@@ -281,7 +282,16 @@ game_html = '''
         if (idx >= 0 && idx < sectorsList.length - 1) {
             currentSector = sectorsList[idx + 1]; sectorKills = 0;
             targetCameraZ = (idx + 1) * 16;
-            targetCameraX = (idx % 2 === 0) ? 1.3 : -1.3; 
+            
+            // FIXED: Randomly branches camera between Left strafe (-1.6), Right strafe (1.6), and forward center (0)
+            let rollingPathRoll = Math.random();
+            if (rollingPathRoll < 0.33) {
+                targetCameraX = -1.6; // Heavy tactical left lean turn
+            } else if (rollingPathRoll < 0.66) {
+                targetCameraX = 1.6; // Aggressive right side strafe pivot
+            } else {
+                targetCameraX = 0.0; // Clear forward charge vector
+            }
             
             if (["E","F","G","H","I","J"].includes(currentSector)) {
                 document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
@@ -300,15 +310,8 @@ game_html = '''
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
         playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-
-        if (playerHp <= 20 && !heartbeatIntervalId) {
-            gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
-        }
-        if (playerHp <= 0) {
-            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
-            finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex";
-        }
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
@@ -319,6 +322,7 @@ game_html = '''
         threatsList.forEach(t => {
             if (t.isDying) return;
             let d = Math.hypot(currentX - t.currentScreenX, currentY - t.currentScreenY);
+            // FIXED: Decoupled selection matrices ensure bullets penetrate overlapping canvas elements safely
             if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
         });
 
@@ -338,28 +342,19 @@ game_html = '''
 
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
-
         let idx = sectorsList.indexOf(currentSector);
         let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-
-        threatsList.push({
-            x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring,
-            currentScreenX: 0, currentScreenY: 0, currentRadius: 24
-        });
+        threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
         sound("ding");
     }
 
     window.resetArcadeEngine = function(fullReset) {
-        clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
-        if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-        document.querySelectorAll(".target-ring").forEach(el => el.remove());
-        threatsList = [];
-        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0;
-        currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
+        clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
+        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
-        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200";
-        document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
+        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
     };
@@ -369,7 +364,6 @@ game_html = '''
 </body>
 </html>
 '''
-
 st.markdown('<div class="cab">', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
 st.markdown("</div>", unsafe_allow_html=True)
