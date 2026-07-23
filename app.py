@@ -18,7 +18,7 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9);
         }
 
-        /* FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
+        /* 🎬 FILM GRAIN + DYNAMIC FULL-SCREEN TACTICAL DAMAGE FLASH */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
@@ -46,7 +46,6 @@ game_html = '''
         .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #0a0a0a, #1a1a1a, #050505); border-radius: 3px; }
         #flash { position: absolute; top: 15px; left: 30px; width: 40px; height: 40px; background: radial-gradient(circle, #ffffff 15%, #ff3c00 60%, transparent 80%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 10px #ff3c00); }
 
-        /* FIXED: Added pointer-events: none so tracking rings never intercept bullet touch points */
         .target-ring { position: absolute; border: 3px dashed #ff2222; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 10px #ff2222; }
         #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00ffff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 8px #00ffff; display: none; }
 
@@ -138,69 +137,104 @@ game_html = '''
     }
 
     const static3DObstacles = [
-        { x: -1.8, y: 0.5, z: 15, color: "#7c2d12" },
-        { x: 1.8, y: 0.5, z: 30, color: "#1e3a8a" },
-        { x: -1.5, y: 0.5, z: 45, color: "#065f46" }
+        { x: -2.0, y: 0.5, z: 15, color: "#22c55e", label: "CONTAINER A" }, // Shuffled colors to mimic steel containers
+        { x: 2.0, y: 0.5, z: 30, color: "#ef4444", label: "CONTAINER B" },
+        { x: -1.8, y: 0.5, z: 45, color: "#3b82f6", label: "CONTAINER C" }
     ];
     function render3DSceneGrid() {
-        ctx.fillStyle = "#0a0f1d"; ctx.fillRect(0, 0, 380, 480);
-
+        // Smooth camera movement interpolation
         cameraZ += (targetCameraZ - cameraZ) * 0.07;
         cameraX += (targetCameraX - cameraX) * 0.07;
 
-        for (let z = 80; z >= 0; z -= 4) {
+        // --- 🌅 REALISTIC TEXTURED BACKDROP BUILDER ---
+        if (currentSector === "C") {
+            // OUTSIDE PORT ENVIRONMENT: Blends deep sea oceans with an amber sky horizon
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
+            skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(0.7, "#1e1b4b"); skyGrd.addColorStop(1, "#311042");
+            ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
+            seaGrd.addColorStop(0, "#090d16"); seaGrd.addColorStop(1, "#022c22");
+            ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
+        } else {
+            // INSIDE WAREHOUSE ENVIRONMENT: Pure heavy steel warehouse void
+            ctx.fillStyle = "#030712"; ctx.fillRect(0, 0, 380, 480);
+        }
+
+        // 🛣️ PROJECTION GENERATOR: TEXTURED 3D WALLED CORRIDOR PANELS
+        for (let z = 85; z >= 0; z -= 1.5) { // Fine-grained depth step cuts for rich textures
             let zPos = Math.floor(cameraZ) + z;
-            zPos = zPos - (zPos % 4); 
+            zPos = zPos - (zPos % 1.5);
 
             let pNear = project3D(0, 0, zPos);
-            let pFar = project3D(0, 0, zPos + 4);
-            if (!pNear || !pFar) continue;
+            if (!pNear) continue;
 
-            let fogOpacity = Math.min(1, z / 60);
-            ctx.strokeStyle = "rgba(30, 41, 59, " + (1 - fogOpacity) + ")";
-            ctx.lineWidth = Math.max(1, pNear.size / 60);
+            let fogOpacity = Math.min(1, z / 65);
+            let intensity = Math.floor((1 - fogOpacity) * 255);
 
+            // Concrete Floor Texturing Math
+            ctx.strokeStyle = "rgba(30, 41, 59, " + (0.4 * (1 - fogOpacity)) + ")";
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(190 - (4 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4 * pNear.size), 240 + (1.6 * pNear.size));
+            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
+            ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
             ctx.stroke();
 
+            // FIXED: Only render container roof panels if player is safely INSIDE sectors A and B
+            if (currentSector !== "C") {
+                ctx.strokeStyle = "rgba(15, 23, 42, " + (0.3 * (1 - fogOpacity)) + ")";
+                ctx.beginPath();
+                ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
+                ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
+                ctx.stroke();
+            }
+
+            // --- 📦 DYNAMIC RIBBED METALLIC CONTAINER CORRUGATION MATH ---
+            // Alternates stroke shading widths based on depth ratios to simulate vertical steel folds
+            let isRidgeFold = Math.floor(zPos * 2) % 2 === 0;
+            let containerShade = isRidgeFold ? "rgba(13, 148, 136, " : "rgba(17, 94, 89, ";
+            
+            ctx.strokeStyle = containerShade + (1 - fogOpacity) + ")";
+            ctx.lineWidth = Math.max(1.5, pNear.size * 0.15); // Scales ridge thickness matching depth orientation
+
+            // Draw left vertical wall corrugation rib
             ctx.beginPath();
-            ctx.moveTo(190 - (4 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 - (4 * pNear.size), 240 - (2.4 * pNear.size));
+            ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size));
+            ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.stroke();
             
+            // Draw right vertical wall corrugation rib
             ctx.beginPath();
-            ctx.moveTo(190 + (4 * pNear.size), 240 + (1.6 * pNear.size));
-            ctx.lineTo(190 + (4 * pNear.size), 240 - (2.4 * pNear.size));
+            ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
+            ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.stroke();
         }
 
+        // 📦 DRAW STACKED BARRICADE STEEL FREIGHT TEXTURES
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z);
             if (!p || b.z < cameraZ) return;
-            let w = 1.8 * p.size; let h = 2.0 * p.size;
+            
+            let w = 1.9 * p.size; let h = 2.2 * p.size;
+            
+            // Outer Main Box Shell
             ctx.fillStyle = b.color; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            
+            // Structural Container Shading Crossbars
+            ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = Math.max(1, p.size * 0.05);
+            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
+            ctx.beginPath(); ctx.moveTo(p.x - w/2, p.y - h/2); ctx.lineTo(p.x + w/2, p.y + h/2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(p.x + w/2, p.y - h/2); ctx.lineTo(p.x - w/2, p.y + h/2); ctx.stroke();
         });
 
+        // 🏃 DRAW SOLDIERS OVER EXPANDED DEPTH
         threatsList.forEach(t => {
             if (t.isDying) return;
             t.age++;
-            
-            if (t.age > 0 && t.age % 35 === 0) {
-                t.isFlashing = true; triggerEnemyDamageStrike();
-                setTimeout(() => { t.isFlashing = false; }, 70);
-            }
+            if (t.age > 0 && t.age % 35 === 0) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-            let p = project3D(t.x, t.y, t.z);
-            if (!p) return;
-
-            let s = p.size * 0.4;
-            t.currentScreenX = p.x; 
-            // FIXED: Shifted structural hitbox center point down to match visual torso configurations perfectly
-            t.currentScreenY = p.y - (s / 2); 
-            t.currentRadius = s * 0.95; // Expanded hit radius to ensure first shots connect reliably
+            let p = project3D(t.x, t.y, t.z); if (!p) return;
+            let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s / 2); t.currentRadius = s * 0.95;
 
             ctx.fillStyle = "#14532d"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
             ctx.strokeStyle = "#000"; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
@@ -213,10 +247,8 @@ game_html = '''
                 flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.4, "#ffaa00"); flashGrd.addColorStop(1, "transparent");
                 ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(p.x + s, p.y - s/6, s * 0.5, 0, Math.PI*2); ctx.fill(); ctx.closePath();
             }
-
             t.ring.style.left = p.x + "px"; t.ring.style.top = (p.y - s/2) + "px";
-            let rSize = Math.max(0, 95 * (1.3 - (t.age / 40)));
-            t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
+            let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
     function triggerSectorPathMovement() {
@@ -224,6 +256,7 @@ game_html = '''
             currentSector = "B"; sectorKills = 0; targetCameraZ = 16; targetCameraX = 1.2;
         } else if (currentSector === "B") {
             currentSector = "C"; sectorKills = 0; targetCameraZ = 32; targetCameraX = -1.2;
+            document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
         } else if (currentSector === "C") {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -254,7 +287,7 @@ game_html = '''
         });
 
         if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa");
+            hitTarget.isDying = true; sound("shout_aaa"); spawnBloodSpit(currentX, currentY);
             score += 100; scoreCounter.innerText = String(score).padStart(5, '0');
             sectorKills += 1;
             
@@ -273,7 +306,6 @@ game_html = '''
     function spawn3DThreatUnit() {
         let maxSimultaneous = 2; if (isOver || threatsList.length >= maxSimultaneous) return;
 
-        // FIXED: Anchored spawner depth equations relative to the active camera sector zone milestones
         let spawnZ = 12;
         if (currentSector === "B") spawnZ = 28;
         if (currentSector === "C") spawnZ = 44;
