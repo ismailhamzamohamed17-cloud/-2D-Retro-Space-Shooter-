@@ -93,13 +93,13 @@ game_html = '''
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
 
-    // --- 🎮 UPGRADED: 10-SECTOR RAIL CAMPAIGN SEQUENCE MATRIX ---
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
-    
     let isMoving = false; 
-    const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
@@ -140,7 +140,6 @@ game_html = '''
         return { x: px, y: py, size: fovScale };
     }
 
-    // Comprehensive 3D structural coordinate arrays spanning across all 10 operations sections
     const static3DObstacles = [
         { x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
         { x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
@@ -156,8 +155,6 @@ game_html = '''
         cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
-        // --- 🌅 REALISTIC ENVIRONMENT ATTRITION LAYER ---
-        // Sectors E through J fully open the warehouse roof into the sea harbor dock lines
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
@@ -171,7 +168,6 @@ game_html = '''
                 let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle);
             }
             
-            // Parallax Horizon Cargo Carrier Ships
             ctx.fillStyle = "#04060c";
             let shipParallaxX = 140 - (cameraX * 25);
             ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill();
@@ -191,7 +187,6 @@ game_html = '''
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 🏗️ GEOMETRIC SOLID 3D RAY CORRIDOR PANELS ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
@@ -208,7 +203,7 @@ game_html = '''
             ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            if (isOutdoorSector) continue; // Clear structural warehouse ceiling/walls outdoors
+            if (isOutdoorSector) continue;
 
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
@@ -234,7 +229,6 @@ game_html = '''
             }
         }
 
-        // Draw static blocking cargo container props
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
@@ -243,7 +237,6 @@ game_html = '''
             ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
         });
 
-        // Render tactical camouflage enemies
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
@@ -268,35 +261,25 @@ game_html = '''
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
-    // --- 🎬 ADVANCED 10-SECTOR CAMERA RAIL ADVANCEMENT ENGINE ---
     function triggerSectorPathMovement() {
-        if (isMoving) return;
-        isMoving = true;
+        if (isMoving) return; isMoving = true;
 
-        // Extracts the index rank of our current location marker to increment vectors safely
         let idx = sectorsList.indexOf(currentSector);
         if (idx >= 0 && idx < sectorsList.length - 1) {
-            currentSector = sectorsList[idx + 1];
-            sectorKills = 0;
-            
-            // Advance the camera coordinate markers deeper forward into 3D world space
+            currentSector = sectorsList[idx + 1]; sectorKills = 0;
             targetCameraZ = (idx + 1) * 16;
-            targetCameraX = (idx % 2 === 0) ? 1.3 : -1.3; // Alternates left/right tactical cover points
+            targetCameraX = (idx % 2 === 0) ? 1.3 : -1.3; 
             
-            // Update contextual header strings for outside operations landmarks
             if (["E","F","G","H","I","J"].includes(currentSector)) {
                 document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
             }
         } else {
-            // Sector J completely eliminated -> Clean operational sweep achieved!
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
-
         let needed = sectorRequirements[currentSector];
-        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        sound("level");
+        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; sound("level");
     }
 
     function triggerEnemyDamageStrike() {
@@ -328,7 +311,6 @@ game_html = '''
         if (hitTarget) {
             hitTarget.isDying = true; sound("shout_aaa");
             score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
-            
             let needed = sectorRequirements[currentSector];
             targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
             hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
@@ -343,11 +325,8 @@ game_html = '''
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
 
-        // Automatically anchors threat positioning offsets to align with active camera sector tracks
         let idx = sectorsList.indexOf(currentSector);
-        let spawnZ = cameraZ + 12 + (idx * 0.5);
-        let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
-
+        let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
 
         threatsList.push({
@@ -371,8 +350,7 @@ game_html = '''
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
     };
 
-    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
 </script>
 </body>
 </html>
