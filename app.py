@@ -18,24 +18,21 @@ game_html = '''
             box-shadow: 0 24px 60px rgba(0,0,0,0.9); perspective: 800px;
         }
 
-        /* 🎬 FILM GRAIN + DYNAMIC WHOLE-SCREEN CRIMSON PULSE SYSTEM OVERLAY */
+        /* FILM GRAIN + DYNAMIC WHOLE-SCREEN DAMAGE RESIZE VIGNETTE */
         #gameArea::after {
             content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 28;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w3.org id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.055'/%3E%3C/svg%3E");
             background-size: auto;
-            /* Default dark ambient overlay lighting shadows */
             box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.95), inset 0 0 140px rgba(0, 0, 0, 0.85);
             background-color: rgba(220, 20, 20, 0);
             transition: box-shadow 0.1s ease-out, background-color 0.1s ease-out;
         }
 
-        /* FIXED: Whole screen now dynamically flashes a red tint gradient mask upon taking damage */
         #gameArea.taking-damage::after {
             background-color: rgba(220, 20, 20, 0.22);
             box-shadow: inset 0 0 110px rgba(220, 20, 20, 0.95), inset 0 0 180px rgba(180, 0, 0, 0.9);
         }
 
-        /* FIXED: Low HP forces the entire screen framing to pulse heavily in sync with the heartbeat rhythm */
         #gameArea.critical-pulse::after {
             animation: wholeScreenLowHpPulse 0.55s ease-in-out infinite alternate;
         }
@@ -44,28 +41,35 @@ game_html = '''
             100% { background-color: rgba(220, 20, 20, 0.25); box-shadow: inset 0 0 115px rgba(240, 0, 0, 0.95), inset 0 0 170px rgba(200, 0, 0, 0.85); }
         }
 
-        #sceneryContainer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; }
+        /* 🎬 FIXED: SMOOTH RAIL-SHOOTER CAMERA TRANSITION WRAPPER CONTAINER */
+        #sceneryContainer { 
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0; 
+            pointer-events: none; z-index: 1;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Simulates dynamic character movement/turning */
+            will-change: transform;
+        }
         /* Chapter 1: European City street facade panel nodes */
-        .city-facade-l { position: absolute; top: 15px; left: 0; width: 125px; height: 185px; background: linear-gradient(135deg, #1c1c1c, #0a0a0a); border-right: 3px solid #000; box-shadow: 12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
-        .city-facade-r { position: absolute; top: 10px; right: 0; width: 115px; height: 190px; background: linear-gradient(225deg, #161616, #070707); border-left: 3px solid #000; box-shadow: -12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
-        .overhead-wires { position: absolute; top: 0; left: 0; width: 100%; height: 140px; background: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.015) 35px, rgba(255,255,255,0.015) 36px); opacity: 0.6; z-index: 3; }
+        .city-facade-l { position: absolute; top: 15px; left: -40px; width: 140px; height: 220px; background: linear-gradient(135deg, #1c1c1c, #0a0a0a); border-right: 3px solid #000; box-shadow: 12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
+        .city-facade-r { position: absolute; top: 10px; right: -50px; width: 130px; height: 230px; background: linear-gradient(225deg, #161616, #070707); border-left: 3px solid #000; box-shadow: -12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
+        .overhead-wires { position: absolute; top: 0; left: -100px; width: 600px; height: 140px; background: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.015) 35px, rgba(255,255,255,0.015) 36px); opacity: 0.6; z-index: 3; }
 
         /* Chapter 2: High-Density 3D Forest Tree Elements */
         .tree-3d { position: absolute; bottom: 200px; width: 65px; height: 160px; transform-origin: center bottom; z-index: 3; }
         .tree-trunk { position: absolute; bottom: 0; left: 27px; width: 10px; height: 50px; background: linear-gradient(to right, #241407, #0f0702); }
         .tree-foliage { position: absolute; bottom: 45px; left: 0; width: 65px; height: 115px; background: radial-gradient(circle at center, #0f2619, #050d08); border-radius: 50%; box-shadow: inset -5px -8px 15px rgba(0,0,0,0.6), 0 10px 15px rgba(0,0,0,0.4); }
 
-        /* Chapter 3: Cargo Pier Docks Container Ship & Terminal Elements */
-        .dock-edge { position: absolute; bottom: 0; left: 0; width: 100%; height: 240px; background: linear-gradient(to bottom, #1b1e22, #0d0f12); z-index: 2; border-top: 8px solid #2d3142; box-shadow: inset 0 15px 30px rgba(0,0,0,0.5); }
-        .port-crane-tower { position: absolute; top: 20px; left: 20px; width: 80px; height: 160px; background: linear-gradient(to right, #11161d, #05070a); border-right: 3px solid #000; z-index: 1; opacity: 0.5; }
-        .cargo-vessel-hull { position: absolute; top: 80px; right: -20px; width: 150px; height: 120px; background: linear-gradient(to bottom, #090e14, #020406); border-radius: 50% 12px 12px 50%; z-index: 1; border-bottom: 4px solid #000; box-shadow: -15px 15px 30px rgba(0,0,0,0.8); }
+        /* Chapter 3: Cinematic Cargo Pier Docks Container Ship & Terminal Elements */
+        .dock-edge { position: absolute; bottom: -50px; left: -100px; width: 600px; height: 300px; background: linear-gradient(to bottom, #1b1e22, #0d0f12); z-index: 2; border-top: 8px solid #2d3142; box-shadow: inset 0 15px 30px rgba(0,0,0,0.5); }
+        .port-crane-tower { position: absolute; top: 20px; left: -20px; width: 80px; height: 190px; background: linear-gradient(to right, #11161d, #05070a); border-right: 3px solid #000; z-index: 1; opacity: 0.5; }
+        .cargo-vessel-hull { position: absolute; top: 80px; right: -80px; width: 220px; height: 140px; background: linear-gradient(to bottom, #090e14, #020406); border-radius: 50% 12px 12px 50%; z-index: 1; border-bottom: 4px solid #000; box-shadow: -15px 15px 30px rgba(0,0,0,0.8); }
         .cargo-container-stack { position: absolute; width: 75px; height: 55px; background: linear-gradient(135deg, #47120c, #1f0402); border: 2px solid #000; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); z-index: 3; }
         .container-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 8px); }
-        .wet-reflection { position: absolute; bottom: 40px; left: 20%; width: 120px; height: 20px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 80%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); z-index: 2; }
+        .wet-reflection { position: absolute; bottom: 40px; left: 10%; width: 200px; height: 30px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 80%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); z-index: 2; }
 
-        .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
+        /* 🗺️ DYNAMIC HIGHWAY STRIP CONTROLLERS */
+        .roadway { position: absolute; bottom: 0; left: -100px; width: 600px; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; transition: transform 0.8s ease-in-out; }
         .road-lines { position: absolute; top: 0; left: 50%; width: 6px; height: 100%; background: repeating-linear-gradient(to bottom, #727a69 0px, #727a69 25px, transparent 25px, transparent 60px); transform: translateX(-50%); opacity: 0.25; }
-        #car { position: absolute; top: 172px; left: 105px; width: 170px; height: 100px; background: linear-gradient(to bottom, #2b331f 0%, #1c2413 45%, #0d1208 100%); border-radius: 6px; box-shadow: 0 25px 45px rgba(0,0,0,0.85); z-index: 4; border: 2px solid #141c0b; will-change: transform, left, top; transform-origin: center bottom; }
+        #car { position: absolute; top: 172px; left: 105px; width: 170px; height: 100px; background: linear-gradient(to bottom, #2b331f 0%, #1c2413 45%, #0d1208 100%); border-radius: 6px; box-shadow: 0 25px 45px rgba(0,0,0,0.85); z-index: 4; border: 2px solid #141c0b; will-change: transform, left, top; transform-origin: center bottom; transition: transform 0.8s ease-in-out, left 0.8s, top 0.8s; }
         .window { position: absolute; top: 16px; left: 20px; width: 130px; height: 22px; background: linear-gradient(180deg, rgba(50,75,110,0.5) 0%, rgba(2,6,15,0.8) 100%); border: 2px solid #000; }
         .wheel { position: absolute; background: #080808; border-radius: 3px; border: 1.5px solid #1c1c1c; }
         .w-front-l { bottom: 10px; left: -6px; width: 8px; height: 32px; } .w-front-r { bottom: 10px; right: -6px; width: 8px; height: 32px; } .w-rear-l { bottom: -10px; left: 20px; width: 38px; height: 16px; } .w-rear-r { bottom: -10px; right: 20px; width: 38px; height: 16px; }
@@ -110,8 +114,6 @@ game_html = '''
         #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.85); padding: 4px 14px; border-radius: 6px; border: 2px solid #444; text-shadow: 0 0 5px #ffea00; }
         #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.85); padding: 6px 12px; border-radius: 6px; border: 1px solid #444; letter-spacing: 1px; }
         #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3333; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.85); padding: 3px 8px; border-radius: 4px; }
-        
-        /* FIXED: Retained standard minimal design for health text container blocks */
         #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3333; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 4px; border: 2px solid #ff2222; text-shadow: 0 0 4px #ff0000; }
 
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
@@ -125,7 +127,7 @@ game_html = '''
     <div id="gameArea">
         <div id="scoreCounter">00200</div>
         <div id="chapterTxt">CHAPTER 1: CITY STREETS</div>
-        <div id="targetTracker">TARGETS CLEAR: 0/5</div>
+        <div id="targetTracker">SECTOR A: 0/3</div>
         <div id="healthCounter">HP: 100</div>
         
         <div id="sceneryContainer"></div>
@@ -163,8 +165,13 @@ game_html = '''
 <script>
     let currentX = 168, currentY = 218, score = 200, isOver = false, activeChapter = 1;
     let carPos = 110, distanceScale = 0.2, carParked = false;
-    let threatsList = []; let chapterKills = 0, playerHp = 100;
+    let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, physicsTimerId = null, heartbeatIntervalId = null;
+
+    // --- 🎮 RAIL-SHOOTER ON-RAILS SECTOR MOTION VARIABLES ---
+    let currentSector = "A"; // Progressive states: "A", "B", "C"
+    let sectorKills = 0;
+    const sectorRequirements = { "A": 3, "B": 3, "C": 4 }; // Kills needed per checkpoint section
 
     const gameArea = document.getElementById("gameArea"), sight = document.getElementById("sight"), weapon = document.getElementById("weapon"), flash = document.getElementById("flash"), car = document.getElementById("car"), scoreCounter = document.getElementById("scoreCounter"), chapterTxt = document.getElementById("chapterTxt"), targetTracker = document.getElementById("targetTracker"), healthCounter = document.getElementById("healthCounter"), sceneryContainer = document.getElementById("sceneryContainer"), overScreen = document.getElementById("overScreen"), winScreen = document.getElementById("winScreen"), intermissionScreen = document.getElementById("intermissionScreen"), finalScore = document.getElementById("finalScore");
 
@@ -200,19 +207,14 @@ game_html = '''
     };
 
     function updateLevelAtmosphere() {
-        let meta = mapChapters[activeChapter]; let maxNeeded = 5 + (activeChapter - 1) * 2;
-        chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`; targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`; gameArea.style.background = meta.bg;
-        let roadwayEl = document.querySelector(".roadway"), carEl = document.getElementById("car");
+        let meta = mapChapters[activeChapter]; let needed = sectorRequirements[currentSector];
+        chapterTxt.innerText = `CH. ${activeChapter}: ${meta.name}`; 
+        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`; gameArea.style.background = meta.bg;
         
-        if (meta.code === "port") {
-            roadwayEl.style.display = "none"; carEl.style.display = "none"; carParked = true; 
-        } else if (meta.code === "tree") {
-            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
-            document.querySelector(".road-lines").style.display = "none"; carEl.style.display = "block";
-        } else {
-            roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
-            document.querySelector(".road-lines").style.display = "block"; carEl.style.display = "block";
-        }
+        let roadwayEl = document.querySelector(".roadway"), carEl = document.getElementById("car");
+        if (meta.code === "port") { roadwayEl.style.display = "none"; carEl.style.display = "none"; carParked = true; } 
+        else if (meta.code === "tree") { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; document.querySelector(".road-lines").style.display = "none"; carEl.style.display = "block"; } 
+        else { roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road; document.querySelector(".road-lines").style.display = "block"; carEl.style.display = "block"; }
         
         sceneryContainer.innerHTML = "";
         if (meta.code === "city") { sceneryContainer.innerHTML = '<div class="city-facade-l"></div><div class="overhead-wires"></div><div class="city-facade-r"></div>'; } 
@@ -229,27 +231,35 @@ game_html = '''
         let pool = document.createElement("div"); pool.className = "blood-pool"; pool.style.left = (x - 26) + "px"; pool.style.top = (y + 26) + "px"; gameArea.appendChild(pool);
     }
 
-    // --- 🚨 FIXED: WHOLE SCREEN SIDE-FLASH RED DAMAGE ENGINE ---
     function triggerEnemyDamageStrike() {
         if (isOver || intermissionScreen.style.display === "flex") return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0;
-        healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
-        
-        // FIXED: Applies the taking-damage class onto gameArea to flash the full frame background
-        gameArea.classList.add("taking-damage"); 
-        setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-
-        // FIXED: Low HP sets the whole screen layer to loop pulse seamlessly
-        if (playerHp <= 20 && !heartbeatIntervalId) {
-            gameArea.classList.add("critical-pulse");
-            heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
-        }
-        if (playerHp <= 0) {
-            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(physicsTimerId);
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
-            finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex";
-        }
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
+        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 140);
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(physicsTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Operation Score: " + score; overScreen.style.display = "flex"; }
     }
+    // --- 🎬 FIXED: ADVANCED VIRTUA COP ON-RAILS MOTION AND CAMERA CONTROLLER ENGINE ---
+    function triggerSectorPathMovement() {
+        if (currentSector === "A") {
+            currentSector = "B"; sectorKills = 0;
+            // Camera pans heavily to the right side layout of the map zone
+            sceneryContainer.style.transform = "scale(1.2) translateX(-40px) translateY(10px)";
+            if (document.querySelector(".roadway")) document.querySelector(".roadway").style.transform = "skewX(-15deg) translateX(-30px)";
+        } else if (currentSector === "B") {
+            currentSector = "C"; sectorKills = 0;
+            // Camera pans up and scales out to simulate running deep inside the base
+            sceneryContainer.style.transform = "scale(1.5) translateX(20px) translateY(30px)";
+            if (document.querySelector(".roadway")) document.querySelector(".roadway").style.transform = "scale(0.8) translateY(40px)";
+        } else if (currentSector === "C") {
+            // Sector C is clear -> Entire chapter campaign area accomplished!
+            if (activeChapter >= 3) { winScreen.style.display = "flex"; return; }
+            sound("level"); intermissionScreen.style.display = "flex";
+            return;
+        }
+        sound("level");
+        updateLevelAtmosphere();
+    }
+
     function triggerFire() {
         if (isOver || intermissionScreen.style.display === "flex") return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
@@ -263,15 +273,20 @@ game_html = '''
             if (hitCenterX >= tX && hitCenterX <= tX + tRect.width && hitCenterY >= tY && hitCenterY <= tY + tRect.height) {
                 t.isDying = true; t.el.classList.add("dead-threat");
                 sound("shout_aaa"); spawnBloodSpit(hitCenterX, hitCenterY);
-                score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); chapterKills += 1;
-                let maxNeeded = 5 + (activeChapter - 1) * 2; targetTracker.innerText = "TARGETS CLEAR: " + chapterKills + "/" + maxNeeded;
+                score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); 
+                
+                sectorKills += 1;
+                let needed = sectorRequirements[currentSector];
+                targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
 
                 t.ring.remove(); t.el.style.transform += " rotate(85deg)"; t.el.style.top = (parseFloat(t.el.style.top) + 26) + "px"; 
-                if (chapterKills >= maxNeeded) { 
-                    clearInterval(spawnTimerId); clearInterval(physicsTimerId); 
-                    if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
-                    if (activeChapter >= 3) { winScreen.style.display = "flex"; return; } 
-                    sound("level"); intermissionScreen.style.display = "flex"; 
+                
+                // FIXED: Character now automatically advances camera layers once the local sector quota is met
+                if (sectorKills >= needed) {
+                    // Instantly clear surviving ambient enemies before camera panning
+                    document.querySelectorAll(".threat, .target-ring").forEach(el => el.remove());
+                    threatsList = [];
+                    setTimeout(triggerSectorPathMovement, 400);
                 }
             }
         });
@@ -308,9 +323,13 @@ game_html = '''
         }, 30);
 
         spawnTimerId = setInterval(() => {
-            let maxSimultaneous = 5 + (activeChapter - 1) * 2; if (isOver || threatsList.length >= maxSimultaneous || !carParked) return;
+            let maxSimultaneous = 3; if (isOver || threatsList.length >= maxSimultaneous || !carParked) return;
             let el = document.createElement("div"); el.className = "threat"; let roll = Math.random(); let sideOffset, topY, armClass;
-            if (roll < 0.25) { sideOffset = -30; topY = 190; armClass = "arm-l"; } else if (roll < 0.5) { sideOffset = 150; topY = 185; armClass = "arm-r"; } else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; } else { sideOffset = 130; topY = 210; armClass = "arm-r"; }
+            
+            // Generate different position vectors based on which dynamic camera zone is active
+            if (currentSector === "B") { sideOffset = roll < 0.5 ? -10 : 110; topY = 220; armClass = "arm-l"; }
+            else if (currentSector === "C") { sideOffset = roll < 0.5 ? 20 : 140; topY = 170; armClass = "arm-r"; }
+            else { if (roll < 0.25) { sideOffset = -30; topY = 190; armClass = "arm-l"; } else if (roll < 0.5) { sideOffset = 150; topY = 185; armClass = "arm-r"; } else if (roll < 0.75) { sideOffset = -15; topY = 210; armClass = "arm-l"; } else { sideOffset = 130; topY = 210; armClass = "arm-r"; } }
 
             el.innerHTML = '<div class="t-head"><div class="t-eyes"></div></div><div class="t-torso"><div class="t-arm ' + armClass + '"><div class="t-weapon"></div><div class="enemy-flash"></div></div></div><div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>';
             let initialScale = (mapChapters[activeChapter].code === "port") ? 0.25 : distanceScale;
@@ -325,26 +344,12 @@ game_html = '''
     }
 
     function clearDeadBodiesAndBlood() { document.querySelectorAll(".threat, .target-ring, .blood-pool, .blood-drop").forEach(el => el.remove()); threatsList = []; }
-    
-    // --- 🏥 FIXED: NEXT-CHAPTER HEALTH RESETS TO 100 VITALITY ---
-    window.advanceToNextChapter = function() { 
-        activeChapter += 1; chapterKills = 0; 
-        playerHp = 100; // Reset metrics cleanly upon loading next operational zone
-        intermissionScreen.style.display = "none"; 
-        clearDeadBodiesAndBlood(); 
-        resetArcadeEngine(false); 
-    };
-    
+    window.advanceToNextChapter = function() { activeChapter += 1; sectorKills = 0; currentSector = "A"; playerHp = 100; if(sceneryContainer) sceneryContainer.style.transform = "none"; intermissionScreen.style.display = "none"; clearDeadBodiesAndBlood(); resetArcadeEngine(false); };
     window.resetArcadeEngine = function(resetFullCampaign) {
-        clearInterval(spawnTimerId); clearInterval(physicsTimerId); 
-        if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
+        clearInterval(spawnTimerId); clearInterval(physicsTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
         clearDeadBodiesAndBlood();
-        
-        if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; playerHp = 100; scoreCounter.innerText = "00200"; }
-        
-        // Ensure UI stays balanced
-        healthCounter.innerText = `HP: ${playerHp}`;
-        updateLevelAtmosphere(); isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); car.classList.remove("parked-open"); carPos = Math.random() * 80 + 70;
+        if (resetFullCampaign) { score = 200; activeChapter = 1; sectorKills = 0; currentSector = "A"; playerHp = 100; if(sceneryContainer) sceneryContainer.style.transform = "none"; scoreCounter.innerText = "00200"; }
+        healthCounter.innerText = `HP: ${playerHp}`; updateLevelAtmosphere(); isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); car.classList.remove("parked-open"); carPos = Math.random() * 80 + 70;
         currentX = 168; currentY = 218; sight.style.left = "168px"; sight.style.top = "218px"; weapon.style.transform = "translateX(-50%) scale(1.1) rotate(0deg) translateY(0px)"; overScreen.style.display = "none"; winScreen.style.display = "none"; runEngineLoops();
     };
     updateLevelAtmosphere(); runEngineLoops();
