@@ -43,6 +43,27 @@ game_html = '''
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
+        /* --- 🎯 DISPLAY VISIBILITY FIXED PERMANENTLY TO PREVENT IFRAME DROPOUTS --- */
+        #weapon { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) scale(1.1); width: 100px; height: 160px; pointer-events: none; z-index: 25; will-change: transform; display: block; }
+        .w-slide { position: absolute; top: 40px; left: 24px; width: 52px; height: 50px; background: linear-gradient(to right, #09090b 0%, #27272a 30%, #18181b 50%, #27272a 70%, #09090b 100%); border-radius: 6px 6px 2px 2px; border-top: 1.5px solid #52525b; box-shadow: 0 16px 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.12); }
+        .w-holo-sight { position: absolute; top: 2px; left: 29px; width: 42px; height: 38px; border: 3.5px solid #27272a; border-bottom: none; border-radius: 6px 6px 0 0; background: linear-gradient(to bottom, rgba(0,240,255,0.15), rgba(0,240,255,0.03)); box-shadow: inset 0 0 10px rgba(0,240,255,0.2); }
+        .w-holo-sight::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #ff0055; border-radius: 50%; box-shadow: 0 0 12px 3px #ff0055; }
+        .w-grip-back { position: absolute; top: 90px; left: 32px; width: 36px; height: 70px; background: linear-gradient(to right, #09090b, #18181b, #020202); border-radius: 3px; }
+        #flash { position: absolute; top: 12px; left: 26px; width: 48px; height: 48px; background: radial-gradient(circle, #ffffff 20%, #ff4500 55%, transparent 85%); border-radius: 50%; display: none; z-index: 26; filter: drop-shadow(0 0 12px #ff4500); }
+
+        .target-ring { position: absolute; border: 3px dashed #ff2266; border-radius: 50%; pointer-events: none; z-index: 10; transform: translate(-50%, -50%); display: block; box-shadow: 0 0 12px #ff2266; opacity: 0; transition: opacity 0.15s ease; }
+        #sight { position: absolute; width: 32px; height: 32px; border: 2px solid #00f0ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px #00f0ff; display: block; }
+
+        #scoreCounter { position: absolute; top: 12px; left: 12px; color: #ffea00; font-weight: bold; font-family: 'Courier New', monospace; font-size: 22px; z-index: 30; background: rgba(0,0,0,0.88); padding: 4px 14px; border-radius: 6px; border: 2px solid #3f3f46; text-shadow: 0 0 6px #ffea00; display: block; }
+        #chapterTxt { position: absolute; top: 12px; right: 12px; color: white; font-weight: bold; font-family: sans-serif; font-size: 11px; z-index: 30; background: rgba(0,0,0,0.88); padding: 6px 12px; border-radius: 6px; border: 1px solid #3f3f46; letter-spacing: 1px; display: block; }
+        #targetTracker { position: absolute; top: 52px; right: 12px; color: #ff3366; font-weight: bold; font-family: monospace; font-size: 12px; z-index: 30; background: rgba(0,0,0,0.88); padding: 3px 8px; border-radius: 4px; display: block; }
+        #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: block; }
+
+        #overScreen, #winScreen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .win-btn { background: #eab308; color: #020617; }
+    </style>
+</head>
 <body>
     <div id="gameArea">
         <div id="chapterOverlay">
@@ -70,7 +91,7 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS OFFICER JERICHO!<br>All terminals and flight decks successfully secured!</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS JERICHO!<br>All terminals and flight decks successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -113,7 +134,6 @@ game_html = '''
     }
 
     function render3DSceneGrid() {
-        // --- 🛠️ FIXED GATING: EVALUATES COMPUTATION LAYERS CORRECTLY WITHOUT FREEZING VIEWPORTS ---
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
@@ -231,7 +251,6 @@ game_html = '''
         });
     }
     function aim(e) {
-        // --- 🛠️ FIXED HOOKS: CROSSHAIRS MOVEMENT NOW OPERATES INDEPENDENTLY OF LOADING PHASES ---
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -282,14 +301,6 @@ game_html = '''
                 document.getElementById("chapterOverlay").style.display = "flex";
                 document.getElementById("chapterTxt").innerText = "CH 2: INTERNATIONAL RUNWAY APRON";
                 
-                // Hide interfaces during the Chapter 2 transition slide smoothly
-                document.getElementById("scoreCounter").style.display = "none";
-                document.getElementById("chapterTxt").style.display = "none";
-                document.getElementById("targetTracker").style.display = "none";
-                document.getElementById("healthCounter").style.display = "none";
-                document.getElementById("sight").style.display = "none";
-                document.getElementById("weapon").style.display = "none";
-
                 setTimeout(initializeActiveArcadeGameplay, 3000); return;
             } else {
                 clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
@@ -347,16 +358,6 @@ game_html = '''
 
     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
-        // --- 🛠️ FIXED FORCED STYLE HOOKS: ASSURES ELEMENTS ARE VISIBLE IMMEDIATELY AFTER INTERMISSIONS ---
-        document.getElementById("scoreCounter").style.display = "block";
-        document.getElementById("chapterTxt").style.display = "block";
-        document.getElementById("targetTracker").style.display = "block";
-        document.getElementById("healthCounter").style.display = "block";
-        document.getElementById("sight").style.display = "block";
-        document.getElementById("weapon").style.display = "block";
-        
-        let activeRequirementMap = (currentChapter === 1) ? ch1Requirements : ch2Requirements;
-        let needed = activeRequirementMap[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
         if (!runLoopTimerId) runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
 
@@ -371,12 +372,6 @@ game_html = '''
         document.getElementById("overlayChapterTitle").innerText = "CHAPTER 1";
         document.getElementById("overlayChapterSubtitle").innerText = "PORT TERMINAL SANITIZATION";
         document.getElementById("chapterOverlay").style.display = "flex";
-        document.getElementById("scoreCounter").style.display = "none";
-        document.getElementById("chapterTxt").style.display = "none";
-        document.getElementById("targetTracker").style.display = "none";
-        document.getElementById("healthCounter").style.display = "none";
-        document.getElementById("sight").style.display = "none";
-        document.getElementById("weapon").style.display = "none";
         setTimeout(initializeActiveArcadeGameplay, 3000);
     };
 
@@ -387,5 +382,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Full Campaign Engine ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Full Integrated Campaign Frame ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
