@@ -29,22 +29,22 @@ game_html = '''
         #sceneryContainer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; }
         
         /* Chapter 1: European City street facade panel nodes */
-        .city-facade-l { position: absolute; top: 15px; left: 0; width: 125px; height: 185px; background: linear-gradient(135deg, #1c1c1c, #0a0a0a); border-right: 3px solid #000; box-shadow: 12px 0 25px rgba(0,0,0,0.8); }
-        .city-facade-r { position: absolute; top: 10px; right: 0; width: 115px; height: 190px; background: linear-gradient(225deg, #161616, #070707); border-left: 3px solid #000; box-shadow: -12px 0 25px rgba(0,0,0,0.8); }
-        .overhead-wires { position: absolute; top: 0; left: 0; width: 100%; height: 140px; background: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.015) 35px, rgba(255,255,255,0.015) 36px); opacity: 0.6; }
+        .city-facade-l { position: absolute; top: 15px; left: 0; width: 125px; height: 185px; background: linear-gradient(135deg, #1c1c1c, #0a0a0a); border-right: 3px solid #000; box-shadow: 12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
+        .city-facade-r { position: absolute; top: 10px; right: 0; width: 115px; height: 190px; background: linear-gradient(225deg, #161616, #070707); border-left: 3px solid #000; box-shadow: -12px 0 25px rgba(0,0,0,0.8); z-index: 3; }
+        .overhead-wires { position: absolute; top: 0; left: 0; width: 100%; height: 140px; background: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.015) 35px, rgba(255,255,255,0.015) 36px); opacity: 0.6; z-index: 3; }
 
         /* Chapter 2: High-Density 3D Forest Tree Elements */
-        .tree-3d { position: absolute; bottom: 150px; width: 65px; height: 160px; transform-origin: center bottom; }
+        .tree-3d { position: absolute; bottom: 200px; width: 65px; height: 160px; transform-origin: center bottom; z-index: 3; }
         .tree-trunk { position: absolute; bottom: 0; left: 27px; width: 10px; height: 50px; background: linear-gradient(to right, #241407, #0f0702); }
         .tree-foliage { position: absolute; bottom: 45px; left: 0; width: 65px; height: 115px; background: radial-gradient(circle at center, #0f2619, #050d08); border-radius: 50%; box-shadow: inset -5px -8px 15px rgba(0,0,0,0.6), 0 10px 15px rgba(0,0,0,0.4); }
 
-        /* Chapter 3: Cinematic Shaded Harborside Pier Docks Asset Nodes */
-        .dock-edge { position: absolute; bottom: 0; right: 0; width: 140px; height: 280px; background: linear-gradient(to right, #1b1e22, #0d0f12); border-left: 6px dashed #111; z-index: 2; box-shadow: -15px 0 30px rgba(0,0,0,0.5); }
-        .port-crane-tower { position: absolute; top: 5px; left: 10px; width: 95px; height: 150px; background: linear-gradient(to right, #11161d, #05070a); border-right: 2px solid #000; }
-        .cargo-vessel-hull { position: absolute; top: 40px; right: -40px; width: 160px; height: 130px; background: linear-gradient(to bottom, #090e14, #020406); border-radius: 50% 6px 6px 50%; border-bottom: 3px solid #030508; box-shadow: -20px 20px 40px rgba(0,0,0,0.8); }
-        .cargo-container-stack { position: absolute; width: 80px; height: 60px; background: linear-gradient(135deg, #47120c, #1f0402); border: 2px solid #000; border-radius: 3px; box-shadow: -5px 8px 16px rgba(0,0,0,0.5); z-index: 3; }
-        .container-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 5px, rgba(0,0,0,0.4) 5px, rgba(0,0,0,0.4) 7px); }
-        .wet-reflection { position: absolute; bottom: 25px; left: 15%; width: 110px; height: 30px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 70%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); }
+        /* FIXED: Chapter 3: Cinematic Cargo Pier Docks Container Ship & Terminal Elements */
+        .dock-edge { position: absolute; bottom: 0; left: 0; width: 100%; height: 240px; background: linear-gradient(to bottom, #1b1e22, #0d0f12); z-index: 2; border-top: 8px solid #2d3142; box-shadow: inset 0 15px 30px rgba(0,0,0,0.5); }
+        .port-crane-tower { position: absolute; top: 20px; left: 20px; width: 80px; height: 160px; background: linear-gradient(to right, #11161d, #05070a); border-right: 3px solid #000; z-index: 1; opacity: 0.5; }
+        .cargo-vessel-hull { position: absolute; top: 80px; right: -20px; width: 150px; height: 120px; background: linear-gradient(to bottom, #090e14, #020406); border-radius: 50% 12px 12px 50%; z-index: 1; border-bottom: 4px solid #000; box-shadow: -15px 15px 30px rgba(0,0,0,0.8); }
+        .cargo-container-stack { position: absolute; width: 75px; height: 55px; background: linear-gradient(135deg, #47120c, #1f0402); border: 2px solid #000; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); z-index: 3; }
+        .container-ribs { width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 8px); }
+        .wet-reflection { position: absolute; bottom: 40px; left: 20%; width: 120px; height: 20px; background: radial-gradient(ellipse at center, rgba(140,180,240,0.08) 0%, transparent 80%); border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); z-index: 2; }
         .roadway { position: absolute; bottom: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(to bottom, #1f2226, #0e1012); clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%); z-index: 2; }
         .roadway::before { content: ''; position: absolute; top: 0; left: 50%; width: 6px; height: 100%; background: repeating-linear-gradient(to bottom, #727a69 0px, #727a69 25px, transparent 25px, transparent 60px); transform: translateX(-50%); opacity: 0.25; }
 
@@ -87,7 +87,7 @@ game_html = '''
         .t-arm { position: absolute; top: 6px; width: 26px; height: 11px; background: #323b20; border: 1.5px solid #000; border-radius: 3px; }
         .arm-l { left: -16px; transform: rotate(-15deg); transform-origin: right center; }
         .arm-r { right: -16px; transform: rotate(15deg); transform-origin: left center; }
-        .t-weapon { position: absolute; top: -2px; width: 15px; height: 11px; background: #111; border-radius: 2px; border-bottom: 2px solid #000; }
+        .t-weapon { position: absolute; top: -2px; width: 14px; height: 11px; background: #111; border-radius: 2px; border-bottom: 2px solid #000; }
         .arm-l .t-weapon { left: -12px; } .arm-r .t-weapon { right: -12px; }
         .t-legs { display: flex; justify-content: space-around; width: 28px; height: 16px; margin-top: auto; }
         .t-leg { background: #1c210e; width: 9px; height: 100%; border-radius: 2px; border: 1px solid #000; animation: walkCycle 0.22s ease-in-out infinite alternate; }
@@ -144,7 +144,6 @@ game_html = '''
             <div class="w-grip-back"></div>
         </div>
 
-        <!-- 💀 FIXED: DEDICATED GAME OVER RETRY STATE HOOK -->
         <div id="overScreen">
             <div style="color:#b01a25; font-size:32px; font-weight:bold; text-shadow:0 0 10px #000; font-family:monospace; letter-spacing:1px;">GAME OVER</div>
             <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Operation Score: 200</div>
@@ -254,32 +253,34 @@ game_html = '''
         let roadwayEl = document.querySelector(".roadway");
         let carEl = document.getElementById("car");
 
+        // FIXED: Explicitly signals carParked state to prevent spawner freezing in Chapter 3
         if (meta.code === "port") {
             roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
-            carEl.style.display = "none"; // Van fully removed from dock sector view
+            carEl.style.display = "none"; 
             carParked = true; distanceScale = 1.0; 
         } else {
             roadwayEl.style.display = "block"; roadwayEl.style.filter = meta.road;
             carEl.style.display = "block";
+            carParked = false; distanceScale = 0.2;
         }
         
         sceneryContainer.innerHTML = "";
         if (meta.code === "city") {
             sceneryContainer.innerHTML = '<div class="city-facade-l"></div><div class="overhead-wires"></div><div class="city-facade-r"></div>';
         } else if (meta.code === "tree") {
-            // HIGH-DENSITY JUNGLE ENHANCEMENT: Spawns 4 distinct detailed 3D trees across different depths
+            // FIXED: Multiple high-density trees spaced cleanly without background clipping
             sceneryContainer.innerHTML = `
-                <div class="tree-3d" style="left:15px; bottom:130px; transform:scale(0.85);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="left:65px; bottom:150px; transform:scale(0.7);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="right:20px; bottom:120px; transform:scale(0.9);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
-                <div class="tree-3d" style="right:75px; bottom:145px; transform:scale(0.75);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>`;
+                <div class="tree-3d" style="left:15px; bottom:160px; transform:scale(0.85);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
+                <div class="tree-3d" style="left:65px; bottom:180px; transform:scale(0.7);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
+                <div class="tree-3d" style="right:20px; bottom:150px; transform:scale(0.9);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>
+                <div class="tree-3d" style="right:75px; bottom:175px; transform:scale(0.75);"><div class="tree-trunk"></div><div class="tree-foliage"></div></div>`;
         } else if (meta.code === "port") {
-            // REALISTIC SHIPPING TERMINAL PORT: Contains layered shipping container blocks and wet docks edge
+            // FIXED: Ground pier walls and stacks anchored inside the road container height bounds
             sceneryContainer.innerHTML = `
                 <div class="dock-edge"></div><div class="port-crane-tower"></div><div class="wet-reflection"></div><div class="cargo-vessel-hull"></div>
-                <div class="cargo-container-stack" style="left:15px; bottom:110px;"><div class="container-ribs"></div></div>
-                <div class="cargo-container-stack" style="left:60px; bottom:145px; background:linear-gradient(135deg,#0a4447,#032021);"><div class="container-ribs"></div></div>
-                <div class="cargo-container-stack" style="right:25px; bottom:130px; background:linear-gradient(135deg,#5c4308,#241a02);"><div class="container-ribs"></div></div>`;
+                <div class="cargo-container-stack" style="left:20px; bottom:115px; z-index:3;"><div class="container-ribs"></div></div>
+                <div class="cargo-container-stack" style="left:70px; bottom:130px; background:linear-gradient(135deg,#0a4447,#032021); z-index:3;"><div class="container-ribs"></div></div>
+                <div class="cargo-container-stack" style="right:35px; bottom:120px; background:linear-gradient(135deg,#5c4308,#241a02); z-index:3;"><div class="container-ribs"></div></div>`;
         }
     }
 
@@ -312,7 +313,7 @@ game_html = '''
                 t.isDying = true; sound("shout_aaa"); spawnBloodSpit(hitCenterX, hitCenterY);
                 score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); chapterKills += 1;
                 let maxNeeded = 5 + (activeChapter - 1) * 2;
-                targetTracker.innerText = `TARGETS CLEAR: ${chapterKills}/${maxNeeded}`;
+                targetTracker.innerText = "TARGETS CLEAR: " + chapterKills + "/" + maxNeeded;
 
                 t.ring.remove();
                 t.el.style.transform += " rotate(85deg)"; t.el.style.top = (parseFloat(t.el.style.top) + 26) + "px"; 
@@ -330,13 +331,14 @@ game_html = '''
             if (isOver) return;
             let meta = mapChapters[activeChapter];
 
+            // Only run the forward driving zoom animation if it's a road level
             if (meta.code !== "port") {
                 if (!carParked) {
                     distanceScale += 0.015;
                     if (distanceScale >= 1.0) { distanceScale = 1.0; carParked = true; car.classList.add("parked-open"); }
                 }
                 let currentTopY = 165 + (distanceScale * 45); 
-                car.style.transform = `scale(${distanceScale})`;
+                car.style.transform = "scale(" + distanceScale + ")";
                 car.style.left = carPos + "px"; car.style.top = currentTopY + "px";
             }
 
@@ -344,10 +346,11 @@ game_html = '''
 
             threatsList.forEach((t) => {
                 if (t.isDying) return; 
-                let updatedX = (meta.code === "port") ? (40 + t.sideOffset) : (carPos + (t.sideOffset * distanceScale));
-                let threatY = (meta.code === "port") ? t.baseTopY : (currentTopY + (t.baseTopY - 195) * distanceScale);
+                // FIXED: Direct placement math avoids vertical floating bugs in Chapter 3
+                let updatedX = (meta.code === "port") ? (60 + t.sideOffset) : (carPos + (t.sideOffset * distanceScale));
+                let threatY = (meta.code === "port") ? (140 + (t.baseTopY - 190)) : (currentTopY + (t.baseTopY - 195) * distanceScale);
                 
-                t.el.style.transform = `scale(${distanceScale})`;
+                t.el.style.transform = "scale(" + distanceScale + ")";
                 t.el.style.left = updatedX + "px"; t.el.style.top = threatY + "px";
                 
                 t.ring.style.width = (90 * (1.3 - (t.age / 40))) + "px";
@@ -373,10 +376,10 @@ game_html = '''
 
             el.innerHTML = '<div class="t-head"><div class="t-eyes"></div></div><div class="t-torso"><div class="t-arm ' + armClass + '"><div class="t-weapon"></div></div></div><div class="t-legs"><div class="t-leg"></div><div class="t-leg"></div></div>';
                 
-            let updatedX = (mapChapters[activeChapter].code === "port") ? (40 + sideOffset) : (carPos + (sideOffset * distanceScale));
-            let threatY = (mapChapters[activeChapter].code === "port") ? topY : ((165 + (distanceScale * 45)) + (topY - 195) * distanceScale);
+            let updatedX = (mapChapters[activeChapter].code === "port") ? (60 + sideOffset) : (carPos + (sideOffset * distanceScale));
+            let threatY = (mapChapters[activeChapter].code === "port") ? (140 + (topY - 190)) : ((165 + (distanceScale * 45)) + (topY - 195) * distanceScale);
             
-            el.style.left = updatedX + "px"; el.style.top = threatY + "px"; el.style.transform = `scale(${distanceScale})`;
+            el.style.left = updatedX + "px"; el.style.top = threatY + "px"; el.style.transform = "scale(" + distanceScale + ")";
             gameArea.appendChild(el);
 
             let ring = document.createElement("div"); ring.className = "target-ring";
@@ -390,7 +393,7 @@ game_html = '''
                 if (!isOver && el.parentNode && !threatObj.isDying) {
                     isOver = true; sound("boom");
                     clearInterval(spawnTimerId); clearInterval(physicsTimerId);
-                    finalScore.innerText = "Final Campaign Score: " + score;
+                    finalScore.innerText = "Final Operation Score: " + score;
                     overScreen.style.display = "flex";
                 }
             }, 1400);
@@ -415,7 +418,7 @@ game_html = '''
         if (resetFullCampaign) { score = 200; activeChapter = 1; chapterKills = 0; scoreCounter.innerText = "00200"; }
         
         updateLevelAtmosphere();
-        isOver = false; distanceScale = 0.2; carParked = false; 
+        isOver = false; distanceScale = 0.2; carParked = (mapChapters[activeChapter].code === "port"); 
         car.classList.remove("parked-open"); 
         carPos = Math.random() * 80 + 70;
         
