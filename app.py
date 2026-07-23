@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Virtua Tactical: Extreme 3D Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Cinematic 3D Operations")
+st.set_page_config(page_title="Virtua Tactical: 3D Special Ops", layout="centered")
+st.title("⚡ Virtua Tactical: Extreme 3D Campaign")
 
 game_html = '''
 <!DOCTYPE html>
@@ -82,9 +82,9 @@ game_html = '''
         </div>
 
         <div id="winScreen">
-            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 OPERATIONS MASTER VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All operations zones cleared successfully!</div>
-            <button class="win-btn" onclick="resetArcadeEngine(true)">RESTART CAMPAIGN 🎮</button>
+            <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All 10 campaign sectors successfully secured!</div>
+            <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
 
@@ -93,12 +93,13 @@ game_html = '''
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
 
+    // --- 🎮 UPGRADED: 10-SECTOR RAIL CAMPAIGN SEQUENCE MATRIX ---
     let currentSector = "A"; let sectorKills = 0;
-    const sectorRequirements = { "A": 3, "B": 3, "C": 4 };
+    const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+    const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
+    
     let isMoving = false; 
-
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
 
     let cameraZ = 0, targetCameraZ = 0;
     let cameraX = 0, targetCameraX = 0;
@@ -139,56 +140,58 @@ game_html = '''
         return { x: px, y: py, size: fovScale };
     }
 
+    // Comprehensive 3D structural coordinate arrays spanning across all 10 operations sections
     const static3DObstacles = [
         { x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, 
         { x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }
+        { x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" },
+        { x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" },
+        { x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" },
+        { x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" },
+        { x: -2.0, y: 0.5, z: 111, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { x: 2.1, y: 0.5, z: 127, baseColor: "#2563eb", shadowColor: "#1e40af" }
     ];
     function render3DSceneGrid() {
         cycleTick += 0.05;
         cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
-        // --- 🌅 CINEMATIC DOCKYARD BACKDROP CORE ENGINE ---
-        if (currentSector === "C") {
-            // Outdoor Harbor Sky
+        // --- 🌅 REALISTIC ENVIRONMENT ATTRITION LAYER ---
+        // Sectors E through J fully open the warehouse roof into the sea harbor dock lines
+        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
+
+        if (isOutdoorSector) {
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
-            skyGrd.addColorStop(0, "#020205"); skyGrd.addColorStop(0.6, "#09091b"); skyGrd.addColorStop(1, "#181024");
+            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
             ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
             
-            // Star field clusters
             ctx.fillStyle = "rgba(255,255,255,0.75)";
             for (let i = 1; i <= 25; i++) {
                 let sX = (i * 73) % 380; let sY = (i * 37) % 190;
                 let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle);
             }
             
-            // --- 🛳️ NEW FEATURE: 3D PARALLAX HORIZON CARGO VESSELS ---
-            // Projects real ship profiles that glide across the deep sea background
+            // Parallax Horizon Cargo Carrier Ships
             ctx.fillStyle = "#04060c";
             let shipParallaxX = 140 - (cameraX * 25);
-            ctx.beginPath();
-            ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230);
-            ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240);
-            ctx.closePath(); ctx.fill();
-            ctx.fillRect(shipParallaxX + 15, 222, 12, 8); // Bridge tower block
+            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill();
+            ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
             
-            // Bioluminescent neon ocean wave currents
             let seaGrd = ctx.createLinearGradient(0, 240, 0, 480);
-            seaGrd.addColorStop(0, "#05070d"); seaGrd.addColorStop(0.5, "#011c16"); seaGrd.addColorStop(1, "#000f0f");
+            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
             ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
             
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.14)"; ctx.lineWidth = 1.5;
-            for (let waveY = 246; waveY < 480; waveY += 32) {
-                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 10;
-                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 12 + waveShift, 260, waveY + 12 + waveShift, 380, waveY + waveShift);
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2;
+            for (let waveY = 250; waveY < 480; waveY += 35) {
+                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12;
+                ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift);
                 ctx.stroke();
             }
         } else {
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 🏗️ UPGRADED VOLUMETRIC TUNNEL GEOMETRY GENERATOR ---
+        // --- 🏗️ GEOMETRIC SOLID 3D RAY CORRIDOR PANELS ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3);
@@ -196,7 +199,6 @@ game_html = '''
 
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
 
-            // Concrete Floor Slabs with perspective split joints
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size));
@@ -206,7 +208,7 @@ game_html = '''
             ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            if (currentSector === "C") continue; // Clear structural side walls outdoors
+            if (isOutdoorSector) continue; // Clear structural warehouse ceiling/walls outdoors
 
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             let wallR = isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale);
@@ -214,19 +216,16 @@ game_html = '''
             let wallB = isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale);
             ctx.fillStyle = "rgba(" + wallR + "," + wallG + "," + wallB + ",1)";
 
-            // Left Corrugated Side Wall Panel
             ctx.beginPath();
             ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // Right Corrugated Side Wall Panel
             ctx.beginPath();
             ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size));
             ctx.lineTo(190 + (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size));
             ctx.fill();
 
-            // Volumetric ceiling support rails down the tunnel
             let isBeamSegment = Math.floor(zPos) % 9 === 0;
             if (isBeamSegment) {
                 let beamColor = "rgba(" + Math.floor(15 * lightScale) + "," + Math.floor(23 * lightScale) + "," + Math.floor(42 * lightScale) + ",1)";
@@ -235,21 +234,16 @@ game_html = '''
             }
         }
 
-        // --- 🏗️ NEW FEATURE: 3D EMBEDDED CRATE BARRICADE DETAILS ---
+        // Draw static blocking cargo container props
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
-
             ctx.fillStyle = b.baseColor; ctx.fillRect(p.x - w/2, p.y - h/2, w, h);
             ctx.fillStyle = b.shadowColor; ctx.fillRect(p.x - w/2 + (w*0.08), p.y - h/2 + (h*0.08), w * 0.84, h * 0.84);
-            
-            // Adds realistic structural container bracing frames
-            ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.lineWidth = Math.max(1, p.size * 0.04);
-            ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
-            ctx.beginPath(); ctx.moveTo(p.x - w/2, p.y - h/2); ctx.lineTo(p.x + w/2, p.y + h/2); ctx.stroke();
+            ctx.strokeStyle = "rgba(0,0,0,0.6)"; ctx.lineWidth = Math.max(1.5, p.size * 0.04); ctx.strokeRect(p.x - w/2, p.y - h/2, w, h);
         });
 
-        // Render infantry troops
+        // Render tactical camouflage enemies
         threatsList.forEach(t => {
             if (t.isDying) return; if (!isMoving) t.age++;
             if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
@@ -274,102 +268,3 @@ game_html = '''
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
-    function triggerSectorPathMovement() {
-        if (isMoving) return; isMoving = true; 
-
-        if (currentSector === "A") {
-            currentSector = "B"; sectorKills = 0; targetCameraZ = 16; targetCameraX = 1.2;
-        } else if (currentSector === "B") {
-            currentSector = "C"; sectorKills = 0; targetCameraZ = 32; targetCameraX = -1.2;
-            document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
-        } else if (currentSector === "C") {
-            clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-            document.getElementById("winScreen").style.display = "flex"; return;
-        }
-        let needed = sectorRequirements[currentSector];
-        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        sound("level");
-    }
-
-    function triggerEnemyDamageStrike() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
-        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-
-        if (playerHp <= 20 && !heartbeatIntervalId) {
-            gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
-        }
-        if (playerHp <= 0) {
-            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
-            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
-            finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex";
-        }
-    }
-
-    function triggerFire() {
-        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
-        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
-
-        let hitTarget = null; let lowestDistance = Infinity;
-        threatsList.forEach(t => {
-            if (t.isDying) return;
-            let d = Math.hypot(currentX - t.currentScreenX, currentY - t.currentScreenY);
-            if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
-        });
-
-        if (hitTarget) {
-            hitTarget.isDying = true; sound("shout_aaa");
-            score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
-            let needed = sectorRequirements[currentSector];
-            targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-            hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
-
-            if (sectorKills >= needed) {
-                document.querySelectorAll(".target-ring").forEach(el => el.remove());
-                threatsList = []; setTimeout(triggerSectorPathMovement, 400);
-            }
-        }
-    }
-
-    function spawn3DThreatUnit() {
-        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
-
-        let spawnZ = 12;
-        if (currentSector === "B") spawnZ = 28;
-        if (currentSector === "C") spawnZ = 44;
-
-        let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
-        let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
-
-        threatsList.push({
-            x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring,
-            currentScreenX: 0, currentScreenY: 0, currentRadius: 24
-        });
-        sound("ding");
-    }
-
-    window.resetArcadeEngine = function(fullReset) {
-        clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
-        if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
-        document.querySelectorAll(".target-ring").forEach(el => el.remove());
-        threatsList = [];
-        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0;
-        currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
-        document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
-        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200";
-        document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
-        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-    };
-
-    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
-    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-</script>
-</body>
-</html>
-'''
-
-st.markdown('<div class="cab">', unsafe_allow_html=True)
-components.html(game_html, height=560, scrolling=False)
-st.markdown("</div>", unsafe_allow_html=True)
