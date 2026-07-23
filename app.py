@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -124,7 +124,7 @@ game_html = '''
     let isMoving = false; let loaderFinished = false;
     
     let perspectiveMode3rdPerson = true; 
-    let cameraFlyInProgressDist = 65; 
+    let cameraFlyInProgressDist = 65; // Acts as our global field-of-view scale during intro
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
@@ -184,7 +184,9 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; 
+                        perspectiveMode3rdPerson = true; 
+                        cameraFlyInProgressDist = 65; // Set our zoom camera high out on the horizon field
+                        
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
@@ -200,18 +202,19 @@ game_html = '''
         else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
         else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
         else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
-        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
+        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, application.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
+    // --- 🎬 FIXED: PROJECTION ALIGNMENT HUB ---
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
-        let activePerspectiveZ = z - cameraZ;
-        if (perspectiveMode3rdPerson) {
-            activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
-        }
+        let relativeZ = z - cameraZ;
         
-        if (activePerspectiveZ <= 0.1) return null;
-        let fovScale = 400 / activePerspectiveZ;
+        if (relativeZ <= 0.1) return null;
+        
+        // Use a clean unified FOV multiplier calculation based directly on active state layers
+        let fovScale = (perspectiveMode3rdPerson) ? (1200 / cameraFlyInProgressDist) : (400 / relativeZ);
+        
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
 
@@ -219,25 +222,18 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // --- 🎬 FIXED: ROBUST ZOOM LIFECYCLE MILESTONE ---
+        // Smoothly bring the global fly-in camera value down to center eye target parameters
         if (perspectiveMode3rdPerson) {
-            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.045; 
-            // Changed validation ceiling bounds from 2.2 to 3.0 to handle browser frame skips safely
-            if (cameraFlyInProgressDist <= 3.0) {
+            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 3.0) * 0.045; 
+            if (cameraFlyInProgressDist <= 3.2) {
                 perspectiveMode3rdPerson = false;
-                cameraFlyInProgressDist = 1.5; // Snap cleanly to center first person coordinates
                 document.getElementById("weapon").style.display = "block";
                 if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
             }
         }
 
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
-
-        if (isOutdoorSector) {
-            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
-        } else {
-            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
-        }
+        ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
 
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
@@ -258,9 +254,9 @@ game_html = '''
         }
         let depthDrawQueue = [];
         static3DObstacles.forEach(b => { if (b.z >= cameraZ) depthDrawQueue.push({ type: "crate", z: b.z, data: b }); });
-        if (!perspectiveMode3rdPerson) {
-            threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
-        }
+        
+        // FIXED: Allow hostiles to load cleanly throughout the loop configurations smoothly
+        threatsList.forEach(t => { if (!t.isDying && t.z >= cameraZ) depthDrawQueue.push({ type: "enemy", z: t.z, data: t }); });
         depthDrawQueue.sort((a, b) => b.z - a.z);
 
         depthDrawQueue.forEach(item => {
@@ -291,11 +287,15 @@ game_html = '''
             }
         });
 
+        // --- 🏗️ FIXED REAL-TIME 3D HUMAN CHARACTER ENGINE ---
+        // Dynamically adapts position parameters to lock smoothly into your screen center vectors
         if (perspectiveMode3rdPerson) {
-            let jX = 190; let jY = 380; let scaleSize = 56; 
+            let jX = 190; let jY = 360; 
+            // Scale body model size directly based on our current camera lens tracker
+            let scaleSize = (180 / cameraFlyInProgressDist) * 8.5; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // A: Running Combat Trousers
+            // A: Long Leg Trousers Pants
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -303,15 +303,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulders Jacket Torso Frame
+            // B: Strong Broad Shoulders Torso Jacket Frame
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Kevlar Trauma Vest Plates
+            // C: Kevlar Trauma Chest Rig Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.18), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Camouflage Helmet Cap Unit
+            // D: Tactical Helmet Unit Shell Profile
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
