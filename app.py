@@ -157,7 +157,7 @@ game_html = '''
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
-    function triggerSectorPathMovement() {
+       function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let idx = sectorsList.indexOf(currentSector);
         if (idx >= 0 && idx < sectorsList.length - 1) {
@@ -165,6 +165,9 @@ game_html = '''
             let rollingPathRoll = Math.random();
             if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
             if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
+            
+            // Bring the message back up for a split second when transitioning to a new sector floor
+            document.getElementById("tutorialPopup").style.display = "block";
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
             if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
@@ -184,6 +187,10 @@ game_html = '''
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
+        
+        // ⚡ INSTANTLY HIDE THE TUTORIAL POPUP IN MILLISECONDS AS SOON AS SHOT IS FIRED
+        document.getElementById("tutorialPopup").style.display = "none";
+
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
@@ -198,6 +205,7 @@ game_html = '''
             if (sectorKills >= needed) { document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = []; setTimeout(triggerSectorPathMovement, 400); }
         }
     }
+
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
@@ -265,11 +273,13 @@ game_html = '''
             }
         });
     }
-    function initializeActiveArcadeGameplay() {
+     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
+        document.getElementById("tutorialPopup").style.display = "block"; // Display tutorial at start
         scoreCounter.style.display = "block"; chapterTxt.style.display = "block"; targetTracker.style.display = "block"; healthCounter.style.display = "block"; sight.style.display = "block"; weapon.style.display = "block";
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
+
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
