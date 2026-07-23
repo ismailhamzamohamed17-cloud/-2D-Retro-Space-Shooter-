@@ -90,19 +90,31 @@ game_html = '''
 <script>
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
-    let spawnTimerId = null, runLoopTimerId = null;
+    let spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const sectorRequirements = { "A":3, "B":3, "C":3, "D":3, "E":4, "F":4, "G":4, "H":4, "I":4, "J":5 };
     let isMoving = false;
     
-    // --- 🎮 PURE FIRST-PERSON COMBAT CONFIGURATION ---
     let perspectiveMode3rdPerson = false; 
     let cameraFlyInProgressDist = 1.5; 
 
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
+
+    // --- 🔊 FIXED UNLOCKED WEB AUDIO MECHANICS CONFIGURATION ---
+    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function sound(type) {
+        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
+        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
+        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
+        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
+        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
+    }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
         let activePerspectiveZ = z - cameraZ;
@@ -116,14 +128,51 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Auto-ignite spawner functions instantly upon container frame initialization
         if (!spawnTimerId && !isOver) {
             spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
         }
 
-        ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
+        // --- 🎬 FIXED: DYNAMIC OUTDOOR LANDSCAPE GRAPHICS MATRIX ---
+        // Checks if player cleared Sectors A-D and initializes the complete ocean/sky assets seamlessly
+        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
-        // --- 🏗️ EXPLICIT CONTEXT DRAW ENGINE FOR DOCKYARD WALLS ---
+        if (isOutdoorSector) {
+            // A: Deep Navy Twinkling Sky Gradient Canopy
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); 
+            skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); 
+            ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            
+            // B: Twinkling Star Clusters
+            ctx.fillStyle = "rgba(255,255,255,0.75)"; 
+            for (let i = 1; i <= 25; i++) { 
+                let sX = (i * 73) % 380; let sY = (i * 37) % 190; 
+                let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; 
+                ctx.fillRect(sX, sY, twinkle, twinkle); 
+            }
+            
+            // C: Parallax Cargo Ship Silhouette Line
+            ctx.fillStyle = "#04060c"; 
+            let shipParallaxX = 140 - (cameraX * 25); 
+            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); 
+            ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
+            
+            // D: Deep Water Sea Grid Mirror
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); 
+            seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#011c20"); seaGrd.addColorStop(1, "#011116"); 
+            ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 480);
+            
+            // E: Animated Water Waves Reflection Curves
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; 
+            for (let waveY = 250; waveY < 480; waveY += 35) { 
+                ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); 
+                ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); 
+            }
+        } else {
+            // Solid dark backdrop layout template for indoor tunnel stages exclusively
+            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
+        }
+
+        // --- 🏗️ RENDER ONLY CORRIDORS FOR SECTORS A-D ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -136,6 +185,7 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
             ctx.stroke(); 
             
+            if (isOutdoorSector) continue; // Skip rendering container wall boundaries when outside
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
@@ -191,12 +241,14 @@ game_html = '''
     gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
 
     function triggerMouseCoordinateFire(e) {
+        // FIXED AUDIO ACCESS UNLOCK: Triggers contextual audio layers smoothly on the user's direct click interaction
+        setupAudio();
         let bounds = gameArea.getBoundingClientRect();
         currentX = e.clientX - bounds.left; currentY = e.clientY - bounds.top;
         triggerFire();
     }
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerMouseCoordinateFire(e); });
-    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
+    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); setupAudio(); aim(e); triggerFire(); } }, { passive: false });
 
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
@@ -205,25 +257,31 @@ game_html = '''
             currentSector = sectorsList[idx + 1]; sectorKills = 0; targetCameraZ = (idx + 1) * 16;
             let rollingPathRoll = Math.random();
             if (rollingPathRoll < 0.33) { targetCameraX = -1.6; } else if (rollingPathRoll < 0.66) { targetCameraX = 1.6; } else { targetCameraX = 0.0; }
-            if (["E","F","G","H","I","J"].includes(currentSector)) { document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; }
+            
+            // Updates HUD indicators based on environment stages cleanly
+            if (["E","F","G","H","I","J"].includes(currentSector)) { 
+                document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL"; 
+            }
         } else {
             clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
             document.getElementById("winScreen").style.display = "flex"; return;
         }
         let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        sound("level");
     }
 
     function triggerEnemyDamageStrike() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
-        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`;
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
         gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
-        if (playerHp <= 20) { gameArea.classList.add("critical-pulse"); }
-        if (playerHp <= 0) { isOver = true; clearInterval(spawnTimerId); clearInterval(runLoopTimerId); finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
+        if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
+        if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
 
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
-        flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
+        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
         let hitTarget = null; let lowestDistance = Infinity;
         threatsList.forEach(t => {
             if (t.isDying) return;
@@ -248,11 +306,13 @@ game_html = '''
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
         let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
         threatsList.push({ x: spawnX, y: 0.2, z: spawnZ, age: 0, loopTick: Math.floor(Math.random()*60), isDying: false, isFlashing: false, ring: ring, currentScreenX: 0, currentScreenY: 0, currentRadius: 24 });
+        sound("ding");
     }
 
     window.resetArcadeEngine = function(fullReset) {
         if (spawnTimerId) { clearInterval(spawnTimerId); spawnTimerId = null; }
-        clearInterval(runLoopTimerId); document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
+        clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        document.querySelectorAll(".target-ring").forEach(el => el.remove()); threatsList = [];
         cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0; currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
         document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
         gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200"; document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
@@ -260,7 +320,6 @@ game_html = '''
         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     };
 
-    // Auto-boot frame loop running parameters on load mounting anchors
     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
 </script>
 </body>
