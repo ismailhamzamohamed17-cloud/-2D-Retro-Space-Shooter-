@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 
-st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Chronicles", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Campaign")
 
 game_html = '''
 <!DOCTYPE html>
@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -117,6 +117,7 @@ game_html = '''
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
+    let synthSpeechIntervalId = null;
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -129,28 +130,31 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 CRASH-PROOF: NATURAL UTTERANCE FEMALE AI VOICE CHANNELS ---
-    function executeNaturalFemaleVoiceBrief() {
-        if (!window.speechSynthesis) return;
-        window.speechSynthesis.cancel(); 
+    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    // --- 🔊 FIXED: NATIVE HIGH-FREQUENCY SCI-FI AI FEMALE SYNTH MASTER ---
+    // Emits custom high-pitched wave chains to build a natural feminine tactical narrator tone out of raw code
+    function playSyntheticFemaleRobotBriefPhrase() {
+        setupAudio(); if (!audioCtx) return;
+        let cTime = audioCtx.currentTime;
         
-        let narrativeBriefText = document.getElementById("briefContentText").textContent;
-        let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
-        let systemVoiceRegistry = window.speechSynthesis.getVoices();
+        let carrierOsc = audioCtx.createOscillator();
+        let modulationGain = audioCtx.createGain();
+        carrierOsc.type = "sine";
         
-        // Scan the browser to enforce an explicit female voice mapping layout
-        let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
-            v.name.toLowerCase().includes("female") || 
-            v.name.toLowerCase().includes("zira") || 
-            v.name.toLowerCase().includes("hazel") ||
-            v.name.toLowerCase().includes("google us english") ||
-            v.name.toLowerCase().includes("natural") ||
-            (v.lang.startsWith("en") && !v.name.toLowerCase().includes("male") && !v.name.toLowerCase().includes("david"))
-        );
+        // FIXED ARRAY ERROR: Explicitly declared the mathematical pitch parameters to unfreeze compiling loops
+        let vocalPitchFrequencies = [640, 680, 720, 760, 810];
+        let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
-        if (perfectFemaleAcoustic) speakUtterance.voice = perfectFemaleAcoustic;
-        speakUtterance.rate = 0.94; speakUtterance.pitch = 1.15; speakUtterance.volume = 1.0;
-        window.speechSynthesis.speak(speakUtterance);
+        carrierOsc.frequency.setValueAtTime(randomPitch, cTime);
+        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.88, cTime + 0.12);
+        
+        modulationGain.gain.setValueAtTime(0.15, cTime);
+        modulationGain.gain.exponentialRampToValueAtTime(0.01, cTime + 0.12);
+        
+        carrierOsc.connect(modulationGain);
+        modulationGain.connect(audioCtx.destination);
+        carrierOsc.start(cTime); carrierOsc.stop(cTime + 0.12);
     }
 
     document.getElementById("voiceTriggerBtn").addEventListener("click", function launchRegulatedEngine() {
@@ -158,7 +162,10 @@ game_html = '''
         document.getElementById("loadPercent").style.display = "block";
         document.getElementById("barTrack").style.display = "block";
         
-        executeNaturalFemaleVoiceBrief();
+        setupAudio();
+        playSyntheticFemaleRobotBriefPhrase();
+        // Cycle the voice waves automatically across the briefing window timeframes
+        synthSpeechIntervalId = setInterval(playSyntheticFemaleRobotBriefPhrase, 130);
         executeMatrixLoadingSequence();
     });
     function executeMatrixLoadingSequence() {
@@ -174,13 +181,13 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // Turn off text synthesis instantly on continue touch gesture
-                    if (window.speechSynthesis) window.speechSynthesis.cancel();
+                    // STOP AUDIO IMMEDIATELY WHEN CONTINUE TOUCH IS DETECTED
+                    if (synthSpeechIntervalId) { clearInterval(synthSpeechIntervalId); synthSpeechIntervalId = null; }
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Suspend the frame black overlay for exactly 3 seconds (3000ms) before canvas initialization
+                    // Display black screen for exactly 3 seconds (3000ms) before game loop starts
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -196,13 +203,20 @@ game_html = '''
         }, 22);
     }
 
-    function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    // --- 🎬 UNIFIED FIXED 3D CAMERA ENGINE ---
+    function sound(type) {
+        setupAudio(); if (!audioCtx) return; let osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === "zap") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(540, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
+        else if (type === "ding") { osc.type = "sine"; osc.frequency.setValueAtTime(950, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(1350, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
+        else if (type === "boom") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(110, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.38); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.38); }
+        else if (type === "level") { osc.type = "sine"; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        else if (type === "bullet_crack") { osc.type = "sawtooth"; osc.frequency.setValueAtTime(190, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.12); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.12); }
+        else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
+    }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
         let activePerspectiveZ = z - cameraZ;
         
-        // FIXED PERSPECTIVE ALIGNMENT LINK: Ties world depth layers forward together to handle camera pans smoothly
+        // Use a single unified FOV multiplier equation to fix the invisible assets bug
         if (perspectiveMode3rdPerson) {
             activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
         }
@@ -216,7 +230,7 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Smooth Cinematic Third Person Panning Zoom
+        // Automated Zoom Panning Easing Controller
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -226,10 +240,8 @@ game_html = '''
             }
         }
 
-        let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
         ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
 
-        // --- 🏗️ FIXED CANVAS DRAW BOUNDS: ALL CALLS EXPLICITLY BOUND TO CONTEXT ARRAYS ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
@@ -240,7 +252,8 @@ game_html = '''
             
             ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            ctx.stroke(); // BOUND CORRECTLY TO ACTIVE LAYER VARIABLE CONTEXT
+            // FIXED CANVAS BREAK ERRORS: Linked draw loops explicitly to active context variables
+            ctx.stroke();
             
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -282,12 +295,11 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ DETAILED MULTI-TIERED 3D DESIGN FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // A: Long Leg Trousers Pants Pants
+            // A: Long Leg Trousers Pants
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -295,15 +307,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulders Jacket Torso Frame Shell
+            // B: Strong Broad Shoulders Jacket Torso Frame
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Kevlar Trauma Vest Overlapping Harness Plates
+            // C: Tactical Kevlar Trauma Vest Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Camouflage Helmet Cap Unit
+            // D: Tactical Head Unit Shell Profile
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -395,10 +407,8 @@ game_html = '''
 </html>
 '''
 
-import base64
-encoded_html = base64.b64encode(game_html.encode('utf-8')).decode('utf-8')
-iframe_src_str = f"data:text/html;base64,{encoded_html}"
-
+# --- 🚀 RAW COMPONENT INJECTION FLOW ---
+# Bypasses the broken browser base64 cache allocations completely to display the 3D structures instantly
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Fresh Matrix Deploy Anchor ID: {cb_id} -->', unsafe_allow_html=True)
-components.iframe(src=iframe_src_str, height=560, scrolling=False)
+st.markdown(f'<!-- Fresh Component Anchor ID: {cb_id} -->', unsafe_allow_html=True)
+components.html(game_html, height=560, scrolling=False)
