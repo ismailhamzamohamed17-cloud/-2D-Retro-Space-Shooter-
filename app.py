@@ -94,8 +94,6 @@ game_html = '''
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorRequirements = { "A": 3, "B": 3, "C": 4 };
-    
-    // FIXED: Added an explicit state tracking lock to safely isolate camera movements from spawner ticks
     let isMoving = false; 
 
     const canvas = document.getElementById("gameCanvas");
@@ -116,12 +114,8 @@ game_html = '''
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
     function aim(e) {
-        // FIXED: Allows the crosshair reticle to scan freely even if camera path transitions are active
         if (isOver) return;
-        let evt = e; 
-        if (e.touches && e.touches.length > 0) { evt = e.touches[0]; } 
-        else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches[0]; }
-        
+        let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect();
         currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -129,9 +123,7 @@ game_html = '''
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-    
-    gameArea.addEventListener("mousemove", aim);
-    gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+    gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
     gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
@@ -151,15 +143,12 @@ game_html = '''
         { x: -1.8, y: 0.5, z: 47, color: "#3b82f6" }
     ];
     function render3DSceneGrid() {
-        // Smoothly glide camera parameters toward active vector milestones
         cameraZ += (targetCameraZ - cameraZ) * 0.07;
         cameraX += (targetCameraX - cameraX) * 0.07;
 
-        // Reset movement lock states once camera values converge onto targets safely
-        if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) {
-            isMoving = false;
-        }
+        if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
 
+        // Render ambient environmental backdrops
         if (currentSector === "C") {
             let skyGrd = ctx.createLinearGradient(0, 0, 0, 240);
             skyGrd.addColorStop(0, "#020617"); skyGrd.addColorStop(0.7, "#1e1b4b"); skyGrd.addColorStop(1, "#311042");
@@ -171,19 +160,24 @@ game_html = '''
             ctx.fillStyle = "#030712"; ctx.fillRect(0, 0, 380, 480);
         }
 
+        // --- 📐 FIXED: ADAPTIVE 3D WALL STRIP GENERATOR ---
         for (let z = 85; z >= 0; z -= 1.5) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 1.5);
             let pNear = project3D(0, 0, zPos); if (!pNear) continue;
             let fogOpacity = Math.min(1, z / 65);
 
+            // Ground floor track pavement mesh (Stays visible across all sections)
             ctx.strokeStyle = "rgba(30, 41, 59, " + (0.4 * (1 - fogOpacity)) + ")"; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
 
-            if (currentSector !== "C") {
-                ctx.strokeStyle = "rgba(15, 23, 42, " + (0.3 * (1 - fogOpacity)) + ")";
-                ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
-            }
+            // FIXED: If we are in Sector C (Outside Terminal), skip drawing the wall skeletons completely!
+            if (currentSector === "C") continue;
 
+            // Warehouse Roof Panels (Only drawn inside Sector A and B)
+            ctx.strokeStyle = "rgba(15, 23, 42, " + (0.3 * (1 - fogOpacity)) + ")";
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
+
+            // Container Wall Corrugated ribs (Only drawn inside Sector A and B)
             let isRidgeFold = Math.floor(zPos * 2) % 2 === 0;
             let containerShade = isRidgeFold ? "rgba(13, 148, 136, " : "rgba(17, 94, 89, ";
             ctx.strokeStyle = containerShade + (1 - fogOpacity) + ")"; ctx.lineWidth = Math.max(1.5, pNear.size * 0.15);
@@ -191,6 +185,7 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.stroke();
         }
 
+        // Draw containers/obstacles
         static3DObstacles.forEach(b => {
             let p = project3D(b.x, b.y, b.z); if (!p || b.z < cameraZ) return;
             let w = 1.9 * p.size; let h = 2.2 * p.size;
@@ -200,22 +195,13 @@ game_html = '''
             ctx.beginPath(); ctx.moveTo(p.x + w/2, p.y - h/2); ctx.lineTo(p.x - w/2, p.y + h/2); ctx.stroke();
         });
 
+        // Draw active enemy targets
         threatsList.forEach(t => {
-            if (t.isDying) return;
-            // Freeze target's local fire clock if camera is actively moving sectors
-            if (!isMoving) t.age++;
-            
-            if (t.age > 0 && t.age % 35 === 0 && !isMoving) {
-                t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70);
-            }
+            if (t.isDying) return; if (!isMoving) t.age++;
+            if (t.age > 0 && t.age % 35 === 0 && !isMoving) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
             let p = project3D(t.x, t.y, t.z); if (!p) return;
-            let s = p.size * 0.4; 
-            
-            // FIXED: Standardized target axis projections matching cursor paths perfectly
-            t.currentScreenX = p.x; 
-            t.currentScreenY = p.y - (s * 0.5); 
-            t.currentRadius = s * 1.1; // Balanced hitbox depth thresholds
+            let s = p.size * 0.4; t.currentScreenX = p.x; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.1;
 
             ctx.fillStyle = "#14532d"; ctx.fillRect(p.x - s/2, p.y - s, s, s * 1.3);
             ctx.strokeStyle = "#000"; ctx.strokeRect(p.x - s/2, p.y - s, s, s * 1.3);
@@ -232,10 +218,8 @@ game_html = '''
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
-    // FIXED: Camera path movement decoupled from loops using isolated state blocks
     function triggerSectorPathMovement() {
-        if (isMoving) return;
-        isMoving = true; 
+        if (isMoving) return; isMoving = true; 
 
         if (currentSector === "A") {
             currentSector = "B"; sectorKills = 0; targetCameraZ = 16; targetCameraX = 1.2;
@@ -273,25 +257,19 @@ game_html = '''
 
         if (hitTarget) {
             hitTarget.isDying = true; sound("shout_aaa");
-            score += 100; scoreCounter.innerText = String(score).padStart(5, '0');
-            sectorKills += 1;
-            
+            score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
             let needed = sectorRequirements[currentSector];
             targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
-            hitTarget.ring.remove();
-            threatsList = threatsList.filter(item => item !== hitTarget);
+            t.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
 
-            // FIXED: Instantly logs kills and triggers safe transitions without freezing spawner loops
             if (sectorKills >= needed) {
                 document.querySelectorAll(".target-ring").forEach(el => el.remove());
-                threatsList = []; 
-                setTimeout(triggerSectorPathMovement, 400);
+                threatsList = []; setTimeout(triggerSectorPathMovement, 400);
             }
         }
     }
 
     function spawn3DThreatUnit() {
-        // FIXED: Blocks spawning loops completely while camera transitions are processing
         if (isOver || threatsList.length >= 2 || isMoving) return;
 
         let spawnZ = 12;
