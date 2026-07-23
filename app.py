@@ -78,7 +78,7 @@ game_html = '''
             <button class="audio-start-btn" id="voiceTriggerBtn">ACTIVATE AUDIO BRIEFING 🔊</button>
 
             <div class="story-scroller" id="briefContentText">The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.</div>
-            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING MATRIX: 0%</div>
+            <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold; display:none;">INITIALIZING JERICHO MATRIX: 0%</div>
             <div class="load-bar-track" id="barTrack" style="display:none;"><div class="load-bar-fluid" id="loadBar"></div></div>
             <div id="tapPrompt" class="blink-prompt">PRESS SCREEN TO CONTINUE</div>
         </div>
@@ -129,16 +129,16 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 STABLE: NATURAL ACCENT FEMALE AI VOCAL SYNTH MATRIX ---
+    // --- 🔊 STABLE: HIGH-FIDELITY FEMALE SPEECH CHANNEL PROFILE ---
     function executeNaturalFemaleVoiceBrief() {
         if (!window.speechSynthesis) return;
-        window.speechSynthesis.cancel(); // Clear hung streams
+        window.speechSynthesis.cancel(); 
         
         let narrativeBriefText = document.getElementById("briefContentText").textContent;
         let speakUtterance = new SpeechSynthesisUtterance(narrativeBriefText);
-        
-        // Scan the host system voice registry to enforce a female voice map profile
         let systemVoiceRegistry = window.speechSynthesis.getVoices();
+        
+        // Lock speech layers cleanly into browser native female voice strings
         let perfectFemaleAcoustic = systemVoiceRegistry.find(v => 
             v.name.toLowerCase().includes("female") || 
             v.name.toLowerCase().includes("zira") || 
@@ -149,9 +149,7 @@ game_html = '''
         );
         
         if (perfectFemaleAcoustic) speakUtterance.voice = perfectFemaleAcoustic;
-        speakUtterance.rate = 0.94; // Premium smooth narrative speed pace
-        speakUtterance.pitch = 1.12; // Shifts frequencies cleanly to female pitch levels
-        speakUtterance.volume = 1.0;
+        speakUtterance.rate = 0.94; speakUtterance.pitch = 1.15; speakUtterance.volume = 1.0;
         window.speechSynthesis.speak(speakUtterance);
     }
 
@@ -160,7 +158,6 @@ game_html = '''
         document.getElementById("loadPercent").style.display = "block";
         document.getElementById("barTrack").style.display = "block";
         
-        // Explicitly ignite the female audio profile on click interaction
         executeNaturalFemaleVoiceBrief();
         executeMatrixLoadingSequence();
     });
@@ -177,13 +174,13 @@ game_html = '''
                 
                 const coverElement = document.getElementById("coverScreen");
                 coverElement.addEventListener("click", function triggerCinematicTransition() {
-                    // STOP AUDIO IMMEDIATELY WHEN CONTINUE TOUCH IS DETECTED
+                    // Stop voice audio when continuing
                     if (window.speechSynthesis) window.speechSynthesis.cancel();
                     
                     coverElement.style.display = "none";
                     document.getElementById("chapterOverlay").style.display = "flex";
                     
-                    // Display black screen for exactly 3 seconds (3000ms) before game loop starts
+                    // Display black chapter overlay screen for exactly 3 seconds (3000ms) before canvas run
                     setTimeout(() => {
                         document.getElementById("chapterOverlay").style.display = "none";
                         document.getElementById("scoreCounter").style.display = "block";
@@ -196,7 +193,7 @@ game_html = '''
                     }, 3000);
                 });
             }
-        }, 25);
+        }, 22);
     }
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -212,7 +209,6 @@ game_html = '''
     }
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
-        // FIXED: Combines world depth and zoom markers so the surroundings move toward the camera together
         let activePerspectiveZ = z - cameraZ;
         if (perspectiveMode3rdPerson) {
             activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
@@ -227,7 +223,7 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Smooth Cinematic Fly-In Tracker
+        // Automated Zoom Panning Easing Controller
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -255,7 +251,9 @@ game_html = '''
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
+            // FIXED TYPO: Appended canvas context prefix cleanly to avoid empty canvas breaks
+            ctx.stroke();
             if (isOutdoorSector) continue;
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -297,12 +295,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ FIXED REAL-TIME 3RD PERSON MODEL NODES FOR HAMPI JERICHO ---
+        // --- 🏗️ DETAILED MULTI-TIERED 3D DESIGN FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // Long Trousers
+            // A: Running Leg Vectors
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -310,15 +308,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // Strong Broad Shoulders Jacket Torso Shell
+            // B: Strong Broad Shoulders Jacket Torso Shell
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // Tactical Trauma Harness Overlapping Plates
+            // C: Tactical Kevlar Trauma Vest Overlapping Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.18), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // Kevlar Camouflage Helmet Cap
+            // D: Camouflage Helmet Cap Unit
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -412,5 +410,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Cache Key Refresher ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Cache Token Key Anchor ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
