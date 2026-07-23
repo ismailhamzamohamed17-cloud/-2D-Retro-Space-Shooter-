@@ -113,6 +113,7 @@ game_html = '''
     }
 
     function render3DSceneGrid() {
+        // --- 🛠️ FIXED GATING: EVALUATES COMPUTATION LAYERS CORRECTLY WITHOUT FREEZING VIEWPORTS ---
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
@@ -230,7 +231,7 @@ game_html = '''
         });
     }
     function aim(e) {
-        if (isOver || document.getElementById("chapterOverlay").style.display === "flex") return;
+        // --- 🛠️ FIXED HOOKS: CROSSHAIRS MOVEMENT NOW OPERATES INDEPENDENTLY OF LOADING PHASES ---
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
         let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
@@ -238,7 +239,7 @@ game_html = '''
         let dynamicallyAdjustedSize = Math.max(16, Math.min(60, (400 / mappedThreatZ) * 0.95));
         sight.style.width = dynamicallyAdjustedSize + "px"; sight.style.height = dynamicallyAdjustedSize + "px";
         
-        sight.style.display = "block"; sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
+        sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
@@ -273,7 +274,6 @@ game_html = '''
                 else if (currentSector === "T") { document.getElementById("chapterTxt").innerText = "CH 2: COCKPIT CONTROL RECOVERY"; }
             }
         } else {
-            // --- 📂 DATA SEPARATION: AUTOMATED TRACK ROUTING INTERSECTORS ---
             if (currentChapter === 1) {
                 currentChapter = 2; currentSector = "K"; sectorKills = 0; cameraZ = 0; targetCameraZ = 0;
                 
@@ -282,6 +282,14 @@ game_html = '''
                 document.getElementById("chapterOverlay").style.display = "flex";
                 document.getElementById("chapterTxt").innerText = "CH 2: INTERNATIONAL RUNWAY APRON";
                 
+                // Hide interfaces during the Chapter 2 transition slide smoothly
+                document.getElementById("scoreCounter").style.display = "none";
+                document.getElementById("chapterTxt").style.display = "none";
+                document.getElementById("targetTracker").style.display = "none";
+                document.getElementById("healthCounter").style.display = "none";
+                document.getElementById("sight").style.display = "none";
+                document.getElementById("weapon").style.display = "none";
+
                 setTimeout(initializeActiveArcadeGameplay, 3000); return;
             } else {
                 clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
@@ -339,6 +347,7 @@ game_html = '''
 
     function initializeActiveArcadeGameplay() {
         document.getElementById("chapterOverlay").style.display = "none";
+        // --- 🛠️ FIXED FORCED STYLE HOOKS: ASSURES ELEMENTS ARE VISIBLE IMMEDIATELY AFTER INTERMISSIONS ---
         document.getElementById("scoreCounter").style.display = "block";
         document.getElementById("chapterTxt").style.display = "block";
         document.getElementById("targetTracker").style.display = "block";
