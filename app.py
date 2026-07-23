@@ -1,8 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import random
 
-st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Ops", layout="centered")
-st.title("⚡ Virtua Tactical: Hampi Jericho Chronicles")
+st.set_page_config(page_title="Virtua Tactical: Hampi Jericho Chronicles", layout="centered")
+st.title("⚡ Virtua Tactical: Hampi Jericho Campaign")
 
 game_html = '''
 <!DOCTYPE html>
@@ -71,7 +72,7 @@ game_html = '''
             <div style="color:#06b6d4; font-size:26px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 12px rgba(6,182,212,0.5);">HAMPI JERICHO</div>
             <div style="color:#e2e8f0; font-size:11px; font-weight:700; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
             <div class="story-scroller">
-                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.
+                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked the container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised [other topic]. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons [other topic]. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis [other topic].
             </div>
             <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
@@ -186,6 +187,10 @@ game_html = '''
     gameArea.addEventListener("mousedown", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(!loaderFinished || perspectiveMode3rdPerson) return; if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
 
+    const static3DObstacles = [
+        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
+        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" }
+    ];
     function project3D(x, y, z) {
         let relativeX = x - cameraX; let relativeZ = z - cameraZ;
         if (relativeZ <= 0.1) return null;
@@ -193,15 +198,11 @@ game_html = '''
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
 
-    const static3DObstacles = [
-        { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
-        { id: "c3", x: -1.9, y: 0.5, z: 47, baseColor: "#2563eb", shadowColor: "#1e40af" }, { id: "c4", x: 2.0, y: 0.5, z: 63, baseColor: "#ba8b02", shadowColor: "#785a01" }
-    ];
     function render3DSceneGrid() {
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Automated 3rd-to-1st Person Camera Focus Easing
+        // Automated Cinematic Focus Fly-In
         if (perspectiveMode3rdPerson) {
             cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
             if (cameraFlyInProgressDist <= 2.2) {
@@ -271,15 +272,18 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ CINEMATIC 3D HUMAN PROPORTIONS FOR HAMPI JERICHO ---
+        // --- 🏗️ FIXED REAL-TIME 3D PROPORTIONS FOR HAMPI JERICHO ---
+        // Overwrites the old static flat blocking square box with a multi-tiered tactical model shape
         if (perspectiveMode3rdPerson) {
             if (cameraFlyInProgressDist <= 0.1) return;
+            
             let characterFovScale = 400 / cameraFlyInProgressDist;
-            let jX = 190; let jY = 240 - (-1.4 * characterFovScale); 
+            let jX = 190; 
+            let jY = 240 - (-1.4 * characterFovScale); 
             let scaleSize = characterFovScale * 0.44; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.28);
 
-            // A: Long Running Athletic Combat Trousers
+            // A: Long Athletic Trousers
             ctx.fillStyle = "#0f172a"; 
             ctx.fillRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
@@ -287,16 +291,16 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.32), jY, scaleSize * 0.22, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.10), jY, scaleSize * 0.22, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulder Military Torso Body Frame
+            // B: Strong Broad Shoulder Torso (Combat Armor Frame)
             ctx.fillStyle = "#1e293b"; 
             ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Kevlar Trauma Vest Harness Plates
+            // C: Tactical Trauma Harness Overlapping Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.15), jY - (scaleSize * 0.85), scaleSize * 0.2, scaleSize * 0.7);
 
-            // D: Tactical Head Unit Shell Profile
+            // D: Kevlar Camouflage Helmet Unit
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.30, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -365,6 +369,9 @@ game_html = '''
 </body>
 </html>
 '''
-st.markdown('<div class="cab">', unsafe_allow_html=True)
+
+# --- 🚀 CACHE BUSTER INTEGRATION ---
+# Appends a unique code parameter to break deep browser asset caches automatically on reload
+cb_id = random.randint(100000, 999999)
+st.markdown(f'<!-- Cache Key ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
-st.markdown("</div>", unsafe_allow_html=True)
