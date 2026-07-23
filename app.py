@@ -268,3 +268,116 @@ game_html = '''
             let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
         });
     }
+    // --- 🎬 ADVANCED 10-SECTOR CAMERA RAIL ADVANCEMENT ENGINE ---
+    function triggerSectorPathMovement() {
+        if (isMoving) return;
+        isMoving = true;
+
+        // Extracts the index rank of our current location marker to increment vectors safely
+        let idx = sectorsList.indexOf(currentSector);
+        if (idx >= 0 && idx < sectorsList.length - 1) {
+            currentSector = sectorsList[idx + 1];
+            sectorKills = 0;
+            
+            // Advance the camera coordinate markers deeper forward into 3D world space
+            targetCameraZ = (idx + 1) * 16;
+            targetCameraX = (idx % 2 === 0) ? 1.3 : -1.3; // Alternates left/right tactical cover points
+            
+            // Update contextual header strings for outside operations landmarks
+            if (["E","F","G","H","I","J"].includes(currentSector)) {
+                document.getElementById("chapterTxt").innerText = "CH 1: OUTSIDE CARGO TERMINAL";
+            }
+        } else {
+            // Sector J completely eliminated -> Clean operational sweep achieved!
+            clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+            document.getElementById("winScreen").style.display = "flex"; return;
+        }
+
+        let needed = sectorRequirements[currentSector];
+        targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        sound("level");
+    }
+
+    function triggerEnemyDamageStrike() {
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        playerHp -= 20; if (playerHp < 0) playerHp = 0; healthCounter.innerText = `HP: ${playerHp}`; sound("bullet_crack");
+        gameArea.classList.add("taking-damage"); setTimeout(() => gameArea.classList.remove("taking-damage"), 130);
+
+        if (playerHp <= 20 && !heartbeatIntervalId) {
+            gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550);
+        }
+        if (playerHp <= 0) {
+            isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
+            if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; }
+            finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex";
+        }
+    }
+
+    function triggerFire() {
+        if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving) return;
+        sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
+
+        let hitTarget = null; let lowestDistance = Infinity;
+        threatsList.forEach(t => {
+            if (t.isDying) return;
+            let d = Math.hypot(currentX - t.currentScreenX, currentY - t.currentScreenY);
+            if (d < t.currentRadius && d < lowestDistance) { lowestDistance = d; hitTarget = t; }
+        });
+
+        if (hitTarget) {
+            hitTarget.isDying = true; sound("shout_aaa");
+            score += 100; scoreCounter.innerText = String(score).padStart(5, '0'); sectorKills += 1;
+            
+            let needed = sectorRequirements[currentSector];
+            targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+            hitTarget.ring.remove(); threatsList = threatsList.filter(item => item !== hitTarget);
+
+            if (sectorKills >= needed) {
+                document.querySelectorAll(".target-ring").forEach(el => el.remove());
+                threatsList = []; setTimeout(triggerSectorPathMovement, 400);
+            }
+        }
+    }
+
+    function spawn3DThreatUnit() {
+        if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex") return;
+
+        // Automatically anchors threat positioning offsets to align with active camera sector tracks
+        let idx = sectorsList.indexOf(currentSector);
+        let spawnZ = cameraZ + 12 + (idx * 0.5);
+        let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
+
+        let ring = document.createElement("div"); ring.className = "target-ring"; gameArea.appendChild(ring);
+
+        threatsList.push({
+            x: spawnX, y: 0.2, z: spawnZ, age: 0, isDying: false, isFlashing: false, ring: ring,
+            currentScreenX: 0, currentScreenY: 0, currentRadius: 24
+        });
+        sound("ding");
+    }
+
+    window.resetArcadeEngine = function(fullReset) {
+        clearInterval(spawnTimerId); clearInterval(runLoopTimerId);
+        if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+        document.querySelectorAll(".target-ring").forEach(el => el.remove());
+        threatsList = [];
+        cameraZ = 0; targetCameraZ = 0; cameraX = 0; targetCameraX = 0;
+        currentSector = "A"; sectorKills = 0; playerHp = 100; score = 200; isMoving = false; isOver = false;
+        document.getElementById("winScreen").style.display = "none"; document.getElementById("overScreen").style.display = "none";
+        gameArea.className = ""; healthCounter.innerText = "HP: 100"; scoreCounter.innerText = "00200";
+        document.getElementById("chapterTxt").innerText = "CH 1: 3D CONTAINER PORT";
+        let needed = sectorRequirements[currentSector]; targetTracker.innerText = `SECTOR ${currentSector}: ${sectorKills}/${needed}`;
+        runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45); spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+    };
+
+    runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
+    spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
+</script>
+</body>
+</html>
+'''
+
+st.markdown('<div class="cab">', unsafe_allow_html=True)
+components.html(game_html, height=560, scrolling=False)
+st.markdown("</div>", unsafe_allow_html=True)
