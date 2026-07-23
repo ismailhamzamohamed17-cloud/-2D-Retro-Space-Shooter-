@@ -61,8 +61,12 @@ game_html = '''
     #healthCounter { position: absolute; bottom: 12px; left: 12px; color: #ff3355; font-weight: bold; font-family: 'Courier New', monospace; font-size: 16px; z-index: 30; background: rgba(0,0,0,0.92); padding: 5px 12px; border-radius: 4px; border: 2px solid #ef4444; text-shadow: 0 0 5px #ff0000; display: block; }
 
     #overScreen, #winScreen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; }
-    .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .retry-btn, .win-btn { margin-top: 20px; padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; z-index: 45; }
     .win-btn { background: #eab308; color: #020617; }
+    
+    /* --- 📋 REAL-TIME ADAPTIVE DEVICE INSTRUCTION PROMPT PLATES --- */
+    #deviceInstructionsPrompt { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); color: #38bdf8; font-family: monospace; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 20px; border: 1px solid #0284c7; z-index: 35; text-align: center; pointer-events: none; text-transform: uppercase; letter-spacing: 0.5px; animation: textGlowPulseLoop 2s infinite alternate; }
+    @keyframes textGlowPulseLoop { 0% { opacity: 0.8; box-shadow: 0 0 4px rgba(2,132,199,0.3); } 100% { opacity: 1; box-shadow: 0 0 10px rgba(2,132,199,0.6); } }
 </style>
 <body style="background:#010409;">
     <div id="gameArea">
@@ -76,6 +80,9 @@ game_html = '''
         <div id="targetTracker">SECTOR A: 0/3</div>
         <div id="healthCounter">HP: 100</div>
         
+        <!-- 📋 LIVE CONTAINER INTERFACE PLATE NODE -->
+        <div id="deviceInstructionsPrompt">INITIALIZING DEVICE DETECTORS...</div>
+        
         <canvas id="gameCanvas" width="380" height="480"></canvas>
         
         <div id="sight"></div>
@@ -83,19 +90,19 @@ game_html = '''
             <div id="flash"></div> <div class="w-slide"></div> <div class="w-holo-sight"></div> <div class="w-grip-back"></div>
         </div>
 
+        <!-- --- 📱 FIXED MOBILES RESET: BINDING TO TONT-START EVENT DRIVERS SO PHONES CAN RESET WITHOUT GLITCHING --- -->
         <div id="overScreen">
             <div style="color:#ef4444; font-size:32px; font-weight:bold; text-shadow:0 0 12px #000; font-family:monospace; letter-spacing:1px;">MISSION FAILURE</div>
             <div id="finalScore" style="color:white; font-size:16px; margin-top:10px;">Final Score Log: 200</div>
-            <button class="retry-btn" onclick="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
+            <button class="retry-btn" onclick="resetArcadeEngine(true)" ontouchstart="resetArcadeEngine(true)">REDEPLOY OPERATIVE 🔄</button>
         </div>
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 CAMPAIGN SECURED 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS JERICHO!<br>All terminals and flight decks successfully secured!</div>
-            <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">CONGRATULATIONS OFFICER JERICHO!<br>All terminals and flight decks successfully secured!</div>
+            <button class="win-btn" onclick="resetArcadeEngine(true)" ontouchstart="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
-
 <script>
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
@@ -126,13 +133,24 @@ game_html = '''
         else if (type === "heartbeat") { osc.type = "sine"; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18); gain.gain.setValueAtTime(0.45, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.18); }
     }
 
+    // --- 📋 DETECT ADAPTIVE DEVICE INTERFACES & FORCE COMPILER TEXT SETS ---
+    function configureAdaptiveDevicePrompts() {
+        let promptBox = document.getElementById("deviceInstructionsPrompt");
+        let queryMobileMatch = (window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0);
+        
+        if (queryMobileMatch) {
+            promptBox.innerText = "👉 Use finger and tap on phone to shoot! 📱";
+        } else {
+            promptBox.innerText = "🖱️ Use mouse on PC to aim and shoot! 🖥️";
+        }
+    }
+
     function project3D(x, y, z) {
         let relativeX = x - cameraX; let activePerspectiveZ = z - cameraZ;
         if (activePerspectiveZ <= 0.1) return null;
         let fovScale = 400 / activePerspectiveZ;
         return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
     }
-
     function render3DSceneGrid() {
         if (document.getElementById("chapterOverlay").style.display === "flex") return;
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
@@ -238,20 +256,11 @@ game_html = '''
                 if (isActivelyOut) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 42 === 0 && !isMoving && isActivelyOut) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
 
-                // --- 🎬 RESTORED REALISTIC SKIN & APPAREL LAYERS ---
                 ctx.fillStyle = (currentChapter === 1) ? "#1e291b" : "#2d1f3d"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
-                
-                // Detailed Face Vector Shading
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
-                
-                // Left and Right Tactical Hands/Arms Outlines
-                ctx.fillStyle = "#d4b38a";
-                ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); 
-                ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
-                
-                // Black Polymer Assault Rifle Barrels
+                ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
                 ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
 
                 if (t.isFlashing && isActivelyOut) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
@@ -259,37 +268,22 @@ game_html = '''
             }
         });
     }
-    // --- 📱 FIXED: IMMERSIVE ACCELERATED MOBILE TOUCH LISTENERS CORE ---
-    function executeAdaptiveInputSweep(e) {
-        setupAudio();
-        // Locks native page dragging so swipe-aiming operates perfectly on mobile viewports
-        if (e.cancelable) e.preventDefault();
-        
-        let targetEventSource = e.touches ? e.touches[0] : e;
-        if (e.type === "touchend" || e.type === "touchcancel") {
-            if (e.changedTouches && e.changedTouches.length > 0) targetEventSource = e.changedTouches[0];
-        }
-        
-        let bounds = gameArea.getBoundingClientRect();
-        currentX = targetEventSource.clientX - bounds.left;
-        currentY = targetEventSource.clientY - bounds.top;
-        
-        // Force clamp pointer values inside the mobile frame box boundary dimensions
-        if (currentX < 0) currentX = 0; if (currentX > 380) currentX = 380;
-        if (currentY < 0) currentY = 0; if (currentY > 480) currentY = 480;
 
+    function executeAdaptiveInputSweep(e) {
+        setupAudio(); if (e.cancelable) e.preventDefault();
+        let src = e.touches ? e.touches : e;
+        if (e.type === "touchend" || e.type === "touchcancel") { if (e.changedTouches && e.changedTouches.length > 0) src = e.changedTouches; }
+        let bounds = gameArea.getBoundingClientRect(); currentX = src.clientX - bounds.left; currentY = src.clientY - bounds.top;
+        if (currentX < 0) currentX = 0; if (currentX > 380) currentX = 380; if (currentY < 0) currentY = 0; if (currentY > 480) currentY = 480;
         sight.style.left = currentX + "px"; sight.style.top = currentY + "px";
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-
-    // Bind clean listener tracks across desktop mouse boards and mobile screens synchronously
     gameArea.addEventListener("mousemove", executeAdaptiveInputSweep);
-    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } });
-    
-    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } }, { passive: false });
     gameArea.addEventListener("touchmove", executeAdaptiveInputSweep, { passive: false });
     gameArea.addEventListener("touchend", executeAdaptiveInputSweep, { passive: false });
+    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } });
+    gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { executeAdaptiveInputSweep(e); triggerFire(); } }, { passive: false });
     function triggerSectorPathMovement() {
         if (isMoving) return; isMoving = true;
         let activeSectorList = (currentChapter === 1) ? ch1Sectors : ch2Sectors;
@@ -310,15 +304,12 @@ game_html = '''
                 else if (currentSector === "T") { document.getElementById("chapterTxt").innerText = "CH 2: COCKPIT CONTROL RECOVERY"; }
             }
         } else {
-            // Chapter transfer logic layers
             if (currentChapter === 1) {
                 currentChapter = 2; currentSector = "K"; sectorKills = 0; cameraZ = 0; targetCameraZ = 0;
-                
                 document.getElementById("overlayChapterTitle").innerText = "CHAPTER 2";
                 document.getElementById("overlayChapterSubtitle").innerText = "AIRPORT TERMINAL & AIRCRAFT RECOVERY";
                 document.getElementById("chapterOverlay").style.display = "flex";
                 document.getElementById("chapterTxt").innerText = "CH 2: INTERNATIONAL RUNWAY APRON";
-                
                 setTimeout(initializeActiveArcadeGameplay, 3000); return;
             } else {
                 clearInterval(spawnTimerId); clearInterval(runLoopTimerId); isOver = true;
@@ -337,6 +328,7 @@ game_html = '''
         if (playerHp <= 20 && !heartbeatIntervalId) { gameArea.classList.add("critical-pulse"); heartbeatIntervalId = setInterval(() => { sound("heartbeat"); }, 550); }
         if (playerHp <= 0) { isOver = true; sound("boom"); clearInterval(spawnTimerId); clearInterval(runLoopTimerId); if(heartbeatIntervalId) { clearInterval(heartbeatIntervalId); gameArea.classList.remove("critical-pulse"); heartbeatIntervalId = null; } finalScore.innerText = "Final Score Log: " + score; overScreen.style.display = "flex"; }
     }
+
     function triggerFire() {
         if (isOver || document.getElementById("winScreen").style.display === "flex" || isMoving || document.getElementById("chapterOverlay").style.display === "flex") return;
         sound("zap"); flash.style.display = "block"; setTimeout(() => { flash.style.display = "none"; }, 60);
@@ -375,6 +367,7 @@ game_html = '''
     }
 
     function initializeActiveArcadeGameplay() {
+        configureAdaptiveDevicePrompts();
         document.getElementById("chapterOverlay").style.display = "none";
         if (!runLoopTimerId) runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
     }
@@ -400,5 +393,5 @@ game_html = '''
 '''
 
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Full Architecture Engine ID: {cb_id} -->', unsafe_allow_html=True)
+st.markdown(f'<!-- Mobile Fixed Deployment Anchor ID: {cb_id} -->', unsafe_allow_html=True)
 components.html(game_html, height=560, scrolling=False)
