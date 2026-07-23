@@ -56,9 +56,9 @@ game_html = '''
 
         #overScreen, #winScreen, #intermissionScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 40; }
         #overScreen { background: rgba(2,2,4,0.97); } #winScreen { background: linear-gradient(135deg, rgba(8,15,30,0.97), rgba(20,32,55,0.97)); }
-        .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(220,38,38,0.5); }
+        .retry-btn { padding: 12px 28px; background: #dc2626; color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14 rgba(220,38,38,0.5); }
         .win-btn { padding: 12px 28px; background: #eab308; color: #000; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 14px rgba(234,179,8,0.5); }
-        /* 🎬 CINEMATIC NARRATIVE COVER SCREEN & CHAPTER INTRON PANELS */
+        /* 🎬 CINEMATIC NARRATIVE COVER SCREEN & CHAPTER INTRO PANELS */
         #coverScreen { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a, #020617); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         #chapterOverlay { position: absolute; inset: 0; background: #000000; z-index: 49; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
@@ -72,9 +72,9 @@ game_html = '''
         <!-- 🎬 JERICHO NARRATIVE PROLOGUE PANEL CARD -->
         <div id="coverScreen">
             <div style="color:#06b6d4; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 10px rgba(6,182,212,0.4);">HAMPI JERICHO</div>
-            <div style="color:#e2e8f0; font-size:12px; font-weight:600; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 THE UNDERGROUND CHECKPOINT 💥</div>
+            <div style="color:#e2e8f0; font-size:12px; font-weight:600; letter-spacing:4px; margin-bottom:15px; color:#94a3b8;">💥 PORT TERMINAL OPERATIONS 💥</div>
             <div class="story-scroller">
-                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked Sector A's container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis.
+                The city sleeps, but the docks are alive with terror. A ruthless criminal syndicate has hijacked Sector A's container port terminal, threatening to hold the city's supply lines hostage. Standard law enforcement has been completely compromised. Enter Hampi Jericho—an elite, rogue tactical operative armed with custom high-precision polymer weapons [other topic]. Slipping between cargo bays, Jericho must execute a precise tactical cleanup across 10 danger zones to restore safety to the metropolis [other topic].
             </div>
             <div id="loadPercent" style="color:#06b6d4; font-family:monospace; font-size:14px; font-weight:bold;">INITIALIZING MATRIX: 0%</div>
             <div class="load-bar-track"><div class="load-bar-fluid" id="loadBar"></div></div>
@@ -123,9 +123,13 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🎬 AUTOMATED TIMEOUT COVER LOADER ENGINE ---
-    window.addEventListener("load", () => {
-        let percentage = 0; let barFluid = document.getElementById("loadBar"); let txtPercent = document.getElementById("loadPercent");
+    // --- 🎬 FIXED: IMMEDIATE AUTO-RUN INLINE LOADER ENGINE ---
+    // Clears the blank screen by executing the loading progression instantly without window.load hooks
+    function executeSelfStartingLoader() {
+        let percentage = 0; 
+        let barFluid = document.getElementById("loadBar"); 
+        let txtPercent = document.getElementById("loadPercent");
+        
         let loadInterval = setInterval(() => {
             percentage += 2;
             if(barFluid) barFluid.style.width = percentage + "%";
@@ -136,7 +140,6 @@ game_html = '''
                 document.getElementById("coverScreen").style.display = "none";
                 document.getElementById("chapterOverlay").style.display = "flex";
                 
-                // Chapter plate stays active for 1.8 seconds before gameplay unlocks
                 setTimeout(() => {
                     document.getElementById("chapterOverlay").style.display = "none";
                     document.getElementById("scoreCounter").style.display = "block";
@@ -146,10 +149,13 @@ game_html = '''
                     
                     runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
-                }, 1800);
+                }, 1600);
             }
-        }, 30);
-    });
+        }, 25);
+    }
+    
+    // Instantly ignite the menu sequence thread
+    setTimeout(executeSelfStartingLoader, 100);
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     
     function sound(type) {
@@ -165,12 +171,9 @@ game_html = '''
     function aim(e) {
         if (isOver) return;
         let evt = e; if (e.touches && e.touches.length > 0) { evt = e.touches; } else if (e.changedTouches && e.changedTouches.length > 0) { evt = e.changedTouches; }
-        let bounds = gameArea.getBoundingClientRect();
-        currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
+        let bounds = gameArea.getBoundingClientRect(); currentX = evt.clientX - bounds.left; currentY = evt.clientY - bounds.top;
         
-        // --- 🎯 FIXED: VARIABLE EXPANDING TARGET CROSSHAIR ---
-        let mappedThreatZ = 12;
-        threatsList.forEach(t => { if(!t.isDying) mappedThreatZ = t.z - cameraZ; });
+        let mappedThreatZ = 12; threatsList.forEach(t => { if(!t.isDying) mappedThreatZ = t.z - cameraZ; });
         let dynamicallyAdjustedSize = Math.max(16, Math.min(60, (400 / mappedThreatZ) * 0.95));
         sight.style.width = dynamicallyAdjustedSize + "px"; sight.style.height = dynamicallyAdjustedSize + "px";
         
@@ -179,15 +182,8 @@ game_html = '''
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
     gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
-    gameArea.addEventListener("mousedown", (e) => { if(b=e.target.tagName !== "BUTTON") triggerFire(); });
+    gameArea.addEventListener("mousedown", (e) => { if(e.target.tagName !== "BUTTON") triggerFire(); });
     gameArea.addEventListener("touchstart", (e) => { if(e.target.tagName !== "BUTTON") { e.preventDefault(); aim(e); triggerFire(); } }, { passive: false });
-
-    function project3D(x, y, z) {
-        let relativeX = x - cameraX; let relativeZ = z - cameraZ;
-        if (relativeZ <= 0.1) return null;
-        let fovScale = 400 / relativeZ;
-        return { x: 190 + (relativeX * fovScale), y: 240 - ((y - 1.6) * fovScale), size: fovScale };
-    }
 
     const static3DObstacles = [
         { id: "c1", x: -2.0, y: 0.5, z: 15, baseColor: "#0d9488", shadowColor: "#115e59" }, { id: "c2", x: 2.1, y: 0.5, z: 31, baseColor: "#dc2626", shadowColor: "#991b1b" },
@@ -195,25 +191,16 @@ game_html = '''
         { id: "c5", x: -2.2, y: 0.5, z: 79, baseColor: "#4b5563", shadowColor: "#1f2937" }, { id: "c6", x: 1.8, y: 0.5, z: 95, baseColor: "#0d9488", shadowColor: "#115e59" }
     ];
     function render3DSceneGrid() {
-        cycleTick += 0.05;
-        cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
+        cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
-
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c");
-            ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            ctx.fillStyle = "rgba(255,255,255,0.75)";
-            for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
-            
-            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25);
-            ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
-            
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612");
-            ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2;
-            for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
+            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
+            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
+            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
+            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
         } else {
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
@@ -222,12 +209,9 @@ game_html = '''
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
-
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03);
-            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
-
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
             if (isOutdoorSector) continue;
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -248,30 +232,20 @@ game_html = '''
             } 
             else if (item.type === "enemy") {
                 let t = item.data; if (!isMoving) t.loopTick++;
-                // --- 🎬 FIXED: GTA PEEK COVER EQUATIONS ---
                 let aiPeriodState = Math.floor(t.loopTick / 38) % 2; let isPeekingNow = (aiPeriodState === 1);
                 let p = project3D(t.x, t.y, t.z); if (!p) return; let s = p.size * 0.4;
                 let currentVisualX = isPeekingNow ? p.x : p.x - (s * 1.5);
                 t.currentScreenX = currentVisualX; t.currentScreenY = p.y - (s * 0.5); t.currentRadius = s * 1.15;
-
                 if (isPeekingNow) { t.ring.style.opacity = "1"; t.age++; } else { t.ring.style.opacity = "0"; }
                 if (t.age > 0 && t.age % 35 === 0 && !isMoving && isPeekingNow) { t.isFlashing = true; triggerEnemyDamageStrike(); setTimeout(() => { t.isFlashing = false; }, 70); }
-
-                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
-                ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
+                ctx.fillStyle = "#1e291b"; ctx.fillRect(currentVisualX - s/2, p.y - s, s, s * 1.3); ctx.strokeStyle = "#000"; ctx.lineWidth = 1.5; ctx.strokeRect(currentVisualX - s/2, p.y - s, s, s * 1.3);
                 ctx.fillStyle = "#3f3f46"; ctx.fillRect(currentVisualX - s/3, p.y - s * 0.9, s * 0.66, s * 0.7);
                 ctx.fillStyle = "#d4b38a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.3, s * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = "#27272a"; ctx.beginPath(); ctx.arc(currentVisualX, p.y - s * 1.4, s * 0.36, Math.PI, 0); ctx.fill(); ctx.stroke();
                 ctx.fillRect(currentVisualX - s/3, p.y + s * 0.3, s * 0.22, s * 0.8); ctx.fillRect(currentVisualX + s/8, p.y + s * 0.3, s * 0.22, s * 0.8);
                 ctx.fillStyle = "#09090b"; ctx.fillRect(currentVisualX + s/6, p.y - s/3, s * 0.75, s * 0.18);
-
-                if (t.isFlashing && isPeekingNow) {
-                    let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55);
-                    flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent");
-                    ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath();
-                }
-                t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px";
-                let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
+                if (t.isFlashing && isPeekingNow) { let flashGrd = ctx.createRadialGradient(currentVisualX + s * 0.9, p.y - s/4, 1, currentVisualX + s * 0.9, p.y - s/4, s * 0.55); flashGrd.addColorStop(0, "#ffffff"); flashGrd.addColorStop(0.5, "#eab308"); flashGrd.addColorStop(1, "transparent"); ctx.fillStyle = flashGrd; ctx.beginPath(); ctx.arc(currentVisualX + s * 0.9, p.y - s/4, s * 0.55, 0, Math.PI*2); ctx.fill(); ctx.closePath(); }
+                t.ring.style.left = currentVisualX + "px"; t.ring.style.top = (p.y - s/2) + "px"; let rSize = Math.max(0, 95 * (1.3 - (t.age / 40))); t.ring.style.width = rSize + "px"; t.ring.style.height = rSize + "px";
             }
         });
     }
