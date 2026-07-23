@@ -108,7 +108,7 @@ game_html = '''
 
         <div id="winScreen">
             <div style="color:#eab308; font-size:28px; font-weight:bold; text-shadow: 0 0 12px #eab308;">👑 COMPLETE CAMPAIGN VICTORY 👑</div>
-            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK JERICHO!<br>All 10 campaign sectors successfully secured!</div>
+            <div style="color:white; font-size:14px; text-align:center; margin-top:15px; max-width:320px; line-height:1.5;">EXCELLENT WORK OFFICER!<br>All 10 campaign sectors successfully secured!</div>
             <button class="win-btn" onclick="resetArcadeEngine(true)">REPLAY CAMPAIGN 🎮</button>
         </div>
     </div>
@@ -129,7 +129,6 @@ game_html = '''
     const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
     let cameraZ = 0, targetCameraZ = 0; let cameraX = 0, targetCameraX = 0; let cycleTick = 0;
 
-    // --- 🔊 STABLE: NATURAL-UTTERANCE FEMALE AI VOICE OVERLAY ---
     function executeNaturalFemaleVoiceBrief() {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel(); 
@@ -220,11 +219,13 @@ game_html = '''
         cycleTick += 0.05; cameraZ += (targetCameraZ - cameraZ) * 0.07; cameraX += (targetCameraX - cameraX) * 0.07;
         if (isMoving && Math.abs(cameraZ - targetCameraZ) < 0.1) { isMoving = false; }
         
-        // Smooth Cinematic Third Person Panning Fly-In Zoom
+        // --- 🎬 FIXED: ROBUST ZOOM LIFECYCLE MILESTONE ---
         if (perspectiveMode3rdPerson) {
-            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.038; 
-            if (cameraFlyInProgressDist <= 2.2) {
+            cameraFlyInProgressDist -= (cameraFlyInProgressDist - 1.5) * 0.045; 
+            // Changed validation ceiling bounds from 2.2 to 3.0 to handle browser frame skips safely
+            if (cameraFlyInProgressDist <= 3.0) {
                 perspectiveMode3rdPerson = false;
+                cameraFlyInProgressDist = 1.5; // Snap cleanly to center first person coordinates
                 document.getElementById("weapon").style.display = "block";
                 if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
             }
@@ -233,11 +234,7 @@ game_html = '''
         let isOutdoorSector = ["E","F","G","H","I","J"].includes(currentSector);
 
         if (isOutdoorSector) {
-            let skyGrd = ctx.createLinearGradient(0, 0, 0, 240); skyGrd.addColorStop(0, "#010103"); skyGrd.addColorStop(0.6, "#040514"); skyGrd.addColorStop(1, "#110b1c"); ctx.fillStyle = skyGrd; ctx.fillRect(0, 0, 380, 240);
-            ctx.fillStyle = "rgba(255,255,255,0.75)"; for (let i = 1; i <= 25; i++) { let sX = (i * 73) % 380; let sY = (i * 37) % 190; let twinkle = Math.abs(Math.sin(cycleTick + i)) * 1.5; ctx.fillRect(sX, sY, twinkle, twinkle); }
-            ctx.fillStyle = "#04060c"; let shipParallaxX = 140 - (cameraX * 25); ctx.beginPath(); ctx.moveTo(shipParallaxX, 230); ctx.lineTo(shipParallaxX + 65, 230); ctx.lineTo(shipParallaxX + 55, 240); ctx.lineTo(shipParallaxX - 5, 240); ctx.closePath(); ctx.fill(); ctx.fillRect(shipParallaxX + 15, 222, 12, 8);
-            let seaGrd = ctx.createLinearGradient(0, 240, 0, 480); seaGrd.addColorStop(0, "#04060c"); seaGrd.addColorStop(0.5, "#012018"); seaGrd.addColorStop(1, "#011612"); ctx.fillStyle = seaGrd; ctx.fillRect(0, 240, 380, 240);
-            ctx.strokeStyle = "rgba(20, 184, 166, 0.15)"; ctx.lineWidth = 2; for (let waveY = 250; waveY < 480; waveY += 35) { ctx.beginPath(); let waveShift = Math.sin(cycleTick + waveY) * 12; ctx.moveTo(0, waveY + waveShift); ctx.bezierCurveTo(120, waveY - 15 + waveShift, 260, waveY + 15 + waveShift, 380, waveY + waveShift); ctx.stroke(); }
+            ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         } else {
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
@@ -246,12 +243,14 @@ game_html = '''
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
+            
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
-            // FIXED CANVAS CONTEXT BUG: Bound prefix context token to draw successfully
+            
+            ctx.strokeStyle = "rgba(20, 184, 166, 0.25)"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); 
+            ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); 
             ctx.stroke();
-            if (isOutdoorSector) continue;
+            
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
             ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 - (4.5 * pNear.size), 240 - (2.4 * pNear.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 - (2.4 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
@@ -292,12 +291,11 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ CINEMATIC 3D HUMAN PROPORTIONS FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // A: Long Running Athletic Combat Trousers
+            // A: Running Combat Trousers
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -305,16 +303,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // B: Strong Broad Shoulder Torso (Combat Armor Frame)
-            ctx.fillStyle = "#1e293b"; 
-            ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
+            // B: Strong Broad Shoulders Jacket Torso Frame
+            ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // C: Tactical Kevlar Trauma Vest Harness Plates
+            // C: Tactical Kevlar Trauma Vest Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
-            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
+            ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.18), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // D: Tactical Head Unit Shell Profile
+            // D: Camouflage Helmet Cap Unit
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
@@ -332,7 +329,7 @@ game_html = '''
         let swayX = (currentX - 190) / 10; let swayY = (currentY - 240) / 12;
         weapon.style.transform = "translateX(-50%) scale(1.1) rotate(" + swayX + "deg) translateY(" + swayY + "px)";
     }
-    gameArea.addEventListener("mousemove", aim); gameArea.addEventListener("touchmove", (e) => { e.preventDefault(); aim(e); }, { passive: false });
+    gameArea.addEventListener("mousemove", aim);
 
     function triggerMouseCoordinateFire(e) {
         let bounds = gameArea.getBoundingClientRect();
@@ -383,7 +380,6 @@ game_html = '''
         }
     }
 
-    // --- 🎮 FIXED RESPONSIVE RESPAWNER ENGINE ---
     function spawn3DThreatUnit() {
         if (isOver || threatsList.length >= 2 || isMoving || document.getElementById("winScreen").style.display === "flex" || perspectiveMode3rdPerson) return;
         let idx = sectorsList.indexOf(currentSector); let spawnZ = cameraZ + 12 + (idx * 0.5); let spawnX = cameraX + (Math.random() * 2.6) - 1.3;
@@ -408,6 +404,10 @@ game_html = '''
 </html>
 '''
 
+import base64
+encoded_html = base64.b64encode(game_html.encode('utf-8')).decode('utf-8')
+iframe_src_str = f"data:text/html;base64,{encoded_html}"
+
 cb_id = random.randint(100000, 999999)
-st.markdown(f'<!-- Refresh Key Anchor ID: {cb_id} -->', unsafe_allow_html=True)
-components.html(game_html, height=560, scrolling=False)
+st.markdown(f'<!-- Fresh Matrix Deploy Anchor ID: {cb_id} -->', unsafe_allow_html=True)
+components.iframe(src=iframe_src_str, height=560, scrolling=False)
