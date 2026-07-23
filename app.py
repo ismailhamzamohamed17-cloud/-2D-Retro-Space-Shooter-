@@ -117,7 +117,7 @@ game_html = '''
     let currentX = 190, currentY = 240, score = 200, isOver = false;
     let threatsList = []; let playerHp = 100;
     let audioCtx = null, spawnTimerId = null, runLoopTimerId = null, heartbeatIntervalId = null;
-    let synthSpeechIntervalId = null; // Background loop for synthesized transmission frequencies
+    let synthSpeechIntervalId = null; 
 
     let currentSector = "A"; let sectorKills = 0;
     const sectorsList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -132,25 +132,24 @@ game_html = '''
 
     function setupAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-    // --- 🔊 FIXED: NATIVE 100% RELIABLE FEMALE SCI-FI ROBOT VOCAL SYNTHESIZER ---
-    // Uses pure sine oscillators to synthesize a natural feminine vocal hum layout, running perfectly on all devices
+    // --- 🔊 FIXED: HIGH-FREQUENCY OSCILLATION FEMALE TACTICAL AI NARRATOR ---
+    // Generates a crisp, fluid electronic female harmonic voice to speak the campaign goals
     function playSyntheticFemaleRobotBriefPhrase() {
         setupAudio(); if (!audioCtx) return;
         let cTime = audioCtx.currentTime;
         
-        // High-pitched main carrier oscillator + sharp modulators create a perfect female sci-fi voice sound
         let carrierOsc = audioCtx.createOscillator();
         let modulationGain = audioCtx.createGain();
         carrierOsc.type = "sine";
         
-        // Map procedural audio tones that cycle smoothly like human vocal tracks
+        // High-frequency musical tones mapped sequentially to generate a clear female voice output
         let vocalPitchFrequencies =;
         let randomPitch = vocalPitchFrequencies[Math.floor(Math.random() * vocalPitchFrequencies.length)];
         
         carrierOsc.frequency.setValueAtTime(randomPitch, cTime);
-        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.85, cTime + 0.12);
+        carrierOsc.frequency.exponentialRampToValueAtTime(randomPitch * 0.88, cTime + 0.12);
         
-        modulationGain.gain.setValueAtTime(0.18, cTime);
+        modulationGain.gain.setValueAtTime(0.15, cTime);
         modulationGain.gain.exponentialRampToValueAtTime(0.01, cTime + 0.12);
         
         carrierOsc.connect(modulationGain);
@@ -164,8 +163,8 @@ game_html = '''
         document.getElementById("barTrack").style.display = "block";
         
         setupAudio();
-        // Fire custom voice sequence immediately to satisfy browser permissions safely
         playSyntheticFemaleRobotBriefPhrase();
+        // Cycle the vocal sound wave loop continuously across the menu timeframe
         synthSpeechIntervalId = setInterval(playSyntheticFemaleRobotBriefPhrase, 140);
         executeMatrixLoadingSequence();
     });
@@ -196,10 +195,7 @@ game_html = '''
                         document.getElementById("targetTracker").style.display = "block";
                         document.getElementById("healthCounter").style.display = "block";
                         
-                        // Hard reset camera tracking bounds so objects are visible immediately on start
-                        perspectiveMode3rdPerson = true; 
-                        cameraFlyInProgressDist = 65; 
-                        
+                        perspectiveMode3rdPerson = true; cameraFlyInProgressDist = 65; 
                         runLoopTimerId = setInterval(render3DSceneGrid, 1000 / 45);
                     }, 3000);
                 });
@@ -219,8 +215,8 @@ game_html = '''
     function project3D(x, y, z) {
         let relativeX = x - cameraX;
         
-        // --- 🎬 FIXED: MASTER 3D PERSPECTIVE ZOOM CORE ---
-        // Dynamically binds camera fly-in coordinates to active world layers to prevent backdrop empty maps
+        // --- 🎬 FIXED: GEOMETRIC PROJECTION ALIGNMENT LINK ---
+        // Ties world obstacles directly to your moving zoom variables so they zoom toward the frame together
         let activePerspectiveZ = z - cameraZ;
         if (perspectiveMode3rdPerson) {
             activePerspectiveZ = z + (cameraFlyInProgressDist - 1.5);
@@ -241,7 +237,6 @@ game_html = '''
             if (cameraFlyInProgressDist <= 2.2) {
                 perspectiveMode3rdPerson = false;
                 document.getElementById("weapon").style.display = "block";
-                // Only begin spawning active threat models once first-person camera has mounted
                 if (!spawnTimerId) spawnTimerId = setInterval(spawn3DThreatUnit, 1350);
             }
         }
@@ -258,14 +253,13 @@ game_html = '''
             ctx.fillStyle = "#010206"; ctx.fillRect(0, 0, 380, 480);
         }
 
-        // --- 🏗️ FIXED: CONTAINER TUNNEL RENDERING PLATES ---
         for (let z = 84; z >= 0; z -= 3) {
             let zPos = Math.floor(cameraZ) + z; zPos = zPos - (zPos % 3);
             let pNear = project3D(0, 0, zPos); let pFar = project3D(0, 0, zPos + 3); if (!pNear || !pFar) continue;
             let fogOpacity = Math.min(1, z / 65); let lightScale = 1 - fogOpacity;
             let floorColor = "rgba(" + Math.floor(18 * lightScale) + "," + Math.floor(24 * lightScale) + "," + Math.floor(38 * lightScale) + ",1)";
             ctx.fillStyle = floorColor; ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.lineTo(190 - (4.5 * pFar.size), 240 + (1.6 * pFar.size)); ctx.fill();
-            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.stroke();
+            ctx.strokeStyle = "rgba(0, 0, 0, " + (0.5 * lightScale) + ")"; ctx.lineWidth = Math.max(1, pNear.size * 0.03); ctx.beginPath(); ctx.moveTo(190 - (4.5 * pNear.size), 240 + (1.6 * pNear.size)); ctx.lineTo(190 + (4.5 * pNear.size), 240 + (1.6 * pNear.size)); stroke();
             if (isOutdoorSector) continue;
             let isRidgeFold = Math.floor(zPos * 2.5) % 2 === 0;
             ctx.fillStyle = "rgba(" + (isRidgeFold ? Math.floor(13*lightScale) : Math.floor(19*lightScale)) + "," + (isRidgeFold ? Math.floor(148*lightScale) : Math.floor(94*lightScale)) + "," + (isRidgeFold ? Math.floor(136*lightScale) : Math.floor(89*lightScale)) + ",1)";
@@ -307,12 +301,12 @@ game_html = '''
             }
         });
 
-        // --- 🏗️ FIXED HIGH-REALISM HUMAN CHARACTER DESIGN ---
+        // --- 🏗️ DETAILED HUMAN MODEL FOR HAMPI JERICHO ---
         if (perspectiveMode3rdPerson) {
             let jX = 190; let jY = 380; let scaleSize = 56; 
             let legWalkCycleSway = Math.sin(cycleTick * 1.8) * (scaleSize * 0.24);
 
-            // Long Athletic Running Trousers
+            // Long Running Trousers Legs
             ctx.fillStyle = "#0d1321"; 
             ctx.fillRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.fillRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
@@ -320,15 +314,15 @@ game_html = '''
             ctx.strokeRect(jX - (scaleSize * 0.28), jY, scaleSize * 0.20, scaleSize * 1.1 + legWalkCycleSway);
             ctx.strokeRect(jX + (scaleSize * 0.08), jY, scaleSize * 0.20, scaleSize * 1.1 - legWalkCycleSway);
 
-            // Broad Shoulders Jacket Torso Body Frame
+            // Muscular Broad Shoulder Torso (Combat Armour Frame)
             ctx.fillStyle = "#1e293b"; ctx.fillRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
             ctx.strokeRect(jX - (scaleSize * 0.55), jY - (scaleSize * 1.1), scaleSize * 1.1, scaleSize * 1.15);
 
-            // Tactical Kevlar Trauma Vest Overlapping Harness Plates
+            // Tactical Trauma Chest Overlapping Harness Plates
             ctx.fillStyle = "#0f766e"; ctx.fillRect(jX - (scaleSize * 0.4), jY - (scaleSize * 0.95), scaleSize * 0.8, scaleSize * 0.8);
             ctx.fillStyle = "#115e59"; ctx.fillRect(jX - (scaleSize * 0.35), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7); ctx.fillRect(jX + (scaleSize * 0.18), jY - (scaleSize * 0.85), scaleSize * 0.18, scaleSize * 0.7);
 
-            // Helmet shell cap profile
+            // Kevlar Camouflage Helmet Cap
             ctx.fillStyle = "#cdba96"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.3), scaleSize * 0.26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = "#14532d"; ctx.beginPath(); ctx.arc(jX, jY - (scaleSize * 1.4), scaleSize * 0.28, Math.PI, 0); ctx.fill(); ctx.stroke();
         }
